@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile } from '../types';
 import { processTemplate } from '../utils';
-import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone } from 'lucide-react';
+import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, AlertCircle, ArrowRight, Activity, Users } from 'lucide-react';
 
 export const MediationManager: React.FC = () => {
   const { mediations, addMediation, updateMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile } = useData();
@@ -49,7 +49,25 @@ export const MediationManager: React.FC = () => {
     m.counterParty.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusColor = (status: MediationStatus) => {
+  // --- PROCESS VISUALIZATION LOGIC ---
+  const getProcessStats = (status: MediationStatus) => {
+      switch(status) {
+          case MediationStatus.APPLIED:
+              return { percent: 25, color: 'bg-blue-500', label: 'Başvuru', step: 1, theme: 'blue' };
+          case MediationStatus.PROCESS:
+              return { percent: 50, color: 'bg-blue-600', label: 'Müzakere', step: 2, theme: 'blue' };
+          case MediationStatus.AGREEMENT:
+              return { percent: 100, color: 'bg-green-500', label: 'Anlaşma', step: 3, theme: 'green' };
+          case MediationStatus.NO_AGREEMENT:
+              return { percent: 100, color: 'bg-red-500', label: 'Anlaşmama', step: 3, theme: 'red' };
+          case MediationStatus.CANCELLED:
+              return { percent: 0, color: 'bg-slate-400', label: 'İptal', step: 0, theme: 'slate' };
+          default:
+              return { percent: 0, color: 'bg-slate-200', label: 'Bilinmiyor', step: 0, theme: 'slate' };
+      }
+  };
+
+  const getStatusBadge = (status: MediationStatus) => {
     switch(status) {
       case MediationStatus.AGREEMENT: return 'bg-green-100 text-green-700 border-green-200';
       case MediationStatus.NO_AGREEMENT: return 'bg-red-100 text-red-700 border-red-200';
@@ -121,7 +139,7 @@ export const MediationManager: React.FC = () => {
   // -------------------------------
 
   const handleAddMeeting = () => {
-    if (!activeMediationData || !newMeeting.date || !newMeeting.notes) return;
+    if (!activeMediationData || !newMeeting.date || !newMeeting.participants) return;
 
     const meetingToAdd: MediationMeeting = {
         id: `mm-${Date.now()}`,
@@ -179,7 +197,7 @@ export const MediationManager: React.FC = () => {
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
                          <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
                              <h3 className="text-lg font-bold text-slate-800 flex items-center">
-                                <Settings className="w-5 h-5 mr-2 text-blue-600" />
+                                <Settings className="w-5 h-5 mr-2 text-brand-600" />
                                 Arabulucu Profil Ayarları
                              </h3>
                              <button onClick={() => setIsProfileModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
@@ -189,7 +207,7 @@ export const MediationManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Ad Soyad</label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm" 
                                         value={editedProfile.name} onChange={e => setEditedProfile({...editedProfile, name: e.target.value})} />
                                 </div>
                             </div>
@@ -197,7 +215,7 @@ export const MediationManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Sicil Numarası</label>
                                 <div className="relative">
                                     <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm" 
                                         value={editedProfile.registrationNumber} onChange={e => setEditedProfile({...editedProfile, registrationNumber: e.target.value})} />
                                 </div>
                             </div>
@@ -205,7 +223,7 @@ export const MediationManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">İletişim (E-Posta)</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                    <input type="email" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                    <input type="email" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm" 
                                         value={editedProfile.email} onChange={e => setEditedProfile({...editedProfile, email: e.target.value})} />
                                 </div>
                             </div>
@@ -213,7 +231,7 @@ export const MediationManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">İletişim (Telefon)</label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm" 
                                         value={editedProfile.phone} onChange={e => setEditedProfile({...editedProfile, phone: e.target.value})} />
                                 </div>
                             </div>
@@ -221,7 +239,7 @@ export const MediationManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Adres</label>
                                 <div className="relative">
                                     <MapPin className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
-                                    <textarea className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm min-h-[60px]" 
+                                    <textarea className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm min-h-[60px]" 
                                         value={editedProfile.address} onChange={e => setEditedProfile({...editedProfile, address: e.target.value})} />
                                 </div>
                             </div>
@@ -229,14 +247,14 @@ export const MediationManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">IBAN (Anlaşma Belgesi İçin)</label>
                                 <div className="relative">
                                     <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono" 
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono" 
                                         value={editedProfile.iban} onChange={e => setEditedProfile({...editedProfile, iban: e.target.value})} />
                                 </div>
                             </div>
                         </div>
                          <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
                             <button onClick={() => setIsProfileModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium">İptal</button>
-                            <button onClick={handleSaveProfile} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm flex items-center">
+                            <button onClick={handleSaveProfile} className="px-5 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium shadow-sm flex items-center">
                                 <Save className="w-4 h-4 mr-2" /> Bilgileri Güncelle
                             </button>
                         </div>
@@ -250,11 +268,11 @@ export const MediationManager: React.FC = () => {
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                             <h3 className="font-bold text-slate-800 flex items-center">
-                                <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                                <FileText className="w-5 h-5 mr-2 text-brand-600" />
                                 Evrak Önizleme
                             </h3>
                             <div className="flex space-x-2">
-                                <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 flex items-center transition shadow-sm">
+                                <button onClick={handlePrint} className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-brand-700 flex items-center transition shadow-sm">
                                     <Printer className="w-4 h-4 mr-2" /> Yazdır
                                 </button>
                                 <button onClick={() => setIsTemplateModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500">
@@ -302,35 +320,35 @@ export const MediationManager: React.FC = () => {
                                 <h4 className="text-sm font-bold text-slate-700 mb-3">Kullanılabilir Değişkenler</h4>
                                 <div className="space-y-2">
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{DOSYA_NO}}')}>
-                                        <span className="font-bold text-blue-600">{'{{DOSYA_NO}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{DOSYA_NO}}'}</span>
                                         <p className="text-slate-500 mt-1">Dosya Numarası</p>
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{MUVEKKIL}}')}>
-                                        <span className="font-bold text-blue-600">{'{{MUVEKKIL}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{MUVEKKIL}}'}</span>
                                         <p className="text-slate-500 mt-1">Başvurucu Adı</p>
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{KARSI_TARAF}}')}>
-                                        <span className="font-bold text-blue-600">{'{{KARSI_TARAF}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{KARSI_TARAF}}'}</span>
                                         <p className="text-slate-500 mt-1">Karşı Taraf Adı</p>
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{KONU}}')}>
-                                        <span className="font-bold text-blue-600">{'{{KONU}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{KONU}}'}</span>
                                         <p className="text-slate-500 mt-1">Uyuşmazlık Konusu</p>
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{ARABULUCU}}')}>
-                                        <span className="font-bold text-blue-600">{'{{ARABULUCU}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{ARABULUCU}}'}</span>
                                         <p className="text-slate-500 mt-1">Arabulucu Adı (Profil)</p>
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{ARABULUCU_SICIL}}')}>
-                                        <span className="font-bold text-blue-600">{'{{ARABULUCU_SICIL}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{ARABULUCU_SICIL}}'}</span>
                                         <p className="text-slate-500 mt-1">Sicil No (Profil)</p>
                                     </div>
                                      <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{BUGUN}}')}>
-                                        <span className="font-bold text-blue-600">{'{{BUGUN}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{BUGUN}}'}</span>
                                         <p className="text-slate-500 mt-1">Bugünün Tarihi</p>
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{SONUC_METNI}}')}>
-                                        <span className="font-bold text-blue-600">{'{{SONUC_METNI}}'}</span>
+                                        <span className="font-bold text-brand-600">{'{{SONUC_METNI}}'}</span>
                                         <p className="text-slate-500 mt-1">Otomatik Sonuç</p>
                                     </div>
                                 </div>
@@ -339,7 +357,7 @@ export const MediationManager: React.FC = () => {
 
                         <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
                             <button onClick={() => setIsTemplateEditorOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium transition">İptal</button>
-                            <button onClick={saveTemplate} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md flex items-center">
+                            <button onClick={saveTemplate} className="px-5 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium shadow-md flex items-center">
                                 <Save className="w-4 h-4 mr-2" /> Şablonu Kaydet
                             </button>
                         </div>
@@ -353,7 +371,7 @@ export const MediationManager: React.FC = () => {
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
                         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
                              <h3 className="text-lg font-bold text-slate-800 flex items-center">
-                                <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+                                <Calendar className="w-5 h-5 mr-2 text-brand-600" />
                                 Yeni Toplantı Planla
                              </h3>
                              <button onClick={() => setIsMeetingModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition"><X className="w-5 h-5" /></button>
@@ -364,28 +382,46 @@ export const MediationManager: React.FC = () => {
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Tarih & Saat</label>
                                     <div className="relative">
-                                        <input type="datetime-local" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" value={newMeeting.date} onChange={e => setNewMeeting({...newMeeting, date: e.target.value})} />
+                                        <input type="datetime-local" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" value={newMeeting.date} onChange={e => setNewMeeting({...newMeeting, date: e.target.value})} />
                                     </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Katılımcılar</label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                        <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-9 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" placeholder="Örn: Müvekkil, Vekiller..." value={newMeeting.participants} onChange={e => setNewMeeting({...newMeeting, participants: e.target.value})} />
+                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                        <select 
+                                            className="w-full border border-slate-300 bg-white text-slate-900 pl-9 pr-8 py-2.5 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm appearance-none"
+                                            value={newMeeting.participants} 
+                                            onChange={e => setNewMeeting({...newMeeting, participants: e.target.value})}
+                                        >
+                                            <option value="">Seçiniz...</option>
+                                            <option value="Taraflar (Hepsi)">Taraflar (Hepsi)</option>
+                                            <option value="Taraflar ve Vekilleri">Taraflar ve Vekilleri</option>
+                                            {activeMediationData && (
+                                                <>
+                                                    <option value={activeMediationData.clientName}>{activeMediationData.clientName} (Başvurucu)</option>
+                                                    <option value={activeMediationData.counterParty}>{activeMediationData.counterParty} (Karşı Taraf)</option>
+                                                </>
+                                            )}
+                                            <option value="Sadece Vekiller">Sadece Vekiller</option>
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Toplantı Gündemi / Notlar</label>
                                 <div className="relative">
-                                    <textarea className="w-full border border-slate-300 bg-white text-slate-900 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm min-h-[100px]" placeholder="Toplantıda görüşülecek konular..." value={newMeeting.notes} onChange={e => setNewMeeting({...newMeeting, notes: e.target.value})}></textarea>
+                                    <textarea className="w-full border border-slate-300 bg-white text-slate-900 p-3 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm min-h-[100px]" placeholder="Toplantıda görüşülecek konular..." value={newMeeting.notes} onChange={e => setNewMeeting({...newMeeting, notes: e.target.value})}></textarea>
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-200">
                             <button onClick={() => setIsMeetingModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium transition">Vazgeç</button>
-                            <button onClick={handleAddMeeting} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md hover:shadow-lg transition flex items-center">
+                            <button onClick={handleAddMeeting} className="px-5 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium shadow-md hover:shadow-lg transition flex items-center">
                                 <Save className="w-4 h-4 mr-2" /> Kaydet
                             </button>
                         </div>
@@ -398,18 +434,75 @@ export const MediationManager: React.FC = () => {
             <>
                 <button 
                     onClick={() => setSelectedMediation(null)}
-                    className="flex items-center text-slate-500 hover:text-blue-600 mb-6 transition-colors group"
+                    className="flex items-center text-slate-500 hover:text-brand-600 mb-6 transition-colors group"
                 >
                     <div className="p-1 rounded-full bg-white border border-slate-200 mr-2 group-hover:border-blue-200 shadow-sm">
                         <ArrowLeft className="w-4 h-4" />
                     </div>
                     <span className="font-medium">Listeye Dön</span>
                 </button>
+                
+                {/* PROCESS VISUALIZATION (DETAIL VIEW) */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                    <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                        <Activity className="w-5 h-5 mr-2 text-brand-600" />
+                        Süreç Takibi
+                    </h2>
+                    
+                    <div className="relative px-4">
+                        {/* Connecting Line */}
+                        <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 z-0 rounded-full"></div>
+                        <div 
+                            className="absolute top-1/2 left-0 h-1 -translate-y-1/2 z-0 rounded-full transition-all duration-1000 ease-out bg-brand-500"
+                            style={{ width: `${getProcessStats(activeMediationData.status).percent}%` }}
+                        ></div>
+
+                        <div className="relative z-10 flex justify-between">
+                            {/* STEP 1: BASVURU */}
+                            <div className="flex flex-col items-center">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-500 bg-brand-600 border-brand-100 text-white shadow-lg`}>
+                                    <FileSignature className="w-5 h-5" />
+                                </div>
+                                <span className="mt-3 font-bold text-sm text-slate-800">Başvuru & Atama</span>
+                                <span className="text-xs text-slate-500">{activeMediationData.applicationDate}</span>
+                            </div>
+
+                            {/* STEP 2: MUZAKERE */}
+                            <div className="flex flex-col items-center">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${
+                                    getProcessStats(activeMediationData.status).step >= 2 
+                                    ? 'bg-brand-600 border-brand-100 text-white shadow-lg' 
+                                    : 'bg-white border-slate-200 text-slate-300'
+                                }`}>
+                                    <Users className="w-5 h-5" />
+                                </div>
+                                <span className={`mt-3 font-bold text-sm ${getProcessStats(activeMediationData.status).step >= 2 ? 'text-slate-800' : 'text-slate-400'}`}>Müzakere Süreci</span>
+                                <span className="text-xs text-slate-500">{activeMediationData.meetings.length} Oturum</span>
+                            </div>
+
+                            {/* STEP 3: SONUC */}
+                            <div className="flex flex-col items-center">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${
+                                    getProcessStats(activeMediationData.status).step === 3
+                                        ? (activeMediationData.status === MediationStatus.AGREEMENT ? 'bg-green-600 border-green-100 text-white' : 'bg-red-600 border-red-100 text-white')
+                                        : 'bg-white border-slate-200 text-slate-300'
+                                }`}>
+                                    {activeMediationData.status === MediationStatus.AGREEMENT ? <CheckCircle2 className="w-6 h-6" /> : 
+                                     activeMediationData.status === MediationStatus.NO_AGREEMENT ? <XCircle className="w-6 h-6" /> : <Scale className="w-5 h-5" />}
+                                </div>
+                                <span className={`mt-3 font-bold text-sm ${getProcessStats(activeMediationData.status).step === 3 ? (activeMediationData.status === MediationStatus.AGREEMENT ? 'text-green-700' : 'text-red-700') : 'text-slate-400'}`}>
+                                    {activeMediationData.status === MediationStatus.AGREEMENT ? 'Anlaşma Sağlandı' : 
+                                     activeMediationData.status === MediationStatus.NO_AGREEMENT ? 'Anlaşmama' : 'Sonuç & Kapanış'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
                     <div>
                          <div className="flex items-center gap-3 mb-2">
-                            <span className={`px-3 py-1 rounded-full text-sm font-bold border ${getStatusColor(activeMediationData.status)}`}>
+                            <span className={`px-3 py-1 rounded-full text-sm font-bold border ${getStatusBadge(activeMediationData.status)}`}>
                                 {activeMediationData.status}
                             </span>
                             <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{activeMediationData.fileNumber}</h1>
@@ -421,7 +514,7 @@ export const MediationManager: React.FC = () => {
                     </div>
                     <button 
                         onClick={() => setIsMeetingModalOpen(true)}
-                        className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center transition-all hover:scale-105 active:scale-95"
+                        className="bg-brand-600 text-white px-5 py-2.5 rounded-xl hover:bg-brand-700 shadow-lg shadow-brand-600/20 flex items-center transition-all hover:scale-105 active:scale-95"
                     >
                         <Plus className="w-5 h-5 mr-2" /> Toplantı Ekle
                     </button>
@@ -432,7 +525,7 @@ export const MediationManager: React.FC = () => {
                         {/* Info Card */}
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center pb-2 border-b border-slate-100">
-                                <Handshake className="w-5 h-5 mr-2 text-blue-600" />
+                                <Handshake className="w-5 h-5 mr-2 text-brand-600" />
                                 Başvuru Detayları
                             </h3>
                             <div className="space-y-4">
@@ -453,7 +546,7 @@ export const MediationManager: React.FC = () => {
                         {/* Parties Card */}
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center pb-2 border-b border-slate-100">
-                                <User className="w-5 h-5 mr-2 text-blue-600" />
+                                <User className="w-5 h-5 mr-2 text-brand-600" />
                                 Taraf Bilgileri
                             </h3>
                             <div className="space-y-3">
@@ -510,7 +603,7 @@ export const MediationManager: React.FC = () => {
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-full">
                             <h3 className="text-lg font-bold text-slate-800 mb-8 flex items-center">
-                                <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                                <Clock className="w-5 h-5 mr-2 text-brand-600" />
                                 Süreç Zaman Çizelgesi
                             </h3>
                             
@@ -519,7 +612,7 @@ export const MediationManager: React.FC = () => {
                                     {activeMediationData.meetings.map((meeting, idx) => (
                                         <div key={meeting.id} className="relative group">
                                             <div className={`absolute -left-[41px] top-0 w-6 h-6 rounded-full border-4 border-white shadow-sm z-10 flex items-center justify-center transition-transform group-hover:scale-110
-                                                ${meeting.outcome === 'Olumlu' ? 'bg-green-500' : meeting.outcome === 'Olumsuz' ? 'bg-red-500' : 'bg-blue-500'}`}>
+                                                ${meeting.outcome === 'Olumlu' ? 'bg-green-500' : meeting.outcome === 'Olumsuz' ? 'bg-red-500' : 'bg-brand-500'}`}>
                                             </div>
                                             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all hover:border-blue-200 group-hover:translate-x-1">
                                                 <div className="flex justify-between items-start mb-3">
@@ -551,7 +644,7 @@ export const MediationManager: React.FC = () => {
                                 <div className="flex flex-col items-center justify-center py-16 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
                                     <Calendar className="w-12 h-12 text-slate-300 mb-3" />
                                     <p className="text-slate-500 font-medium">Henüz toplantı kaydı girilmemiştir.</p>
-                                    <button onClick={() => setIsMeetingModalOpen(true)} className="mt-3 text-blue-600 hover:underline text-sm">İlk toplantıyı planla</button>
+                                    <button onClick={() => setIsMeetingModalOpen(true)} className="mt-3 text-brand-600 hover:underline text-sm">İlk toplantıyı planla</button>
                                 </div>
                             )}
                         </div>
@@ -570,7 +663,7 @@ export const MediationManager: React.FC = () => {
                             <div className="bg-slate-50 px-8 py-6 border-b border-slate-200 flex justify-between items-start">
                                 <div>
                                     <h3 className="text-xl font-bold text-slate-800 flex items-center">
-                                        <FileSignature className="w-6 h-6 mr-3 text-blue-600" />
+                                        <FileSignature className="w-6 h-6 mr-3 text-brand-600" />
                                         Yeni Arabuluculuk Dosyası
                                     </h3>
                                     <p className="text-sm text-slate-500 mt-1 ml-9">Başvuru bilgilerini girerek süreci başlatın.</p>
@@ -590,7 +683,7 @@ export const MediationManager: React.FC = () => {
                                             <div className="relative">
                                                 <input 
                                                     type="text" 
-                                                    className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                                                    className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none transition" 
                                                     placeholder="2025/..." 
                                                     value={newApplication.fileNumber} 
                                                     onChange={e => setNewApplication({...newApplication, fileNumber: e.target.value})}
@@ -602,7 +695,7 @@ export const MediationManager: React.FC = () => {
                                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Uyuşmazlık Konusu</label>
                                             <div className="relative">
                                                 <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="Örn: Kıdem Tazminatı" value={newApplication.subject} onChange={e => setNewApplication({...newApplication, subject: e.target.value})} />
+                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm transition" placeholder="Örn: Kıdem Tazminatı" value={newApplication.subject} onChange={e => setNewApplication({...newApplication, subject: e.target.value})} />
                                             </div>
                                         </div>
 
@@ -610,7 +703,7 @@ export const MediationManager: React.FC = () => {
                                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Atanan Arabulucu</label>
                                             <div className="relative">
                                                 <Scale className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                                <input type="text" className="w-full border border-slate-300 bg-slate-100 text-slate-600 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition cursor-not-allowed" 
+                                                <input type="text" className="w-full border border-slate-300 bg-slate-100 text-slate-600 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm transition cursor-not-allowed" 
                                                     value={newApplication.mediatorName} disabled />
                                             </div>
                                             <p className="text-[10px] text-slate-400 mt-1">Profil ayarlarından otomatik çekilir.</p>
@@ -649,7 +742,7 @@ export const MediationManager: React.FC = () => {
                             {/* Footer */}
                             <div className="bg-slate-50 px-8 py-5 border-t border-slate-200 flex justify-end gap-3">
                                 <button onClick={() => setIsApplicationModalOpen(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-medium transition">Vazgeç</button>
-                                <button onClick={handleCreateApplication} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium shadow-lg hover:shadow-blue-600/30 transition transform active:scale-95 flex items-center">
+                                <button onClick={handleCreateApplication} className="px-6 py-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 text-sm font-medium shadow-lg hover:shadow-brand-600/30 transition transform active:scale-95 flex items-center">
                                     <Plus className="w-4 h-4 mr-2" /> Başvuruyu Oluştur
                                 </button>
                             </div>
@@ -672,7 +765,7 @@ export const MediationManager: React.FC = () => {
                         </button>
                         <button 
                             onClick={handleOpenApplicationModal}
-                            className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5"
+                            className="mt-4 sm:mt-0 bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg shadow-brand-600/20 transition-all hover:-translate-y-0.5"
                         >
                         <Plus className="w-5 h-5 mr-2" />
                         Yeni Başvuru
@@ -687,7 +780,7 @@ export const MediationManager: React.FC = () => {
                             <input
                             type="text"
                             placeholder="Arabuluculuk no, taraf ismi..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"
+                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm transition"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -705,21 +798,23 @@ export const MediationManager: React.FC = () => {
                                     <th className="px-6 py-4">Konu</th>
                                     <th className="px-6 py-4">Müvekkil</th>
                                     <th className="px-6 py-4">Karşı Taraf</th>
-                                    <th className="px-6 py-4">Durum</th>
+                                    <th className="px-6 py-4 w-1/5">Süreç Durumu</th>
                                     <th className="px-6 py-4">Başvuru Tar.</th>
                                     <th className="px-6 py-4 text-right">İşlem</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {filteredMediations.map(m => (
+                                {filteredMediations.map(m => {
+                                    const stats = getProcessStats(m.status);
+                                    return (
                                     <tr 
                                         key={m.id} 
                                         className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                                         onClick={() => setSelectedMediation(m)}
                                     >
                                         <td className="px-6 py-4 font-bold text-slate-700 flex items-center">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 group-hover:bg-blue-100 transition">
-                                                <Handshake className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 group-hover:bg-brand-100 transition">
+                                                <Handshake className="w-4 h-4 text-slate-400 group-hover:text-brand-600" />
                                             </div>
                                             {m.fileNumber}
                                         </td>
@@ -727,18 +822,33 @@ export const MediationManager: React.FC = () => {
                                         <td className="px-6 py-4 text-sm text-slate-600">{m.clientName}</td>
                                         <td className="px-6 py-4 text-sm text-slate-600">{m.counterParty}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(m.status)}`}>
-                                                {m.status}
-                                            </span>
+                                            <div className="w-full">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className={`text-xs font-bold ${
+                                                        stats.theme === 'green' ? 'text-green-700' :
+                                                        stats.theme === 'red' ? 'text-red-700' :
+                                                        'text-brand-700'
+                                                    }`}>
+                                                        {m.status}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-slate-400">%{stats.percent}</span>
+                                                </div>
+                                                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                                    <div 
+                                                        className={`h-full rounded-full ${stats.color} transition-all duration-500`} 
+                                                        style={{ width: `${stats.percent}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-500">{m.applicationDate}</td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-blue-600 hover:text-blue-800 text-sm font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
-                                                Yönet
+                                            <button className="text-brand-600 hover:text-brand-800 text-sm font-bold bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition flex items-center ml-auto">
+                                                Yönet <ArrowRight className="w-3 h-3 ml-1" />
                                             </button>
                                         </td>
                                     </tr>
-                                ))}
+                                )})}
                                 {filteredMediations.length === 0 && (
                                     <tr>
                                         <td colSpan={7} className="px-6 py-16 text-center">

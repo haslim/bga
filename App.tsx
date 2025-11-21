@@ -60,7 +60,7 @@ const MainContent: React.FC = () => {
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
-            <div className="bg-blue-600 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/30 overflow-hidden">
+            <div className="bg-brand-600 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-600/30 overflow-hidden">
                {siteSettings.logoUrl ? (
                   <img src={siteSettings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
                ) : (
@@ -82,7 +82,7 @@ const MainContent: React.FC = () => {
               <label className="block text-sm font-medium text-slate-700 mb-1">E-Posta Adresi</label>
               <input
                 type="email"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all text-slate-900"
                 placeholder="ornek@bgaofis.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -92,7 +92,7 @@ const MainContent: React.FC = () => {
               <label className="block text-sm font-medium text-slate-700 mb-1">Şifre</label>
               <input
                 type="password"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all text-slate-900"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -123,7 +123,7 @@ const MainContent: React.FC = () => {
       {/* Mobile Header */}
       <header className="lg:hidden bg-slate-900 text-white p-4 flex items-center justify-between sticky top-0 z-30 shadow-md">
         <div className="flex items-center space-x-3 overflow-hidden">
-           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+           <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
                {siteSettings.logoUrl ? (
                   <img src={siteSettings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
                ) : (

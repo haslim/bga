@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings } from './types';
-import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE } from './constants';
+import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE, THEME_COLORS } from './constants';
 import { checkPermission } from './utils';
 
 interface DataContextType {
@@ -33,6 +33,7 @@ interface DataContextType {
   updateTemplate: (template: Template) => void;
   updateMediatorProfile: (profile: MediatorProfile) => void;
   updateSiteSettings: (settings: SiteSettings) => void;
+  updateUserTheme: (theme: string) => void;
   
   // Knowledge Base Actions
   addKnowledgeEntry: (entry: KnowledgeEntry) => void;
@@ -71,6 +72,24 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   // Auth State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // Apply Theme Effect
+  useEffect(() => {
+    if (currentUser && currentUser.theme && THEME_COLORS[currentUser.theme]) {
+        const themeColors = THEME_COLORS[currentUser.theme].colors;
+        const root = document.documentElement;
+        Object.entries(themeColors).forEach(([shade, value]) => {
+             root.style.setProperty(`--color-brand-${shade}`, value);
+        });
+    } else {
+        // Default to blue if no user or no theme
+        const themeColors = THEME_COLORS['blue'].colors;
+        const root = document.documentElement;
+        Object.entries(themeColors).forEach(([shade, value]) => {
+             root.style.setProperty(`--color-brand-${shade}`, value);
+        });
+    }
+  }, [currentUser]);
 
   // -- Helpers --
   const hasPermission = (permission: Permission): boolean => {
@@ -188,6 +207,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logAction('SETTINGS_UPDATE', 'Sistem ayarları güncellendi.');
   };
 
+  const updateUserTheme = (theme: string) => {
+      if (currentUser) {
+          const updatedUser = { ...currentUser, theme };
+          setCurrentUser(updatedUser);
+          // Also update in users list
+          setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
+          logAction('THEME_UPDATE', `Kullanıcı teması güncellendi: ${theme}`);
+      }
+  };
+
   // Knowledge Base
   const addKnowledgeEntry = (entry: KnowledgeEntry) => {
     setKnowledgeBase(prev => [entry, ...prev]);
@@ -225,7 +254,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates, knowledgeBase,
       currentUser, mediatorProfile, siteSettings,
       addCase, updateCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
-      addMediation, updateMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings,
+      addMediation, updateMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings, updateUserTheme,
       addKnowledgeEntry, updateKnowledgeEntry, deleteKnowledgeEntry,
       addUser, updateUser, deleteUser, hasPermission, logAction,
       login, logout

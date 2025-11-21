@@ -121,9 +121,9 @@ export const Dashboard: React.FC = () => {
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Bugünkü Duruşma</p>
-             <h3 className="text-2xl font-bold text-blue-600 mt-1">{todaysHearings.length}</h3>
+             <h3 className="text-2xl font-bold text-brand-600 mt-1">{todaysHearings.length}</h3>
           </div>
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+          <div className="p-3 bg-brand-50 text-brand-600 rounded-lg">
             <Calendar className="w-6 h-6" />
           </div>
         </div>
@@ -165,15 +165,15 @@ export const Dashboard: React.FC = () => {
             {/* 1. BUGÜNKÜ DURUŞMALAR */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="bg-slate-50 p-4 border-b border-slate-200 flex items-center">
-                    <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+                    <Calendar className="w-5 h-5 text-brand-600 mr-2" />
                     <h3 className="font-bold text-slate-800">Bugünkü Duruşmalar ({today})</h3>
                 </div>
                 <div className="p-4">
                     {todaysHearings.length > 0 ? (
                         <div className="space-y-3">
                             {todaysHearings.map((h, idx) => (
-                                <div key={idx} className="flex items-center p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                                    <div className="font-bold text-blue-800 text-lg mr-4 w-16 text-center bg-white rounded py-1 border border-blue-100 shadow-sm">
+                                <div key={idx} className="flex items-center p-3 bg-brand-50 border border-brand-100 rounded-lg">
+                                    <div className="font-bold text-brand-800 text-lg mr-4 w-16 text-center bg-white rounded py-1 border border-brand-100 shadow-sm">
                                         {h.time}
                                     </div>
                                     <div className="overflow-hidden">
@@ -259,7 +259,7 @@ export const Dashboard: React.FC = () => {
                 <div className="mb-4 flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-slate-800 flex items-center text-sm md:text-base">
-                        <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
+                        <TrendingUp className="w-5 h-5 mr-2 text-brand-600" />
                         Finansal Trend
                     </h3>
                     <p className="text-xs text-slate-500 mt-1">Son 6 Ay</p>
@@ -301,7 +301,7 @@ export const Dashboard: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                  <div className="p-4 border-b border-slate-100 bg-slate-50">
                      <h3 className="font-bold text-slate-800 flex items-center">
-                        <User className="w-5 h-5 mr-2 text-indigo-600" />
+                        <User className="w-5 h-5 mr-2 text-brand-600" />
                         En Aktif Müvekkiller
                      </h3>
                  </div>
@@ -314,7 +314,7 @@ export const Dashboard: React.FC = () => {
                                 </span>
                                 <span className="text-sm font-medium text-slate-700 truncate">{client.name}</span>
                             </div>
-                            <span className="text-xs font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full shrink-0">
+                            <span className="text-xs font-bold bg-brand-50 text-brand-600 px-2 py-1 rounded-full shrink-0">
                                 {client.count} Dosya
                             </span>
                         </div>

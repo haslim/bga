@@ -4,7 +4,11 @@ import { useData } from '../DataContext';
 import { User, UserRole } from '../types';
 import { Shield, User as UserIcon, Plus, Trash2, Edit2, Save, X, Activity, Clock, Search, Lock, RefreshCw, Image as ImageIcon } from 'lucide-react';
 
-export const UserManager: React.FC = () => {
+interface UserManagerProps {
+  isEmbedded?: boolean;
+}
+
+export const UserManager: React.FC<UserManagerProps> = ({ isEmbedded = false }) => {
   const { users, auditLogs, currentUser, addUser, updateUser, deleteUser, hasPermission } = useData();
   const [activeTab, setActiveTab] = useState<'users' | 'logs'>('users');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +20,7 @@ export const UserManager: React.FC = () => {
   });
 
   if (!hasPermission('USER_MANAGE')) {
+      if (isEmbedded) return null; // Return null if embedded to avoid showing error screen inside settings
       return (
           <div className="p-8 flex flex-col items-center justify-center h-screen text-slate-500">
               <Shield className="w-16 h-16 text-slate-300 mb-4" />
@@ -77,7 +82,7 @@ export const UserManager: React.FC = () => {
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in">
+    <div className={isEmbedded ? "animate-in fade-in" : "p-8 bg-gray-50 min-h-screen animate-in fade-in"}>
       
       {/* User Edit/Add Modal */}
       {isModalOpen && (
@@ -186,12 +191,14 @@ export const UserManager: React.FC = () => {
           </div>
       )}
 
-      <header className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Kullanıcı Yönetimi</h1>
-          <p className="text-slate-500 mt-1">Personel yetkilendirme ve sistem logları</p>
-        </div>
-      </header>
+      {!isEmbedded && (
+        <header className="mb-8 flex justify-between items-center">
+            <div>
+            <h1 className="text-3xl font-bold text-slate-800">Kullanıcı Yönetimi</h1>
+            <p className="text-slate-500 mt-1">Personel yetkilendirme ve sistem logları</p>
+            </div>
+        </header>
+      )}
 
       {/* Tabs */}
       <div className="flex space-x-4 mb-6 border-b border-slate-200">

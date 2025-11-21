@@ -69,17 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
       label: 'Bilgi Bankası',
       icon: BookOpen
     },
-    { 
-      id: 'users', 
-      label: 'Kullanıcılar', 
-      icon: Shield,
-      allowedRoles: [UserRole.ADMIN]
-    },
     {
       id: 'settings',
       label: 'Ayarlar',
-      icon: Settings,
-      allowedRoles: [UserRole.ADMIN]
+      icon: Settings
     }
   ];
 
@@ -105,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
         
         <div className="p-6 border-b border-slate-700 flex items-center justify-between">
           <div className="flex items-center space-x-3 overflow-hidden">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
               {siteSettings.logoUrl ? (
                 <img src={siteSettings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
@@ -136,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
                 }}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-brand-600 text-white shadow-md'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
               >
@@ -152,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
             <img
               src={currentUser.avatarUrl}
               alt="Profile"
-              className="w-10 h-10 rounded-full border-2 border-blue-500 object-cover shrink-0"
+              className="w-10 h-10 rounded-full border-2 border-brand-500 object-cover shrink-0"
             />
             <div className="overflow-hidden">
               <p className="text-sm font-semibold truncate">{currentUser.name}</p>

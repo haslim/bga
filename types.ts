@@ -31,6 +31,7 @@ export interface User {
   avatarUrl?: string;
   lastLogin?: string;
   ipAddress?: string;
+  theme?: string; // 'blue', 'red', 'green', etc.
 }
 
 export interface AuditLog {

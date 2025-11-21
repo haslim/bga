@@ -1,6 +1,105 @@
 
 import { Case, CaseStatus, Client, FinancialRecord, Task, User, UserRole, Mediation, MediationStatus, Permission, AuditLog, Template, KnowledgeEntry, MediatorProfile } from './types';
 
+export const THEME_COLORS: Record<string, { label: string, colors: Record<number, string> }> = {
+  blue: {
+    label: 'Kurumsal Mavi',
+    colors: {
+      50: '239 246 255',
+      100: '219 234 254',
+      200: '191 219 254',
+      300: '147 197 253',
+      400: '96 165 250',
+      500: '59 130 246',
+      600: '37 99 235',
+      700: '29 78 216',
+      800: '30 64 175',
+      900: '30 58 138',
+      950: '23 37 84',
+    }
+  },
+  red: {
+    label: 'Yakut Kırmızısı',
+    colors: {
+      50: '254 242 242',
+      100: '254 226 226',
+      200: '254 202 202',
+      300: '252 165 165',
+      400: '248 113 113',
+      500: '239 68 68',
+      600: '220 38 38',
+      700: '185 28 28',
+      800: '153 27 27',
+      900: '127 29 29',
+      950: '69 10 10',
+    }
+  },
+  green: {
+    label: 'Zümrüt Yeşili',
+    colors: {
+      50: '240 253 244',
+      100: '220 252 231',
+      200: '187 247 208',
+      300: '134 239 172',
+      400: '74 222 128',
+      500: '34 197 94',
+      600: '22 163 74',
+      700: '21 128 61',
+      800: '22 101 52',
+      900: '20 83 45',
+      950: '5 46 22',
+    }
+  },
+  purple: {
+    label: 'Kraliyet Moru',
+    colors: {
+      50: '250 245 255',
+      100: '243 232 255',
+      200: '233 213 255',
+      300: '216 180 254',
+      400: '192 132 252',
+      500: '168 85 247',
+      600: '147 51 234',
+      700: '126 34 206',
+      800: '107 33 168',
+      900: '88 28 135',
+      950: '59 7 100',
+    }
+  },
+  orange: {
+    label: 'Gün Batımı',
+    colors: {
+      50: '255 247 237',
+      100: '255 237 213',
+      200: '254 215 170',
+      300: '253 186 116',
+      400: '251 146 60',
+      500: '249 115 22',
+      600: '234 88 12',
+      700: '194 65 12',
+      800: '154 52 18',
+      900: '124 45 18',
+      950: '67 20 7',
+    }
+  },
+  slate: {
+    label: 'Antrasit Gri',
+    colors: {
+      50: '248 250 252',
+      100: '241 245 249',
+      200: '226 232 240',
+      300: '203 213 225',
+      400: '148 163 184',
+      500: '100 116 139',
+      600: '71 85 105',
+      700: '51 65 85',
+      800: '30 41 59',
+      900: '15 23 42',
+      950: '2 6 23',
+    }
+  }
+};
+
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   [UserRole.ADMIN]: ['CASE_VIEW_ALL', 'CASE_EDIT', 'CASH_VIEW', 'DOC_UPLOAD', 'USER_MANAGE', 'CLIENT_MANAGE', 'REPORT_VIEW'],
   [UserRole.LAWYER]: ['CASE_VIEW_ALL', 'CASE_EDIT', 'CLIENT_MANAGE', 'DOC_UPLOAD'],
@@ -16,7 +115,8 @@ export const CURRENT_USER: User = {
   password: '123456', // Default password
   role: UserRole.ADMIN,
   avatarUrl: 'https://picsum.photos/id/1005/200/200',
-  lastLogin: new Date().toISOString()
+  lastLogin: new Date().toISOString(),
+  theme: 'blue'
 };
 
 export const DEFAULT_MEDIATOR_PROFILE: MediatorProfile = {
@@ -30,10 +130,10 @@ export const DEFAULT_MEDIATOR_PROFILE: MediatorProfile = {
 
 export const MOCK_USERS: User[] = [
   CURRENT_USER,
-  { id: 'u2', name: 'Av. Selin Y.', email: 'avukat@bgaofis.com', password: '123456', role: UserRole.LAWYER, avatarUrl: 'https://picsum.photos/id/1011/200/200', lastLogin: '2025-10-24 09:00', ipAddress: '192.168.1.12' },
-  { id: 'u3', name: 'Stj. Can K.', email: 'stajyer@bgaofis.com', password: '123456', role: UserRole.INTERN, avatarUrl: 'https://picsum.photos/id/1012/200/200', lastLogin: '2025-10-24 10:15', ipAddress: '192.168.1.15' },
-  { id: 'u4', name: 'Ayşe M.', email: 'sekreter@bgaofis.com', password: '123456', role: UserRole.SECRETARY, avatarUrl: 'https://picsum.photos/id/1013/200/200', lastLogin: '2025-10-24 08:30', ipAddress: '192.168.1.10' },
-  { id: 'u5', name: 'Mehmet H.', email: 'finans@bgaofis.com', password: '123456', role: UserRole.FINANCE, avatarUrl: 'https://picsum.photos/id/1014/200/200', lastLogin: '2025-10-24 11:30', ipAddress: '192.168.1.20' },
+  { id: 'u2', name: 'Av. Selin Y.', email: 'avukat@bgaofis.com', password: '123456', role: UserRole.LAWYER, avatarUrl: 'https://picsum.photos/id/1011/200/200', lastLogin: '2025-10-24 09:00', ipAddress: '192.168.1.12', theme: 'purple' },
+  { id: 'u3', name: 'Stj. Can K.', email: 'stajyer@bgaofis.com', password: '123456', role: UserRole.INTERN, avatarUrl: 'https://picsum.photos/id/1012/200/200', lastLogin: '2025-10-24 10:15', ipAddress: '192.168.1.15', theme: 'green' },
+  { id: 'u4', name: 'Ayşe M.', email: 'sekreter@bgaofis.com', password: '123456', role: UserRole.SECRETARY, avatarUrl: 'https://picsum.photos/id/1013/200/200', lastLogin: '2025-10-24 08:30', ipAddress: '192.168.1.10', theme: 'orange' },
+  { id: 'u5', name: 'Mehmet H.', email: 'finans@bgaofis.com', password: '123456', role: UserRole.FINANCE, avatarUrl: 'https://picsum.photos/id/1014/200/200', lastLogin: '2025-10-24 11:30', ipAddress: '192.168.1.20', theme: 'slate' },
 ];
 
 export const MOCK_LOGS: AuditLog[] = [
