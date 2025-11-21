@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
 import { User, UserRole } from '../types';
-import { Shield, User as UserIcon, Plus, Trash2, Edit2, Save, X, Activity, Clock, Search } from 'lucide-react';
+import { Shield, User as UserIcon, Plus, Trash2, Edit2, Save, X, Activity, Clock, Search, Lock, RefreshCw, Image as ImageIcon } from 'lucide-react';
 
 export const UserManager: React.FC = () => {
   const { users, auditLogs, currentUser, addUser, updateUser, deleteUser, hasPermission } = useData();
@@ -11,7 +12,7 @@ export const UserManager: React.FC = () => {
   
   // User Form State
   const [formData, setFormData] = useState<Partial<User>>({
-      name: '', email: '', role: UserRole.INTERN
+      name: '', email: '', role: UserRole.INTERN, password: '', avatarUrl: ''
   });
 
   if (!hasPermission('USER_MANAGE')) {
@@ -27,10 +28,17 @@ export const UserManager: React.FC = () => {
   const handleOpenModal = (user?: User) => {
       if (user) {
           setEditingUser(user);
-          setFormData({ ...user });
+          // Şifre alanını boş getir, böylece kullanıcı sadece değiştirmek isterse yazar
+          setFormData({ ...user, password: '' });
       } else {
           setEditingUser(null);
-          setFormData({ name: '', email: '', role: UserRole.INTERN });
+          setFormData({ 
+              name: '', 
+              email: '', 
+              role: UserRole.INTERN, 
+              password: '',
+              avatarUrl: `https://ui-avatars.com/api/?name=Yeni+Kullanici&background=random`
+          });
       }
       setIsModalOpen(true);
   };
@@ -39,18 +47,33 @@ export const UserManager: React.FC = () => {
       if (!formData.name || !formData.email) return;
 
       if (editingUser) {
-          updateUser({ ...editingUser, ...formData } as User);
+          // Eğer şifre alanı boş bırakıldıysa eski şifreyi koru, doluysa güncelle
+          const updatedUser: User = {
+              ...editingUser,
+              ...formData as User,
+              password: formData.password && formData.password.trim() !== '' ? formData.password : editingUser.password
+          };
+          updateUser(updatedUser);
       } else {
           const newUser: User = {
               id: `u-${Date.now()}`,
-              avatarUrl: `https://ui-avatars.com/api/?name=${formData.name}&background=random`,
+              avatarUrl: formData.avatarUrl || `https://ui-avatars.com/api/?name=${formData.name}&background=random`,
               lastLogin: '-',
               ipAddress: '-',
-              ...formData as User
+              ...formData as User,
+              // Yeni kullanıcıda şifre girilmezse varsayılan ata
+              password: formData.password || '123456'
           };
           addUser(newUser);
       }
       setIsModalOpen(false);
+  };
+
+  const generateAvatar = () => {
+      if (formData.name) {
+          const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random&size=200`;
+          setFormData({...formData, avatarUrl: url});
+      }
   };
 
   return (
@@ -59,12 +82,49 @@ export const UserManager: React.FC = () => {
       {/* User Edit/Add Modal */}
       {isModalOpen && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col">
                   <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
                       <h3 className="font-bold text-slate-800">{editingUser ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı Ekle'}</h3>
                       <button onClick={() => setIsModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
                   </div>
-                  <div className="p-6 space-y-4">
+                  <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+                      
+                      {/* Avatar Section */}
+                      <div className="flex flex-col items-center mb-4">
+                          <div className="relative group">
+                              <img 
+                                src={formData.avatarUrl} 
+                                alt="Avatar" 
+                                className="w-20 h-20 rounded-full border-2 border-slate-200 object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${formData.name || 'User'}&background=random` }}
+                              />
+                          </div>
+                          <div className="flex gap-2 mt-3">
+                              <button 
+                                type="button"
+                                onClick={generateAvatar}
+                                className="text-xs flex items-center px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 transition"
+                                title="İsimden Otomatik Oluştur"
+                              >
+                                  <RefreshCw className="w-3 h-3 mr-1" /> Oto. Oluştur
+                              </button>
+                          </div>
+                          
+                          <div className="w-full mt-3">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 text-center">Veya Resim URL'i Girin</label>
+                            <div className="relative">
+                                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3 h-3" />
+                                <input 
+                                    type="text" 
+                                    className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg pl-8 pr-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="https://..."
+                                    value={formData.avatarUrl}
+                                    onChange={e => setFormData({...formData, avatarUrl: e.target.value})}
+                                />
+                            </div>
+                          </div>
+                      </div>
+
                       <div>
                           <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Ad Soyad</label>
                           <input 
@@ -83,6 +143,26 @@ export const UserManager: React.FC = () => {
                             onChange={e => setFormData({...formData, email: e.target.value})}
                           />
                       </div>
+                      
+                      <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                              {editingUser ? 'Yeni Şifre (Değişmeyecekse boş bırakın)' : 'Şifre'}
+                          </label>
+                          <div className="relative">
+                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                              <input 
+                                type="text" 
+                                className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={editingUser ? "******" : "Şifre belirleyin"}
+                                value={formData.password}
+                                onChange={e => setFormData({...formData, password: e.target.value})}
+                              />
+                          </div>
+                          {!editingUser && !formData.password && (
+                              <p className="text-[10px] text-slate-400 mt-1">Boş bırakılırsa varsayılan: 123456</p>
+                          )}
+                      </div>
+
                       <div>
                           <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Rol / Yetki</label>
                           <select 
@@ -155,7 +235,7 @@ export const UserManager: React.FC = () => {
                     {users.map(user => (
                         <tr key={user.id} className="hover:bg-slate-50/50">
                             <td className="px-6 py-4 flex items-center">
-                                <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full mr-3 border border-slate-200" />
+                                <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full mr-3 border border-slate-200 object-cover" />
                                 <span className="font-medium text-slate-800">{user.name}</span>
                             </td>
                             <td className="px-6 py-4 text-slate-600 text-sm">{user.email}</td>

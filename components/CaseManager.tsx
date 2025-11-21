@@ -150,7 +150,7 @@ export const CaseManager: React.FC = () => {
     const netBalance = totalIncome - totalExpense;
 
     return (
-      <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
+      <div className="p-4 md:p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
         {/* Add Hearing Modal */}
         {isHearingModalOpen && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -317,27 +317,27 @@ export const CaseManager: React.FC = () => {
 
         <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8 gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className={`px-3 py-1 rounded-full text-sm font-bold border ${getStatusColor(activeCaseData.status)}`}>
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <span className={`px-3 py-1 rounded-full text-xs md:text-sm font-bold border ${getStatusColor(activeCaseData.status)}`}>
                 {activeCaseData.status}
               </span>
-              <h1 className="text-3xl font-bold text-slate-800">{activeCaseData.caseNumber}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 break-all">{activeCaseData.caseNumber}</h1>
             </div>
-            <h2 className="text-xl text-slate-600 font-medium">{activeCaseData.title}</h2>
-            <p className="text-slate-500 mt-1 max-w-2xl">{activeCaseData.description}</p>
+            <h2 className="text-lg md:text-xl text-slate-600 font-medium">{activeCaseData.title}</h2>
+            <p className="text-slate-500 mt-1 max-w-2xl text-sm md:text-base">{activeCaseData.description}</p>
           </div>
           <div className="flex gap-3">
-            <button className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 shadow-sm">
+            <button className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 shadow-sm text-sm md:text-base">
               Dava Detaylarını Düzenle
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Left Column: Info & Parties */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {/* Case Details Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
               <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
                 <FileText className="w-5 h-5 mr-2 text-blue-600" />
                 Dosya Bilgileri
@@ -365,7 +365,7 @@ export const CaseManager: React.FC = () => {
             </div>
 
             {/* Parties Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
               <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
                 <User className="w-5 h-5 mr-2 text-blue-600" />
                 Taraf Bilgileri
@@ -375,9 +375,9 @@ export const CaseManager: React.FC = () => {
                   {activeCaseData.parties.map((party) => (
                     <div key={party.id} className="flex items-start p-3 bg-slate-50 rounded-lg">
                       <div className={`w-2 h-10 rounded-l mr-3 ${party.role === 'Müvekkil' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <div>
-                        <p className="font-bold text-slate-800 text-sm">{party.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                      <div className="overflow-hidden">
+                        <p className="font-bold text-slate-800 text-sm truncate">{party.name}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="text-xs px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-500">
                                 {party.role}
                             </span>
@@ -394,7 +394,7 @@ export const CaseManager: React.FC = () => {
             </div>
             
              {/* Financial Summary Card */}
-             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-slate-800 flex items-center">
                         <DollarSign className="w-5 h-5 mr-2 text-blue-600" />
@@ -408,18 +408,18 @@ export const CaseManager: React.FC = () => {
                     </button>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+                <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6">
+                    <div className="p-2 md:p-3 bg-green-50 rounded-lg border border-green-100">
                         <p className="text-xs text-green-600 font-medium mb-1">Tahsilat</p>
-                        <p className="text-lg font-bold text-green-700">{totalIncome.toLocaleString('tr-TR')} ₺</p>
+                        <p className="text-sm md:text-lg font-bold text-green-700">{totalIncome.toLocaleString('tr-TR')} ₺</p>
                     </div>
-                    <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+                    <div className="p-2 md:p-3 bg-red-50 rounded-lg border border-red-100">
                         <p className="text-xs text-red-600 font-medium mb-1">Masraf</p>
-                        <p className="text-lg font-bold text-red-700">{totalExpense.toLocaleString('tr-TR')} ₺</p>
+                        <p className="text-sm md:text-lg font-bold text-red-700">{totalExpense.toLocaleString('tr-TR')} ₺</p>
                     </div>
-                     <div className={`p-3 rounded-lg border ${netBalance >= 0 ? 'bg-slate-50 border-slate-200' : 'bg-orange-50 border-orange-200'}`}>
+                     <div className={`p-2 md:p-3 rounded-lg border ${netBalance >= 0 ? 'bg-slate-50 border-slate-200' : 'bg-orange-50 border-orange-200'}`}>
                         <p className="text-xs text-slate-500 font-medium mb-1">Net Bakiye</p>
-                        <p className={`text-lg font-bold ${netBalance >= 0 ? 'text-slate-700' : 'text-orange-700'}`}>{netBalance.toLocaleString('tr-TR')} ₺</p>
+                        <p className={`text-sm md:text-lg font-bold ${netBalance >= 0 ? 'text-slate-700' : 'text-orange-700'}`}>{netBalance.toLocaleString('tr-TR')} ₺</p>
                     </div>
                 </div>
 
@@ -429,17 +429,17 @@ export const CaseManager: React.FC = () => {
                         <ul className="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                             {caseFinance.map(f => (
                                 <li key={f.id} className="flex items-start justify-between text-sm p-2.5 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-100 transition">
-                                    <div className="flex items-start space-x-3">
-                                        <div className={`mt-1 p-1.5 rounded-full ${f.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                    <div className="flex items-start space-x-3 overflow-hidden">
+                                        <div className={`mt-1 p-1.5 rounded-full shrink-0 ${f.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                                             {f.type === 'income' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-slate-700 text-xs">{f.category}</p>
-                                            <p className="text-slate-600 text-xs">{f.description}</p>
+                                        <div className="overflow-hidden">
+                                            <p className="font-bold text-slate-700 text-xs truncate">{f.category}</p>
+                                            <p className="text-slate-600 text-xs truncate">{f.description}</p>
                                             <p className="text-[10px] text-slate-400 mt-0.5">{f.date}</p>
                                         </div>
                                     </div>
-                                    <span className={`font-bold text-sm ${f.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                    <span className={`font-bold text-xs md:text-sm ml-2 shrink-0 ${f.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                                         {f.type === 'income' ? '+' : '-'}{f.amount.toLocaleString('tr-TR')} ₺
                                     </span>
                                 </li>
@@ -453,9 +453,9 @@ export const CaseManager: React.FC = () => {
           </div>
 
           {/* Right Column: Hearings & Activities */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6 md:space-y-8">
             {/* Hearings Timeline */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
                <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center">
                     <Gavel className="w-5 h-5 mr-2 text-blue-600" />
@@ -476,7 +476,7 @@ export const CaseManager: React.FC = () => {
                             <div className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-600 border-4 border-white shadow-sm"></div>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-1">
                                 <h4 className="font-bold text-slate-800">{hearing.type}</h4>
-                                <div className="flex items-center text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded mt-1 sm:mt-0">
+                                <div className="flex items-center text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded mt-1 sm:mt-0 w-fit">
                                     <Calendar className="w-3 h-3 mr-1" />
                                     {hearing.date.replace('T', ' ')}
                                 </div>
@@ -505,11 +505,11 @@ export const CaseManager: React.FC = () => {
             </div>
 
             {/* Tasks / Workflow */}
-             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-slate-800 flex items-center">
                         <CheckSquare className="w-5 h-5 mr-2 text-blue-600" />
-                        Görevler & İş Takibi (Workflow)
+                        Görevler & İş Takibi
                     </h3>
                     <button 
                         onClick={() => setIsTaskModalOpen(true)}
@@ -523,14 +523,14 @@ export const CaseManager: React.FC = () => {
                     <ul className="space-y-2">
                         {caseTasks.map(task => (
                             <li key={task.id} className="flex items-start p-3 hover:bg-slate-50 rounded-lg border border-transparent hover:border-slate-100 transition-all">
-                                <div className={`mt-1 mr-3 w-4 h-4 rounded border ${task.completed ? 'bg-green-500 border-green-500' : 'border-slate-300'}`}>
+                                <div className={`mt-1 mr-3 w-4 h-4 rounded border shrink-0 ${task.completed ? 'bg-green-500 border-green-500' : 'border-slate-300'}`}>
                                     {task.completed && <CheckSquare className="w-3 h-3 text-white" />}
                                 </div>
-                                <div className="flex-1">
-                                    <span className={`text-sm block ${task.completed ? 'text-slate-400 line-through' : 'text-slate-800 font-medium'}`}>
+                                <div className="flex-1 min-w-0">
+                                    <span className={`text-sm block truncate ${task.completed ? 'text-slate-400 line-through' : 'text-slate-800 font-medium'}`}>
                                         {task.title}
                                     </span>
-                                    <div className="flex items-center mt-1 gap-2">
+                                    <div className="flex items-center mt-1 gap-2 flex-wrap">
                                         <span className={`text-xs px-1.5 py-0.5 rounded ${
                                             task.priority === 'Yüksek' ? 'bg-red-100 text-red-700' : 
                                             task.priority === 'Orta' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
@@ -559,25 +559,25 @@ export const CaseManager: React.FC = () => {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
         {/* New Case Modal - Redesigned */}
         {isNewCaseModalOpen && (
              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
                     {/* Header */}
-                    <div className="bg-slate-50 px-8 py-6 border-b border-slate-200 flex justify-between items-center">
+                    <div className="bg-slate-50 px-6 md:px-8 py-4 md:py-6 border-b border-slate-200 flex justify-between items-center">
                          <div>
-                             <h3 className="text-xl font-bold text-slate-800 flex items-center">
-                                <Plus className="w-6 h-6 mr-3 text-blue-600" />
+                             <h3 className="text-lg md:text-xl font-bold text-slate-800 flex items-center">
+                                <Plus className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3 text-blue-600" />
                                 Yeni Dava Dosyası Aç
                              </h3>
-                             <p className="text-sm text-slate-500 mt-1 ml-9">UYAP uyumlu dosya kaydı oluşturun.</p>
+                             <p className="text-xs md:text-sm text-slate-500 mt-1 ml-8 md:ml-9">UYAP uyumlu dosya kaydı oluşturun.</p>
                          </div>
                          <button onClick={() => setIsNewCaseModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 hover:bg-white hover:shadow-sm rounded-full transition"><X className="w-6 h-6" /></button>
                     </div>
 
                     {/* Body */}
-                    <div className="p-8 overflow-y-auto custom-scrollbar">
+                    <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Left Column */}
                             <div className="space-y-5">
@@ -586,7 +586,7 @@ export const CaseManager: React.FC = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Dosya Numarası</label>
                                     <div className="relative">
-                                        <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="2023/123 E." value={newCase.caseNumber} onChange={e => setNewCase({...newCase, caseNumber: e.target.value})} />
+                                        <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="2025/123 E." value={newCase.caseNumber} onChange={e => setNewCase({...newCase, caseNumber: e.target.value})} />
                                     </div>
                                 </div>
                                 
@@ -634,7 +634,7 @@ export const CaseManager: React.FC = () => {
                     </div>
 
                     {/* Footer */}
-                    <div className="bg-slate-50 px-8 py-5 border-t border-slate-200 flex justify-end gap-3">
+                    <div className="bg-slate-50 px-6 md:px-8 py-5 border-t border-slate-200 flex justify-end gap-3">
                         <button onClick={() => setIsNewCaseModalOpen(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-medium transition">İptal</button>
                         <button onClick={handleAddCase} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium shadow-lg hover:shadow-blue-600/30 transition transform active:scale-95 flex items-center">
                             <Plus className="w-4 h-4 mr-2" /> Dosyayı Oluştur
@@ -646,8 +646,8 @@ export const CaseManager: React.FC = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Dava Dosyaları</h1>
-          <p className="text-slate-500 mt-1">Tüm aktif ve arşivlenmiş dosyalar</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Dava Dosyaları</h1>
+          <p className="text-sm text-slate-500 mt-1">Tüm aktif ve arşivlenmiş dosyalar</p>
         </div>
         <button 
             onClick={() => setIsNewCaseModalOpen(true)}
@@ -691,13 +691,13 @@ export const CaseManager: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 text-xs uppercase font-semibold tracking-wider">
-                <th className="px-6 py-4">Dosya No</th>
-                <th className="px-6 py-4">Konu / Başlık</th>
-                <th className="px-6 py-4">Müvekkil</th>
-                <th className="px-6 py-4">Tür</th>
-                <th className="px-6 py-4">Durum</th>
-                <th className="px-6 py-4">Duruşma</th>
-                <th className="px-6 py-4 text-right">Detay</th>
+                <th className="px-6 py-4 whitespace-nowrap">Dosya No</th>
+                <th className="px-6 py-4 whitespace-nowrap">Konu / Başlık</th>
+                <th className="px-6 py-4 whitespace-nowrap">Müvekkil</th>
+                <th className="px-6 py-4 whitespace-nowrap">Tür</th>
+                <th className="px-6 py-4 whitespace-nowrap">Durum</th>
+                <th className="px-6 py-4 whitespace-nowrap">Duruşma</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Detay</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -707,31 +707,33 @@ export const CaseManager: React.FC = () => {
                     className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
                     onClick={() => setSelectedCase(c)}
                 >
-                  <td className="px-6 py-4 font-medium text-slate-900 flex items-center">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 group-hover:bg-blue-100 transition">
-                         <FileText className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                  <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
+                    <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 group-hover:bg-blue-100 transition">
+                            <FileText className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                        </div>
+                        {c.caseNumber}
                     </div>
-                    {c.caseNumber}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-slate-800">{c.title}</div>
-                    <div className="text-xs text-slate-400 mt-0.5 truncate max-w-xs">{c.description}</div>
+                    <div className="text-sm font-medium text-slate-800 truncate max-w-[200px]">{c.title}</div>
+                    <div className="text-xs text-slate-400 mt-0.5 truncate max-w-[200px]">{c.description}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{c.clientName}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{c.type}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">{c.clientName}</td>
+                  <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">{c.type}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(c.status)}`}>
                       {c.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
+                  <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
                     {c.nextHearingDate ? (
                         <span className="text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded">{c.nextHearingDate}</span>
                     ) : (
                         <span className="text-slate-400">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right whitespace-nowrap">
                     <button className="text-blue-600 hover:text-blue-800 text-sm font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
                       Görüntüle
                     </button>

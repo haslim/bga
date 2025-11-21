@@ -16,10 +16,17 @@ export type Permission =
   | 'CLIENT_MANAGE'
   | 'REPORT_VIEW';
 
+export interface SiteSettings {
+  title: string;
+  subtitle: string;
+  logoUrl: string;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string; // Added password for mock auth
   role: UserRole;
   avatarUrl?: string;
   lastLogin?: string;
@@ -104,6 +111,15 @@ export interface Mediation {
   meetings: MediationMeeting[];
 }
 
+export interface MediatorProfile {
+  name: string;
+  registrationNumber: string; // Sicil No
+  address: string;
+  phone: string;
+  email: string;
+  iban?: string;
+}
+
 export type TemplateType = 'Basvuru' | 'Tutanak' | 'Anlasma';
 
 export interface Template {
@@ -182,4 +198,4 @@ export interface KnowledgeEntry {
   author: string;
 }
 
-export type ViewState = 'dashboard' | 'cases' | 'mediation' | 'clients' | 'finance' | 'tasks' | 'invoices' | 'users' | 'knowledge';
+export type ViewState = 'dashboard' | 'cases' | 'mediation' | 'clients' | 'finance' | 'tasks' | 'invoices' | 'users' | 'knowledge' | 'settings';

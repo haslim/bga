@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry } from './types';
-import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE } from './constants';
+import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings } from './types';
+import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE } from './constants';
 import { checkPermission } from './utils';
 
 interface DataContextType {
@@ -15,7 +15,9 @@ interface DataContextType {
   auditLogs: AuditLog[];
   templates: Template[];
   knowledgeBase: KnowledgeEntry[];
-  currentUser: User;
+  currentUser: User | null; // Can be null if not logged in
+  mediatorProfile: MediatorProfile;
+  siteSettings: SiteSettings;
   
   // Actions
   addCase: (newCase: Case) => void;
@@ -29,6 +31,8 @@ interface DataContextType {
   updateMediation: (mediation: Mediation) => void;
   addInvoice: (invoice: Invoice) => void;
   updateTemplate: (template: Template) => void;
+  updateMediatorProfile: (profile: MediatorProfile) => void;
+  updateSiteSettings: (settings: SiteSettings) => void;
   
   // Knowledge Base Actions
   addKnowledgeEntry: (entry: KnowledgeEntry) => void;
@@ -36,6 +40,8 @@ interface DataContextType {
   deleteKnowledgeEntry: (id: string) => void;
 
   // User & Auth
+  login: (email: string, password: string) => boolean;
+  logout: () => void;
   addUser: (user: User) => void;
   updateUser: (user: User) => void;
   deleteUser: (userId: string) => void;
@@ -56,17 +62,28 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(MOCK_LOGS);
   const [templates, setTemplates] = useState<Template[]>(DEFAULT_TEMPLATES);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeEntry[]>(MOCK_KNOWLEDGE_BASE);
+  const [mediatorProfile, setMediatorProfile] = useState<MediatorProfile>(DEFAULT_MEDIATOR_PROFILE);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+    title: 'BGAofis',
+    subtitle: 'Hukuk Otomasyonu',
+    logoUrl: ''
+  });
+  
+  // Auth State
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // -- Helpers --
   const hasPermission = (permission: Permission): boolean => {
-    return checkPermission(CURRENT_USER.role, permission);
+    if (!currentUser) return false;
+    return checkPermission(currentUser.role, permission);
   };
 
   const logAction = (action: string, details: string, entityType?: any, entityId?: string) => {
+    if (!currentUser) return;
     const newLog: AuditLog = {
       id: `log-${Date.now()}`,
-      userId: CURRENT_USER.id,
-      userName: CURRENT_USER.name,
+      userId: currentUser.id,
+      userName: currentUser.name,
       action,
       details,
       timestamp: new Date().toISOString(),
@@ -78,6 +95,23 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // --- Actions ---
+
+  const login = (email: string, password: string): boolean => {
+      const user = users.find(u => u.email === email && u.password === password);
+      if (user) {
+          setCurrentUser(user);
+          logAction('LOGIN', `${user.name} sisteme giriş yaptı.`);
+          return true;
+      }
+      return false;
+  };
+
+  const logout = () => {
+      if (currentUser) {
+          logAction('LOGOUT', `${currentUser.name} çıkış yaptı.`);
+      }
+      setCurrentUser(null);
+  };
 
   const addCase = (newCase: Case) => {
     setCases(prev => [newCase, ...prev]);
@@ -144,6 +178,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logAction('TEMPLATE_UPDATE', `${template.name} şablonu güncellendi`);
   };
 
+  const updateMediatorProfile = (profile: MediatorProfile) => {
+    setMediatorProfile(profile);
+    logAction('PROFILE_UPDATE', 'Arabulucu profil bilgileri güncellendi.');
+  };
+  
+  const updateSiteSettings = (settings: SiteSettings) => {
+    setSiteSettings(settings);
+    logAction('SETTINGS_UPDATE', 'Sistem ayarları güncellendi.');
+  };
+
   // Knowledge Base
   const addKnowledgeEntry = (entry: KnowledgeEntry) => {
     setKnowledgeBase(prev => [entry, ...prev]);
@@ -179,11 +223,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return (
     <DataContext.Provider value={{
       cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates, knowledgeBase,
-      currentUser: CURRENT_USER,
+      currentUser, mediatorProfile, siteSettings,
       addCase, updateCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
-      addMediation, updateMediation, addInvoice, updateTemplate,
+      addMediation, updateMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings,
       addKnowledgeEntry, updateKnowledgeEntry, deleteKnowledgeEntry,
-      addUser, updateUser, deleteUser, hasPermission, logAction
+      addUser, updateUser, deleteUser, hasPermission, logAction,
+      login, logout
     }}>
       {children}
     </DataContext.Provider>

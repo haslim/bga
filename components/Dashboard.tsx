@@ -110,14 +110,14 @@ export const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-6 bg-gray-50 min-h-screen animate-in fade-in">
+    <div className="p-4 md:p-8 space-y-6 bg-gray-50 min-h-screen animate-in fade-in">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-800">Yönetim Paneli</h1>
-        <p className="text-slate-500 mt-1">Günlük iş akışı ve performans özetleri</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Yönetim Paneli</h1>
+        <p className="text-sm md:text-base text-slate-500 mt-1">Günlük iş akışı ve performans özetleri</p>
       </header>
 
       {/* TOP STATS ROW */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Bugünkü Duruşma</p>
@@ -158,9 +158,9 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* LEFT COLUMN: URGENT & TODAY */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-6">
             
             {/* 1. BUGÜNKÜ DURUŞMALAR */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -176,8 +176,8 @@ export const Dashboard: React.FC = () => {
                                     <div className="font-bold text-blue-800 text-lg mr-4 w-16 text-center bg-white rounded py-1 border border-blue-100 shadow-sm">
                                         {h.time}
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-slate-800">{h.caseNumber}</p>
+                                    <div className="overflow-hidden">
+                                        <p className="font-bold text-slate-800 truncate">{h.caseNumber}</p>
                                         <p className="text-sm text-slate-600 truncate">{h.title}</p>
                                     </div>
                                 </div>
@@ -194,23 +194,23 @@ export const Dashboard: React.FC = () => {
                 <div className="bg-slate-50 p-4 border-b border-slate-200 flex items-center justify-between">
                     <div className="flex items-center">
                         <AlertTriangle className="w-5 h-5 text-orange-600 mr-2" />
-                        <h3 className="font-bold text-slate-800">Önümüzdeki 7 Gün Kritik Süreler</h3>
+                        <h3 className="font-bold text-slate-800 text-sm md:text-base">Önümüzdeki 7 Gün Kritik</h3>
                     </div>
-                    <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-bold">
+                    <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-bold whitespace-nowrap">
                         {criticalDeadlines.length} Kayıt
                     </span>
                 </div>
                 <div className="divide-y divide-slate-100">
                     {criticalDeadlines.map((item, idx) => (
                         <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50">
-                            <div className="flex items-center space-x-3">
-                                <div className={`w-2 h-2 rounded-full ${item.urgent ? 'bg-red-500' : 'bg-orange-400'}`}></div>
-                                <div>
-                                    <p className="text-sm font-bold text-slate-800">{item.title}</p>
+                            <div className="flex items-center space-x-3 overflow-hidden">
+                                <div className={`w-2 h-2 rounded-full shrink-0 ${item.urgent ? 'bg-red-500' : 'bg-orange-400'}`}></div>
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
                                     <p className="text-xs text-slate-500">{item.type} • {item.urgent ? 'ACİL' : 'Normal'}</p>
                                 </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right ml-2 shrink-0">
                                 <p className="text-sm font-bold text-slate-700">{item.date}</p>
                                 <p className="text-xs text-slate-400">Tarihinde</p>
                             </div>
@@ -232,20 +232,20 @@ export const Dashboard: React.FC = () => {
                     <div className="w-1/3 h-4 bg-slate-100 rounded-full overflow-hidden">
                         <div className="h-full bg-green-500 transition-all duration-1000" style={{ width: `${completionRate}%` }}></div>
                     </div>
-                    <span className="font-bold text-slate-700">{completionRate}% Tamamlandı</span>
+                    <span className="font-bold text-slate-700 text-sm md:text-base">{completionRate}% Tamamlandı</span>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-4">
-                     <div className="p-3 bg-slate-50 rounded border border-slate-100 text-center">
-                        <span className="block text-2xl font-bold text-slate-800">{totalTasks}</span>
-                        <span className="text-xs text-slate-500">Toplam Görev</span>
+                <div className="mt-4 grid grid-cols-3 gap-2 md:gap-4">
+                     <div className="p-2 md:p-3 bg-slate-50 rounded border border-slate-100 text-center">
+                        <span className="block text-xl md:text-2xl font-bold text-slate-800">{totalTasks}</span>
+                        <span className="text-[10px] md:text-xs text-slate-500">Toplam Görev</span>
                      </div>
-                     <div className="p-3 bg-green-50 rounded border border-green-100 text-center">
-                        <span className="block text-2xl font-bold text-green-600">{completedTasks}</span>
-                        <span className="text-xs text-green-600">Tamamlanan</span>
+                     <div className="p-2 md:p-3 bg-green-50 rounded border border-green-100 text-center">
+                        <span className="block text-xl md:text-2xl font-bold text-green-600">{completedTasks}</span>
+                        <span className="text-[10px] md:text-xs text-green-600">Tamamlanan</span>
                      </div>
-                     <div className="p-3 bg-orange-50 rounded border border-orange-100 text-center">
-                        <span className="block text-2xl font-bold text-orange-600">{totalTasks - completedTasks}</span>
-                        <span className="text-xs text-orange-600">Bekleyen</span>
+                     <div className="p-2 md:p-3 bg-orange-50 rounded border border-orange-100 text-center">
+                        <span className="block text-xl md:text-2xl font-bold text-orange-600">{totalTasks - completedTasks}</span>
+                        <span className="text-[10px] md:text-xs text-orange-600">Bekleyen</span>
                      </div>
                 </div>
             </div>
@@ -255,14 +255,14 @@ export const Dashboard: React.FC = () => {
         {/* RIGHT COLUMN: STATS */}
         <div className="space-y-6">
             {/* 5. FİNANSAL GRAFİK (YENİ - AREA CHART) */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-[400px] flex flex-col">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 h-[350px] md:h-[400px] flex flex-col">
                 <div className="mb-4 flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-slate-800 flex items-center">
+                    <h3 className="font-bold text-slate-800 flex items-center text-sm md:text-base">
                         <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
-                        Finansal Trend (Son 6 Ay)
+                        Finansal Trend
                     </h3>
-                    <p className="text-xs text-slate-500 mt-1">Aylık Gelir/Gider Akışı</p>
+                    <p className="text-xs text-slate-500 mt-1">Son 6 Ay</p>
                   </div>
                   <div className="text-right">
                      <p className="text-xs text-slate-400">Bu Ay</p>
@@ -273,9 +273,9 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 w-full h-full">
+                <div className="flex-1 w-full h-full -ml-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={trendData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                    <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3}/>
@@ -287,8 +287,8 @@ export const Dashboard: React.FC = () => {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
                       <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }} />
                       <Area type="monotone" dataKey="Gelir" stroke="#16a34a" strokeWidth={2} fillOpacity={1} fill="url(#colorIncome)" activeDot={{ r: 6 }} />
                       <Area type="monotone" dataKey="Gider" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorExpense)" activeDot={{ r: 6 }} />
@@ -308,13 +308,13 @@ export const Dashboard: React.FC = () => {
                  <div className="divide-y divide-slate-50">
                     {topClients.map((client, idx) => (
                         <div key={idx} className="p-4 flex items-center justify-between">
-                            <div className="flex items-center">
-                                <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold mr-3">
+                            <div className="flex items-center overflow-hidden">
+                                <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold mr-3 shrink-0">
                                     {idx + 1}
                                 </span>
-                                <span className="text-sm font-medium text-slate-700">{client.name}</span>
+                                <span className="text-sm font-medium text-slate-700 truncate">{client.name}</span>
                             </div>
-                            <span className="text-xs font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">
+                            <span className="text-xs font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full shrink-0">
                                 {client.count} Dosya
                             </span>
                         </div>
@@ -357,7 +357,7 @@ export const Dashboard: React.FC = () => {
                     {myOpenTasks.slice(0,4).map(t => (
                         <li key={t.id} className="flex items-start text-sm">
                              <div className={`w-2 h-2 rounded-full mt-1.5 mr-2 shrink-0 ${t.priority === 'Yüksek' ? 'bg-red-500' : 'bg-blue-400'}`}></div>
-                             <span className="text-slate-600">{t.title}</span>
+                             <span className="text-slate-600 line-clamp-1">{t.title}</span>
                         </li>
                     ))}
                     {myOpenTasks.length === 0 && <li className="text-xs text-slate-400">Bekleyen görev yok.</li>}

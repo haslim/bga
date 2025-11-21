@@ -1,5 +1,5 @@
 
-import { Mediation, MediationStatus, UserRole, Permission } from './types';
+import { Mediation, MediationStatus, UserRole, Permission, MediatorProfile } from './types';
 import { ROLE_PERMISSIONS } from './constants';
 
 // --- PERMISSION UTILS ---
@@ -27,7 +27,7 @@ export const formatDate = (dateString: string): string => {
 /**
  * Replaces placeholders in a template string with actual data from the Mediation object.
  */
-export const processTemplate = (templateContent: string, data: Mediation): string => {
+export const processTemplate = (templateContent: string, data: Mediation, profile: MediatorProfile): string => {
   const today = new Date().toLocaleDateString('tr-TR');
   
   // Determine result text for Minutes (Tutanak)
@@ -47,7 +47,11 @@ export const processTemplate = (templateContent: string, data: Mediation): strin
     .replace(/{{MUVEKKIL}}/g, data.clientName || '.....')
     .replace(/{{KARSI_TARAF}}/g, data.counterParty || '.....')
     .replace(/{{KONU}}/g, data.subject || '.....')
-    .replace(/{{ARABULUCU}}/g, data.mediatorName || '.....')
+    // Use data from Mediator Profile
+    .replace(/{{ARABULUCU}}/g, profile.name || '.....')
+    .replace(/{{ARABULUCU_SICIL}}/g, profile.registrationNumber || '.....')
+    .replace(/{{ARABULUCU_ADRES}}/g, profile.address || '.....')
+    .replace(/{{ARABULUCU_IBAN}}/g, profile.iban || '.....')
     .replace(/{{BUGUN}}/g, today)
     .replace(/{{SONUC_METNI}}/g, outcomeText);
 };

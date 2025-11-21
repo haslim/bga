@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from '../DataContext';
 import { Invoice, InvoiceItem } from '../types';
@@ -53,7 +54,7 @@ export const InvoiceManager: React.FC = () => {
 
     const newInvoice: Invoice = {
       id: `inv-${Date.now()}`,
-      invoiceNumber: `SMM-2023/${invoices.length + 101}`,
+      invoiceNumber: `SMM-2025/${invoices.length + 101}`,
       clientName,
       date: invoiceDate,
       dueDate: invoiceDate, // Simplified

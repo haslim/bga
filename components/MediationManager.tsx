@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
-import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType } from '../types';
+import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile } from '../types';
 import { processTemplate } from '../utils';
-import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3 } from 'lucide-react';
+import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone } from 'lucide-react';
 
 export const MediationManager: React.FC = () => {
-  const { mediations, addMediation, updateMediation, templates, updateTemplate } = useData();
+  const { mediations, addMediation, updateMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile } = useData();
   
   const [selectedMediation, setSelectedMediation] = useState<Mediation | null>(null);
   const [activeMediationData, setActiveMediationData] = useState<Mediation | null>(null);
@@ -17,12 +17,16 @@ export const MediationManager: React.FC = () => {
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
   const [templatePreviewContent, setTemplatePreviewContent] = useState('');
   
   // Template Editing State
   const [selectedTemplateToEdit, setSelectedTemplateToEdit] = useState<Template | null>(null);
   const [editedTemplateContent, setEditedTemplateContent] = useState('');
+
+  // Profile Editing State
+  const [editedProfile, setEditedProfile] = useState<MediatorProfile>({...mediatorProfile});
 
   const [newMeeting, setNewMeeting] = useState<Partial<MediationMeeting>>({ date: '', participants: '', notes: '' });
   const [newApplication, setNewApplication] = useState<Partial<Mediation>>({
@@ -65,7 +69,8 @@ export const MediationManager: React.FC = () => {
           return;
       }
 
-      const html = processTemplate(template.content, activeMediationData);
+      // Pass the MediatorProfile to the processor
+      const html = processTemplate(template.content, activeMediationData, mediatorProfile);
       setTemplatePreviewContent(html);
       setIsTemplateModalOpen(true);
   };
@@ -81,6 +86,18 @@ export const MediationManager: React.FC = () => {
           printWindow.print();
       }
   };
+
+  // --- Profile Handlers ---
+  const handleOpenProfileModal = () => {
+      setEditedProfile({...mediatorProfile});
+      setIsProfileModalOpen(true);
+  };
+
+  const handleSaveProfile = () => {
+      updateMediatorProfile(editedProfile);
+      setIsProfileModalOpen(false);
+  };
+  // -----------------------
 
   // --- Template Editor Handlers ---
   const openTemplateEditor = (type: TemplateType) => {
@@ -122,6 +139,18 @@ export const MediationManager: React.FC = () => {
     setNewMeeting({ date: '', participants: '', notes: '' });
   };
 
+  const handleOpenApplicationModal = () => {
+      // Auto-fill mediator name from profile
+      setNewApplication({
+          clientName: '', 
+          counterParty: '', 
+          subject: '', 
+          mediatorName: mediatorProfile.name, // Auto-fill
+          fileNumber: ''
+      });
+      setIsApplicationModalOpen(true);
+  };
+
   const handleCreateApplication = () => {
       if (!newApplication.clientName || !newApplication.counterParty) return;
       
@@ -131,7 +160,7 @@ export const MediationManager: React.FC = () => {
           clientName: newApplication.clientName || '',
           counterParty: newApplication.counterParty || '',
           subject: newApplication.subject || '',
-          mediatorName: newApplication.mediatorName || '',
+          mediatorName: newApplication.mediatorName || mediatorProfile.name,
           status: MediationStatus.APPLIED,
           applicationDate: new Date().toISOString().split('T')[0],
           meetings: []
@@ -139,12 +168,82 @@ export const MediationManager: React.FC = () => {
       
       addMediation(application);
       setIsApplicationModalOpen(false);
-      setNewApplication({clientName: '', counterParty: '', subject: '', mediatorName: '', fileNumber: ''});
-  }
+  };
 
   return (
         <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
             
+            {/* Mediator Profile Modal */}
+            {isProfileModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                             <h3 className="text-lg font-bold text-slate-800 flex items-center">
+                                <Settings className="w-5 h-5 mr-2 text-blue-600" />
+                                Arabulucu Profil Ayarları
+                             </h3>
+                             <button onClick={() => setIsProfileModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
+                        </div>
+                        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Ad Soyad</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                        value={editedProfile.name} onChange={e => setEditedProfile({...editedProfile, name: e.target.value})} />
+                                </div>
+                            </div>
+                             <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Sicil Numarası</label>
+                                <div className="relative">
+                                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                        value={editedProfile.registrationNumber} onChange={e => setEditedProfile({...editedProfile, registrationNumber: e.target.value})} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">İletişim (E-Posta)</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                    <input type="email" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                        value={editedProfile.email} onChange={e => setEditedProfile({...editedProfile, email: e.target.value})} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">İletişim (Telefon)</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+                                        value={editedProfile.phone} onChange={e => setEditedProfile({...editedProfile, phone: e.target.value})} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Adres</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                    <textarea className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm min-h-[60px]" 
+                                        value={editedProfile.address} onChange={e => setEditedProfile({...editedProfile, address: e.target.value})} />
+                                </div>
+                            </div>
+                             <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">IBAN (Anlaşma Belgesi İçin)</label>
+                                <div className="relative">
+                                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                    <input type="text" className="w-full border bg-white text-slate-900 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono" 
+                                        value={editedProfile.iban} onChange={e => setEditedProfile({...editedProfile, iban: e.target.value})} />
+                                </div>
+                            </div>
+                        </div>
+                         <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+                            <button onClick={() => setIsProfileModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium">İptal</button>
+                            <button onClick={handleSaveProfile} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm flex items-center">
+                                <Save className="w-4 h-4 mr-2" /> Bilgileri Güncelle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Template Preview Modal */}
             {isTemplateModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
@@ -220,7 +319,11 @@ export const MediationManager: React.FC = () => {
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{ARABULUCU}}')}>
                                         <span className="font-bold text-blue-600">{'{{ARABULUCU}}'}</span>
-                                        <p className="text-slate-500 mt-1">Arabulucu Adı</p>
+                                        <p className="text-slate-500 mt-1">Arabulucu Adı (Profil)</p>
+                                    </div>
+                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{ARABULUCU_SICIL}}')}>
+                                        <span className="font-bold text-blue-600">{'{{ARABULUCU_SICIL}}'}</span>
+                                        <p className="text-slate-500 mt-1">Sicil No (Profil)</p>
                                     </div>
                                      <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{BUGUN}}')}>
                                         <span className="font-bold text-blue-600">{'{{BUGUN}}'}</span>
@@ -228,7 +331,7 @@ export const MediationManager: React.FC = () => {
                                     </div>
                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{SONUC_METNI}}')}>
                                         <span className="font-bold text-blue-600">{'{{SONUC_METNI}}'}</span>
-                                        <p className="text-slate-500 mt-1">Otomatik Sonuç (Anlaştı/Anlaşamadı)</p>
+                                        <p className="text-slate-500 mt-1">Otomatik Sonuç</p>
                                     </div>
                                 </div>
                             </div>
@@ -488,7 +591,7 @@ export const MediationManager: React.FC = () => {
                                                 <input 
                                                     type="text" 
                                                     className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none transition" 
-                                                    placeholder="2023/..." 
+                                                    placeholder="2025/..." 
                                                     value={newApplication.fileNumber} 
                                                     onChange={e => setNewApplication({...newApplication, fileNumber: e.target.value})}
                                                 />
@@ -507,8 +610,10 @@ export const MediationManager: React.FC = () => {
                                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Atanan Arabulucu</label>
                                             <div className="relative">
                                                 <Scale className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="Arabulucu Adı Soyadı" value={newApplication.mediatorName} onChange={e => setNewApplication({...newApplication, mediatorName: e.target.value})} />
+                                                <input type="text" className="w-full border border-slate-300 bg-slate-100 text-slate-600 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition cursor-not-allowed" 
+                                                    value={newApplication.mediatorName} disabled />
                                             </div>
+                                            <p className="text-[10px] text-slate-400 mt-1">Profil ayarlarından otomatik çekilir.</p>
                                         </div>
                                     </div>
 
@@ -557,13 +662,22 @@ export const MediationManager: React.FC = () => {
                     <h1 className="text-3xl font-bold text-slate-800">Arabuluculuk Dosyaları</h1>
                     <p className="text-slate-500 mt-1">Başvuru, süreç ve anlaşma takibi</p>
                     </div>
-                    <button 
-                        onClick={() => setIsApplicationModalOpen(true)}
-                        className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5"
-                    >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Yeni Başvuru
-                    </button>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={handleOpenProfileModal}
+                            className="mt-4 sm:mt-0 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 py-2.5 rounded-xl font-medium flex items-center transition-all"
+                        >
+                            <Settings className="w-5 h-5 mr-2 text-slate-500" />
+                            Arabulucu Ayarları
+                        </button>
+                        <button 
+                            onClick={handleOpenApplicationModal}
+                            className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5"
+                        >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Yeni Başvuru
+                        </button>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
