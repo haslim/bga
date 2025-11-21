@@ -15,97 +15,217 @@ import { SettingsManager } from './components/SettingsManager';
 import { ViewState } from './types';
 import { Lock, AlertCircle, Menu, Scale, Quote, Mail, ArrowRight } from 'lucide-react';
 
-// Define assets for the random login screen with diverse books and covers
+// Expanded assets for a "limitless" feel - 30 Unique Entries
 const LOGIN_ASSETS = [
   {
     id: 1,
     quote: "Bir suç her şeyden önce kişinin kendi vicdanına karşı işlenmiş bir hatadır.",
     author: "Suç ve Ceza — Fyodor Dostoyevski",
-    // Moody dark library
     image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=2000", 
-    // Dark book cover vibe
     coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600" 
   },
   {
     id: 2,
     quote: "Çoğunluğa bağlı olmayan tek şey insanın vicdanıdır.",
     author: "Bülbülü Öldürmek — Harper Lee",
-    // Wooden desk, nostalgic
     image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=2000",
-    // Old yellowed book
     coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 3,
     quote: "Adalet mülkün temelidir.",
     author: "Mustafa Kemal Atatürk",
-    // Marble columns, court
     image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=2000",
-    // Gavel and law book
     coverUrl: "https://images.unsplash.com/photo-1589994965851-08d8095e267f?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 4,
     quote: "Kanun, adalet kavramını gerçekleştirmek için vardır.",
     author: "Sefiller — Victor Hugo",
-    // Old Paris vibes, dark bricks
     image: "https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&q=80&w=2000",
-    // Classic leather book
     coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 5,
     quote: "Doğru olanı yapmak, korkudan titrese bile, ileriye doğru bir adım atmaktır.",
     author: "Dava — Franz Kafka",
-    // Abstract, shadows, bureaucratic
     image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=2000",
-    // Minimalist dark book
     coverUrl: "https://images.unsplash.com/photo-1610116306796-6fea9f4fae38?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 6,
     quote: "Özgürlük, iki kere ikinin dört ettiğini söyleyebilmektir. Buna izin verilirse, gerisi kendiliğinden gelir.",
     author: "1984 — George Orwell",
-    // Industrial, grey, surveillance vibe
     image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2000",
-    // Red book cover
     coverUrl: "https://images.unsplash.com/photo-1535905557558-afc4877a26fc?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 7,
     quote: "Sorgulanmamış bir hayat, yaşanmaya değmez.",
     author: "Sokrates'in Savunması — Platon",
-    // Ancient greek style, stone
     image: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?auto=format&fit=crop&q=80&w=2000",
-    // Philosophy texts
     coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 8,
     quote: "Bir şeyi gerçekten istersen, bütün evren onu gerçekleştirmen için işbirliği yapar.",
     author: "Simyacı — Paulo Coelho",
-    // Desert, stars, mystical
     image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=2000",
-    // Book with light
     coverUrl: "https://images.unsplash.com/photo-1519681393784-d8e5b5a4570e?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 9,
     quote: "Bizim mantığımızla hayatın mantığı asla uyuşmadı.",
     author: "Tutunamayanlar — Oğuz Atay",
-    // Melancholic, rainy window or messy desk
     image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=2000",
-    // Stack of books
     coverUrl: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&q=80&w=600"
   },
   {
     id: 10,
     quote: "Adalet peşinde koşmak, onu elde etmekten daha değerlidir.",
     author: "Denemeler — Montaigne",
-    // Classic library, leather
     image: "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&q=80&w=2000",
-    // Antique book spine
     coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 11,
+    quote: "Kaybedecek bir şeyi olmayan insanlardan korkmalısın.",
+    author: "Kürk Mantolu Madonna — Sabahattin Ali",
+    image: "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1518373714866-3f1479910625?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 12,
+    quote: "İnsan, evrende gövdesi kadar değil, yüreği kadar yer kaplar.",
+    author: "İnce Memed — Yaşar Kemal",
+    image: "https://images.unsplash.com/photo-1501446529957-6226bd447c46?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 13,
+    quote: "Her şeyin bir saati vardır. O saat gelince olur.",
+    author: "Saatleri Ayarlama Enstitüsü — A. Hamdi Tanpınar",
+    image: "https://images.unsplash.com/photo-1508062878650-88b52897f298?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 14,
+    quote: "İnsan ancak yüreğiyle baktığı zaman doğruyu görebilir.",
+    author: "Küçük Prens — Antoine de Saint-Exupéry",
+    image: "https://images.unsplash.com/photo-1525715843408-5c6ec44503b1?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1612698093158-e07ac200d44e?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 15,
+    quote: "Bütün hayvanlar eşittir ama bazı hayvanlar öbürlerinden daha eşittir.",
+    author: "Hayvan Çiftliği — George Orwell",
+    image: "https://images.unsplash.com/photo-1516496636080-14fb87f10926?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1569516449771-41c4e5e7c9b3?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 16,
+    quote: "Bugün, anne öldü. Belki de dün, bilmiyorum.",
+    author: "Yabancı — Albert Camus",
+    image: "https://images.unsplash.com/photo-1507692049790-de58293a4697?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 17,
+    quote: "Dünya herkesin ihtiyacına yetecek kadarını sağlar, fakat herkesin hırsına yetecek kadarını değil.",
+    author: "Mahatma Gandhi",
+    image: "https://images.unsplash.com/photo-1464660439080-b79116909ce7?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1532634922-8fe0b757fb13?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 18,
+    quote: "Bir insanı, cevaplarıyla değil, sorduğu sorularla yargılayın.",
+    author: "Voltaire",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 19,
+    quote: "Adaletsizliği işleyen, çekenden daha sefildir.",
+    author: "Platon",
+    image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 20,
+    quote: "Satranç tahtasında tüm denizlerdekinden daha fazla macera vardır.",
+    author: "Satranç — Stefan Zweig",
+    image: "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1586165368502-2504177ed2d0?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 21,
+    quote: "Fareler ve insanların en iyi planları genellikle boşa çıkar.",
+    author: "Fareler ve İnsanlar — John Steinbeck",
+    image: "https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1516542076529-1ea3854896f2?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 22,
+    quote: "Bilgi, güçtür.",
+    author: "Francis Bacon",
+    image: "https://images.unsplash.com/photo-1484335629320-6108b760071f?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1503437313881-5035e719ba85?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 23,
+    quote: "Yurtta sulh, cihanda sulh.",
+    author: "Mustafa Kemal Atatürk",
+    image: "https://images.unsplash.com/photo-1497294815431-9365093b7331?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1520032525096-7bd04a94b5a4?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 24,
+    quote: "Hiçbir şey, eyleme geçen cehaletten daha korkutucu değildir.",
+    author: "Goethe",
+    image: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 25,
+    quote: "Hukuk, bir gün herkese lazım olur.",
+    author: "Anonim Hukuk Özdeyişi",
+    image: "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1593526498546-807224b49669?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 26,
+    quote: "Zorluklar, başarının değerini artıran süslerdir.",
+    author: "Moliere",
+    image: "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 27,
+    quote: "Düşünüyorum, öyleyse varım.",
+    author: "Rene Descartes",
+    image: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 28,
+    quote: "En karanlık an, şafaktan hemen önceki andır.",
+    author: "Simyacı — Paulo Coelho",
+    image: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1519681393784-d8e5b5a4570e?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 29,
+    quote: "Adalet, devletin amacıdır.",
+    author: "Aristoteles",
+    image: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1555881400-65a2341be736?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 30,
+    quote: "Yasa, aklın sesidir.",
+    author: "Cicero",
+    image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=2000",
+    coverUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600"
   }
 ];
 
