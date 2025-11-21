@@ -3,8 +3,13 @@ import React from 'react';
 import { useData } from '../DataContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign, BookOpen } from 'lucide-react';
+import { ViewState } from '../types';
 
-export const Dashboard: React.FC = () => {
+interface DashboardProps {
+  onChangeView: (view: ViewState) => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
   const { cases, tasks, finance, knowledgeBase } = useData();
 
   const today = new Date().toISOString().split('T')[0];
@@ -118,41 +123,56 @@ export const Dashboard: React.FC = () => {
 
       {/* TOP STATS ROW */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div 
+            onClick={() => onChangeView('cases')}
+            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-brand-200 group active:scale-95"
+        >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Bugünkü Duruşma</p>
+             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-brand-600 transition-colors">Bugünkü Duruşma</p>
              <h3 className="text-2xl font-bold text-brand-600 mt-1">{todaysHearings.length}</h3>
           </div>
-          <div className="p-3 bg-brand-50 text-brand-600 rounded-lg">
+          <div className="p-3 bg-brand-50 text-brand-600 rounded-lg group-hover:bg-brand-100 transition-colors">
             <Calendar className="w-6 h-6" />
           </div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+
+        <div 
+            onClick={() => onChangeView('tasks')}
+            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-orange-200 group active:scale-95"
+        >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Açık Görevler</p>
+             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-orange-600 transition-colors">Açık Görevler</p>
              <h3 className="text-2xl font-bold text-orange-600 mt-1">{myOpenTasks.length}</h3>
           </div>
-          <div className="p-3 bg-orange-50 text-orange-600 rounded-lg">
+          <div className="p-3 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition-colors">
             <CheckCircle className="w-6 h-6" />
           </div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+
+        <div 
+            onClick={() => onChangeView('tasks')}
+            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-green-200 group active:scale-95"
+        >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">İş Tamamlanma</p>
+             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-green-600 transition-colors">İş Tamamlanma</p>
              <h3 className="text-2xl font-bold text-green-600 mt-1">%{completionRate}</h3>
           </div>
-          <div className="p-3 bg-green-50 text-green-600 rounded-lg">
+          <div className="p-3 bg-green-50 text-green-600 rounded-lg group-hover:bg-green-100 transition-colors">
             <Activity className="w-6 h-6" />
           </div>
         </div>
-         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+
+         <div 
+            onClick={() => onChangeView('finance')}
+            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-slate-300 group active:scale-95"
+        >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Toplam Net Kasa</p>
+             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-slate-700 transition-colors">Toplam Net Kasa</p>
              <h3 className="text-2xl font-bold text-slate-700 mt-1">
                {netBalance.toLocaleString('tr-TR')} ₺
              </h3>
           </div>
-          <div className="p-3 bg-slate-100 text-slate-600 rounded-lg">
+          <div className="p-3 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-slate-200 transition-colors">
             <DollarSign className="w-6 h-6" />
           </div>
         </div>

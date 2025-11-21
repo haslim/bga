@@ -41,7 +41,7 @@ const MainContent: React.FC = () => {
 
   const renderView = () => {
     switch (currentView) {
-      case 'dashboard': return <Dashboard />;
+      case 'dashboard': return <Dashboard onChangeView={setCurrentView} />;
       case 'cases': return <CaseManager />;
       case 'mediation': return <MediationManager />;
       case 'clients': return <ClientManager />;
@@ -51,7 +51,7 @@ const MainContent: React.FC = () => {
       case 'users': return <UserManager />;
       case 'knowledge': return <KnowledgeBase />;
       case 'settings': return <SettingsManager />;
-      default: return <Dashboard />;
+      default: return <Dashboard onChangeView={setCurrentView} />;
     }
   };
 
