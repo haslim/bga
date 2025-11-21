@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '../DataContext';
 import { Invoice, InvoiceItem } from '../types';
@@ -105,7 +104,7 @@ export const InvoiceManager: React.FC = () => {
                       <div className="relative">
                          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                          <select 
-                            className="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white transition"
+                            className="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white transition text-slate-900"
                             value={clientName}
                             onChange={(e) => setClientName(e.target.value)}
                           >
@@ -120,7 +119,7 @@ export const InvoiceManager: React.FC = () => {
                           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                           <input 
                             type="date" 
-                            className="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+                            className="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-white text-slate-900"
                             value={invoiceDate}
                             onChange={(e) => setInvoiceDate(e.target.value)}
                           />
@@ -154,7 +153,7 @@ export const InvoiceManager: React.FC = () => {
                                     <input 
                                         type="text" 
                                         placeholder="Hizmet açıklaması giriniz..."
-                                        className="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                        className="w-full border border-slate-300 rounded p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white text-slate-900"
                                         value={item.description}
                                         onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
                                       />
@@ -163,7 +162,7 @@ export const InvoiceManager: React.FC = () => {
                                     <input 
                                         type="number" 
                                         placeholder="0.00"
-                                        className="w-full border border-slate-300 rounded p-2 text-sm text-right focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-mono"
+                                        className="w-full border border-slate-300 rounded p-2 text-sm text-right focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-mono bg-white text-slate-900"
                                         value={item.amount}
                                         onChange={(e) => handleItemChange(idx, 'amount', Number(e.target.value))}
                                       />
@@ -186,7 +185,7 @@ export const InvoiceManager: React.FC = () => {
                      <div className="grid grid-cols-2 gap-6 mb-4 border-b border-slate-200 pb-4">
                         <div>
                            <label className="block text-xs font-medium text-slate-500 mb-1">KDV Oranı</label>
-                           <select className="w-full border p-1.5 rounded text-sm bg-white" value={vatRate} onChange={e => setVatRate(Number(e.target.value))}>
+                           <select className="w-full border p-1.5 rounded text-sm bg-white text-slate-900" value={vatRate} onChange={e => setVatRate(Number(e.target.value))}>
                              <option value="0">%0</option>
                              <option value="10">%10</option>
                              <option value="20">%20</option>
@@ -194,7 +193,7 @@ export const InvoiceManager: React.FC = () => {
                         </div>
                         <div>
                            <label className="block text-xs font-medium text-slate-500 mb-1">Stopaj Oranı</label>
-                           <select className="w-full border p-1.5 rounded text-sm bg-white" value={stopajRate} onChange={e => setStopajRate(Number(e.target.value))}>
+                           <select className="w-full border p-1.5 rounded text-sm bg-white text-slate-900" value={stopajRate} onChange={e => setStopajRate(Number(e.target.value))}>
                              <option value="0">%0</option>
                              <option value="20">%20</option>
                            </select>

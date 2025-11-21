@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DataProvider, useData } from './DataContext';
 import { Sidebar } from './components/Sidebar';
@@ -9,6 +8,7 @@ import { FinanceManager } from './components/FinanceManager';
 import { TasksManager } from './components/TasksManager';
 import { MediationManager } from './components/MediationManager';
 import { InvoiceManager } from './components/InvoiceManager';
+import { UserManager } from './components/UserManager';
 import { ViewState } from './types';
 import { Lock } from 'lucide-react';
 
@@ -36,10 +36,11 @@ const MainContent: React.FC<{
       case 'dashboard': return <Dashboard />;
       case 'cases': return <CaseManager />;
       case 'mediation': return <MediationManager />;
-      case 'clients': return <ClientManager clients={[]} />; // ClientManager needs update to use Context, passing [] for now as fallback
+      case 'clients': return <ClientManager />;
       case 'finance': return <FinanceManager />;
       case 'tasks': return <TasksManager />;
       case 'invoices': return <InvoiceManager />;
+      case 'users': return <UserManager />;
       default: return <Dashboard />;
     }
   };
@@ -61,7 +62,7 @@ const MainContent: React.FC<{
               <label className="block text-sm font-medium text-slate-700 mb-1">E-Posta Adresi</label>
               <input
                 type="email"
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900"
                 placeholder="ornek@bgaofis.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -71,7 +72,7 @@ const MainContent: React.FC<{
               <label className="block text-sm font-medium text-slate-700 mb-1">Şifre</label>
               <input
                 type="password"
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

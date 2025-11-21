@@ -3,8 +3,18 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   LAWYER = 'AVUKAT',
   INTERN = 'STAJYER',
-  SECRETARY = 'SEKRETERYA'
+  SECRETARY = 'SEKRETERYA',
+  FINANCE = 'FINANS'
 }
+
+export type Permission = 
+  | 'CASE_VIEW_ALL' 
+  | 'CASE_EDIT' 
+  | 'CASH_VIEW' 
+  | 'DOC_UPLOAD' 
+  | 'USER_MANAGE' 
+  | 'CLIENT_MANAGE'
+  | 'REPORT_VIEW';
 
 export interface User {
   id: string;
@@ -12,6 +22,20 @@ export interface User {
   email: string;
   role: UserRole;
   avatarUrl?: string;
+  lastLogin?: string;
+  ipAddress?: string;
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string;
+  userName: string;
+  action: string; // e.g., 'USER_LOGIN', 'CASE_CREATE'
+  details: string;
+  timestamp: string;
+  ipAddress: string;
+  entityType?: 'CASE' | 'CLIENT' | 'FINANCE' | 'USER';
+  entityId?: string;
 }
 
 export enum CaseStatus {
@@ -91,6 +115,9 @@ export interface Client {
   address?: string;
   taxNumber?: string; // TC or VKN
   taxOffice?: string;
+  notes?: string;
+  tags?: string[]; // 'VIP', 'Riskli', 'Referanslı'
+  createdDate?: string;
 }
 
 export interface FinancialRecord {
@@ -134,4 +161,4 @@ export interface Task {
   caseId?: string; // Linked case ID
 }
 
-export type ViewState = 'dashboard' | 'cases' | 'mediation' | 'clients' | 'finance' | 'tasks' | 'invoices';
+export type ViewState = 'dashboard' | 'cases' | 'mediation' | 'clients' | 'finance' | 'tasks' | 'invoices' | 'users';

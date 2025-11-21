@@ -1,13 +1,35 @@
 
-import { Case, CaseStatus, Client, FinancialRecord, Task, User, UserRole, Mediation, MediationStatus } from './types';
+import { Case, CaseStatus, Client, FinancialRecord, Task, User, UserRole, Mediation, MediationStatus, Permission, AuditLog } from './types';
+
+export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  [UserRole.ADMIN]: ['CASE_VIEW_ALL', 'CASE_EDIT', 'CASH_VIEW', 'DOC_UPLOAD', 'USER_MANAGE', 'CLIENT_MANAGE', 'REPORT_VIEW'],
+  [UserRole.LAWYER]: ['CASE_VIEW_ALL', 'CASE_EDIT', 'CLIENT_MANAGE', 'DOC_UPLOAD'],
+  [UserRole.INTERN]: ['CASE_VIEW_ALL', 'DOC_UPLOAD'],
+  [UserRole.SECRETARY]: ['CLIENT_MANAGE', 'CASE_VIEW_ALL'],
+  [UserRole.FINANCE]: ['CASH_VIEW', 'REPORT_VIEW']
+};
 
 export const CURRENT_USER: User = {
   id: 'u1',
   name: 'Av. Burak G.',
   email: 'burak@bgaofis.com',
   role: UserRole.ADMIN,
-  avatarUrl: 'https://picsum.photos/id/1005/200/200'
+  avatarUrl: 'https://picsum.photos/id/1005/200/200',
+  lastLogin: new Date().toISOString()
 };
+
+export const MOCK_USERS: User[] = [
+  CURRENT_USER,
+  { id: 'u2', name: 'Av. Selin Y.', email: 'selin@bgaofis.com', role: UserRole.LAWYER, avatarUrl: 'https://picsum.photos/id/1011/200/200', lastLogin: '2023-10-24 09:00', ipAddress: '192.168.1.12' },
+  { id: 'u3', name: 'Stj. Can K.', email: 'can@bgaofis.com', role: UserRole.INTERN, avatarUrl: 'https://picsum.photos/id/1012/200/200', lastLogin: '2023-10-24 10:15', ipAddress: '192.168.1.15' },
+  { id: 'u4', name: 'Ayşe M.', email: 'ayse@bgaofis.com', role: UserRole.SECRETARY, avatarUrl: 'https://picsum.photos/id/1013/200/200', lastLogin: '2023-10-24 08:30', ipAddress: '192.168.1.10' },
+];
+
+export const MOCK_LOGS: AuditLog[] = [
+  { id: 'l1', userId: 'u1', userName: 'Av. Burak G.', action: 'LOGIN', details: 'Sisteme giriş yapıldı', timestamp: '2023-10-24 08:00', ipAddress: '192.168.1.5' },
+  { id: 'l2', userId: 'u2', userName: 'Av. Selin Y.', action: 'CASE_UPDATE', details: '2023/145 E. dosyasına duruşma eklendi', timestamp: '2023-10-24 09:30', ipAddress: '192.168.1.12', entityType: 'CASE', entityId: 'c1' },
+  { id: 'l3', userId: 'u1', userName: 'Av. Burak G.', action: 'CLIENT_ADD', details: 'Yeni müvekkil eklendi: Vural Gayrimenkul', timestamp: '2023-10-24 11:00', ipAddress: '192.168.1.5', entityType: 'CLIENT', entityId: 'cl3' }
+];
 
 const today = new Date().toISOString().split('T')[0];
 const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -147,10 +169,10 @@ export const MOCK_MEDIATIONS: Mediation[] = [
 ];
 
 export const MOCK_CLIENTS: Client[] = [
-  { id: 'cl1', name: 'Yılmaz Ticaret A.Ş.', type: 'Kurumsal', phone: '0212 555 10 20', email: 'info@yilmaz.com', status: 'Aktif', balance: -15000 },
-  { id: 'cl2', name: 'Mehmet Demir', type: 'Bireysel', phone: '0532 555 20 30', email: 'mehmet@gmail.com', status: 'Aktif', balance: 0 },
-  { id: 'cl3', name: 'Vural Gayrimenkul', type: 'Kurumsal', phone: '0216 444 30 40', email: 'contact@vural.com', status: 'Aktif', balance: -5000 },
-  { id: 'cl4', name: 'Ayşe Kaya', type: 'Bireysel', phone: '0555 123 45 67', email: 'ayse.kaya@hotmail.com', status: 'Pasif', balance: 0 },
+  { id: 'cl1', name: 'Yılmaz Ticaret A.Ş.', type: 'Kurumsal', phone: '0212 555 10 20', email: 'info@yilmaz.com', status: 'Aktif', balance: -15000, tags: ['VIP', 'Kurumsal'], taxNumber: '1234567890', address: 'Şişli, İstanbul' },
+  { id: 'cl2', name: 'Mehmet Demir', type: 'Bireysel', phone: '0532 555 20 30', email: 'mehmet@gmail.com', status: 'Aktif', balance: 0, tags: ['Bireysel'], taxNumber: '11111111111', address: 'Kadıköy, İstanbul' },
+  { id: 'cl3', name: 'Vural Gayrimenkul', type: 'Kurumsal', phone: '0216 444 30 40', email: 'contact@vural.com', status: 'Aktif', balance: -5000, tags: ['Kurumsal'], taxNumber: '2222222222' },
+  { id: 'cl4', name: 'Ayşe Kaya', type: 'Bireysel', phone: '0555 123 45 67', email: 'ayse.kaya@hotmail.com', status: 'Pasif', balance: 0, tags: ['Boşanma', 'Referanslı'] },
 ];
 
 export const MOCK_FINANCE: FinancialRecord[] = [

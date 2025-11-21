@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
 import { Case, CaseStatus, FinancialRecord, Task, Hearing } from '../types';
@@ -151,11 +150,11 @@ export const CaseManager: React.FC = () => {
                     <div className="space-y-3">
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Tarih</label>
-                            <input type="datetime-local" className="w-full border p-2 rounded" value={newHearing.date} onChange={e => setNewHearing({...newHearing, date: e.target.value})} />
+                            <input type="datetime-local" className="w-full border p-2 rounded bg-white text-slate-900" value={newHearing.date} onChange={e => setNewHearing({...newHearing, date: e.target.value})} />
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Tür</label>
-                            <select className="w-full border p-2 rounded" value={newHearing.type} onChange={e => setNewHearing({...newHearing, type: e.target.value})}>
+                            <select className="w-full border p-2 rounded bg-white text-slate-900" value={newHearing.type} onChange={e => setNewHearing({...newHearing, type: e.target.value})}>
                                 <option>Ön İnceleme</option>
                                 <option>Tahkikat</option>
                                 <option>Sözlü Yargılama</option>
@@ -164,7 +163,7 @@ export const CaseManager: React.FC = () => {
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Açıklama</label>
-                            <textarea className="w-full border p-2 rounded" rows={3} value={newHearing.description} onChange={e => setNewHearing({...newHearing, description: e.target.value})}></textarea>
+                            <textarea className="w-full border p-2 rounded bg-white text-slate-900" rows={3} value={newHearing.description} onChange={e => setNewHearing({...newHearing, description: e.target.value})}></textarea>
                         </div>
                     </div>
                     <div className="flex justify-end gap-2 mt-4">
@@ -183,15 +182,15 @@ export const CaseManager: React.FC = () => {
                     <div className="space-y-3">
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Görev Başlığı</label>
-                            <input type="text" className="w-full border p-2 rounded" value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} />
+                            <input type="text" className="w-full border p-2 rounded bg-white text-slate-900" value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} />
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Son Tarih</label>
-                            <input type="date" className="w-full border p-2 rounded" value={newTask.dueDate} onChange={e => setNewTask({...newTask, dueDate: e.target.value})} />
+                            <input type="date" className="w-full border p-2 rounded bg-white text-slate-900" value={newTask.dueDate} onChange={e => setNewTask({...newTask, dueDate: e.target.value})} />
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Öncelik</label>
-                            <select className="w-full border p-2 rounded" value={newTask.priority} onChange={e => setNewTask({...newTask, priority: e.target.value as any})}>
+                            <select className="w-full border p-2 rounded bg-white text-slate-900" value={newTask.priority} onChange={e => setNewTask({...newTask, priority: e.target.value as any})}>
                                 <option>Yüksek</option>
                                 <option>Orta</option>
                                 <option>Düşük</option>
@@ -216,26 +215,26 @@ export const CaseManager: React.FC = () => {
                             <label className="block text-xs font-medium text-slate-500 mb-1">İşlem Türü</label>
                             <div className="flex space-x-2">
                                 <button 
-                                    className={`flex-1 py-2 rounded border ${newFinance.type === 'expense' ? 'bg-red-100 border-red-500 text-red-700' : 'border-slate-200 text-slate-600'}`}
+                                    className={`flex-1 py-2 rounded border ${newFinance.type === 'expense' ? 'bg-red-100 border-red-500 text-red-700' : 'bg-white border-slate-200 text-slate-600'}`}
                                     onClick={() => setNewFinance({...newFinance, type: 'expense'})}
                                 >Gider / Masraf</button>
                                 <button 
-                                    className={`flex-1 py-2 rounded border ${newFinance.type === 'income' ? 'bg-green-100 border-green-500 text-green-700' : 'border-slate-200 text-slate-600'}`}
+                                    className={`flex-1 py-2 rounded border ${newFinance.type === 'income' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-white border-slate-200 text-slate-600'}`}
                                     onClick={() => setNewFinance({...newFinance, type: 'income'})}
                                 >Gelir / Tahsilat</button>
                             </div>
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Tutar (TL)</label>
-                            <input type="number" className="w-full border p-2 rounded" value={newFinance.amount} onChange={e => setNewFinance({...newFinance, amount: Number(e.target.value)})} />
+                            <input type="number" className="w-full border p-2 rounded bg-white text-slate-900" value={newFinance.amount} onChange={e => setNewFinance({...newFinance, amount: Number(e.target.value)})} />
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Açıklama</label>
-                            <input type="text" className="w-full border p-2 rounded" value={newFinance.description} onChange={e => setNewFinance({...newFinance, description: e.target.value})} />
+                            <input type="text" className="w-full border p-2 rounded bg-white text-slate-900" value={newFinance.description} onChange={e => setNewFinance({...newFinance, description: e.target.value})} />
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Tarih</label>
-                            <input type="date" className="w-full border p-2 rounded" value={newFinance.date} onChange={e => setNewFinance({...newFinance, date: e.target.value})} />
+                            <input type="date" className="w-full border p-2 rounded bg-white text-slate-900" value={newFinance.date} onChange={e => setNewFinance({...newFinance, date: e.target.value})} />
                         </div>
                     </div>
                     <div className="flex justify-end gap-2 mt-4">
@@ -512,19 +511,19 @@ export const CaseManager: React.FC = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Dosya Numarası</label>
                                     <div className="relative">
-                                        <input type="text" className="w-full border border-slate-300 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="2023/123 E." value={newCase.caseNumber} onChange={e => setNewCase({...newCase, caseNumber: e.target.value})} />
+                                        <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="2023/123 E." value={newCase.caseNumber} onChange={e => setNewCase({...newCase, caseNumber: e.target.value})} />
                                     </div>
                                 </div>
                                 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Dava Türü</label>
-                                    <input type="text" className="w-full border border-slate-300 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Örn: İş Hukuku" value={newCase.type} onChange={e => setNewCase({...newCase, type: e.target.value})} />
+                                    <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Örn: İş Hukuku" value={newCase.type} onChange={e => setNewCase({...newCase, type: e.target.value})} />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Dosya Durumu</label>
                                     <div className="relative">
-                                        <select className="w-full border border-slate-300 pl-3 pr-8 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm appearance-none bg-white" value={newCase.status} onChange={e => setNewCase({...newCase, status: e.target.value as CaseStatus})}>
+                                        <select className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-8 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm appearance-none" value={newCase.status} onChange={e => setNewCase({...newCase, status: e.target.value as CaseStatus})}>
                                             {Object.values(CaseStatus).map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                         <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
@@ -540,20 +539,20 @@ export const CaseManager: React.FC = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Konu / Başlık</label>
-                                    <input type="text" className="w-full border border-slate-300 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Davanın kısa adı" value={newCase.title} onChange={e => setNewCase({...newCase, title: e.target.value})} />
+                                    <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Davanın kısa adı" value={newCase.title} onChange={e => setNewCase({...newCase, title: e.target.value})} />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Müvekkil Adı</label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                        <input type="text" className="w-full border border-slate-300 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Ad Soyad" value={newCase.clientName} onChange={e => setNewCase({...newCase, clientName: e.target.value})} />
+                                        <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Ad Soyad" value={newCase.clientName} onChange={e => setNewCase({...newCase, clientName: e.target.value})} />
                                     </div>
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Açıklama / Notlar</label>
-                                    <textarea className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm min-h-[80px]" placeholder="Dosya ile ilgili kısa notlar..." value={newCase.description} onChange={e => setNewCase({...newCase, description: e.target.value})}></textarea>
+                                    <textarea className="w-full border border-slate-300 bg-white text-slate-900 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm min-h-[80px]" placeholder="Dosya ile ilgili kısa notlar..." value={newCase.description} onChange={e => setNewCase({...newCase, description: e.target.value})}></textarea>
                                 </div>
                             </div>
                         </div>
@@ -592,7 +591,7 @@ export const CaseManager: React.FC = () => {
             <input
               type="text"
               placeholder="Dosya no, müvekkil veya konu ara..."
-              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
+              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

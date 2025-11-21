@@ -20,7 +20,7 @@ export const MediationManager: React.FC = () => {
 
   const [newMeeting, setNewMeeting] = useState<Partial<MediationMeeting>>({ date: '', participants: '', notes: '' });
   const [newApplication, setNewApplication] = useState<Partial<Mediation>>({
-      clientName: '', counterParty: '', subject: '', mediatorName: '', fileNumber: `ARB-2023/${Math.floor(Math.random()*1000)}`
+      clientName: '', counterParty: '', subject: '', mediatorName: '', fileNumber: ''
   });
 
   useEffect(() => {
@@ -104,11 +104,10 @@ export const MediationManager: React.FC = () => {
       
       addMediation(application);
       setIsApplicationModalOpen(false);
-      setNewApplication({clientName: '', counterParty: '', subject: '', mediatorName: '', fileNumber: `ARB-2023/${Math.floor(Math.random()*1000)}`});
+      setNewApplication({clientName: '', counterParty: '', subject: '', mediatorName: '', fileNumber: ''});
   }
 
-  if (activeMediationData) {
-    return (
+  return (
         <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
             
             {/* Template Preview Modal */}
@@ -130,7 +129,7 @@ export const MediationManager: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto p-8 bg-gray-100">
-                             <div className="bg-white shadow-lg p-10 min-h-full max-w-[210mm] mx-auto" dangerouslySetInnerHTML={{ __html: templateContent }} />
+                             <div className="bg-white shadow-lg p-10 min-h-full mx-auto" dangerouslySetInnerHTML={{ __html: templateContent }} />
                         </div>
                     </div>
                 </div>
@@ -153,21 +152,21 @@ export const MediationManager: React.FC = () => {
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Tarih & Saat</label>
                                     <div className="relative">
-                                        <input type="datetime-local" className="w-full border border-slate-300 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-700" value={newMeeting.date} onChange={e => setNewMeeting({...newMeeting, date: e.target.value})} />
+                                        <input type="datetime-local" className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" value={newMeeting.date} onChange={e => setNewMeeting({...newMeeting, date: e.target.value})} />
                                     </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Katılımcılar</label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                        <input type="text" className="w-full border border-slate-300 pl-9 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" placeholder="Örn: Müvekkil, Vekiller..." value={newMeeting.participants} onChange={e => setNewMeeting({...newMeeting, participants: e.target.value})} />
+                                        <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-9 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" placeholder="Örn: Müvekkil, Vekiller..." value={newMeeting.participants} onChange={e => setNewMeeting({...newMeeting, participants: e.target.value})} />
                                     </div>
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Toplantı Gündemi / Notlar</label>
                                 <div className="relative">
-                                    <textarea className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm min-h-[100px]" placeholder="Toplantıda görüşülecek konular..." value={newMeeting.notes} onChange={e => setNewMeeting({...newMeeting, notes: e.target.value})}></textarea>
+                                    <textarea className="w-full border border-slate-300 bg-white text-slate-900 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm min-h-[100px]" placeholder="Toplantıda görüşülecek konular..." value={newMeeting.notes} onChange={e => setNewMeeting({...newMeeting, notes: e.target.value})}></textarea>
                                 </div>
                             </div>
                         </div>
@@ -182,342 +181,351 @@ export const MediationManager: React.FC = () => {
                 </div>
             )}
 
-            <button 
-                onClick={() => setSelectedMediation(null)}
-                className="flex items-center text-slate-500 hover:text-blue-600 mb-6 transition-colors group"
-            >
-                <div className="p-1 rounded-full bg-white border border-slate-200 mr-2 group-hover:border-blue-200 shadow-sm">
-                    <ArrowLeft className="w-4 h-4" />
-                </div>
-                <span className="font-medium">Listeye Dön</span>
-            </button>
-
-            <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
-                <div>
-                     <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-bold border ${getStatusColor(activeMediationData.status)}`}>
-                            {activeMediationData.status}
-                        </span>
-                        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{activeMediationData.fileNumber}</h1>
-                    </div>
-                    <p className="text-slate-600 flex items-center">
-                        <Scale className="w-4 h-4 mr-1.5 text-slate-400" />
-                        {activeMediationData.subject}
-                    </p>
-                </div>
+            {/* View/Edit Mode */}
+            {activeMediationData ? (
+            <>
                 <button 
-                    onClick={() => setIsMeetingModalOpen(true)}
-                    className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center transition-all hover:scale-105 active:scale-95"
+                    onClick={() => setSelectedMediation(null)}
+                    className="flex items-center text-slate-500 hover:text-blue-600 mb-6 transition-colors group"
                 >
-                    <Plus className="w-5 h-5 mr-2" /> Toplantı Ekle
+                    <div className="p-1 rounded-full bg-white border border-slate-200 mr-2 group-hover:border-blue-200 shadow-sm">
+                        <ArrowLeft className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium">Listeye Dön</span>
                 </button>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="space-y-6">
-                    {/* Info Card */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center pb-2 border-b border-slate-100">
-                            <Handshake className="w-5 h-5 mr-2 text-blue-600" />
-                            Başvuru Detayları
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 text-sm font-medium">Başvuru Tarihi</span>
-                                <span className="text-slate-800 font-semibold text-sm bg-slate-50 px-2 py-1 rounded">{activeMediationData.applicationDate}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 text-sm font-medium">Arabulucu</span>
-                                <span className="text-slate-800 font-semibold text-sm flex items-center">
-                                    <User className="w-3 h-3 mr-1 text-slate-400" />
-                                    {activeMediationData.mediatorName}
-                                </span>
-                            </div>
+                <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+                    <div>
+                         <div className="flex items-center gap-3 mb-2">
+                            <span className={`px-3 py-1 rounded-full text-sm font-bold border ${getStatusColor(activeMediationData.status)}`}>
+                                {activeMediationData.status}
+                            </span>
+                            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{activeMediationData.fileNumber}</h1>
                         </div>
-                    </div>
-
-                    {/* Parties Card */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center pb-2 border-b border-slate-100">
-                            <User className="w-5 h-5 mr-2 text-blue-600" />
-                            Taraf Bilgileri
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="p-4 bg-green-50/50 rounded-xl border border-green-100/50 hover:border-green-200 transition">
-                                <span className="text-[10px] uppercase tracking-wider text-green-600 font-bold block mb-1">BAŞVURUCU (MÜVEKKİL)</span>
-                                <span className="text-slate-800 font-bold text-sm block">{activeMediationData.clientName}</span>
-                            </div>
-                            <div className="flex justify-center">
-                                <div className="w-px h-4 bg-slate-200"></div>
-                            </div>
-                            <div className="p-4 bg-red-50/50 rounded-xl border border-red-100/50 hover:border-red-200 transition">
-                                <span className="text-[10px] uppercase tracking-wider text-red-600 font-bold block mb-1">KARŞI TARAF</span>
-                                <span className="text-slate-800 font-bold text-sm block">{activeMediationData.counterParty}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Document Generator */}
-                    <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl border border-indigo-100 p-6 shadow-sm">
-                         <h3 className="text-lg font-bold text-indigo-900 mb-2 flex items-center">
-                            <Printer className="w-5 h-5 mr-2" />
-                            Otomatik Şablonlar
-                        </h3>
-                        <p className="text-xs text-indigo-600/80 mb-5 leading-relaxed">
-                            Seçili dosya verilerini kullanarak aşağıdaki resmi evrakları tek tıkla oluşturabilirsiniz.
+                        <p className="text-slate-600 flex items-center">
+                            <Scale className="w-4 h-4 mr-1.5 text-slate-400" />
+                            {activeMediationData.subject}
                         </p>
-                        <div className="space-y-2.5">
-                            {['Basvuru', 'Tutanak', 'Anlasma'].map((type) => (
-                                <button 
-                                    key={type}
-                                    onClick={() => handleGenerateDoc(type as any)}
-                                    className="w-full bg-white text-slate-700 border border-slate-200 hover:border-indigo-300 hover:shadow-md hover:text-indigo-700 py-3 px-4 rounded-xl text-sm font-medium transition-all text-left flex items-center justify-between group"
-                                >
-                                    <span className="flex items-center">
-                                        <FileText className="w-4 h-4 mr-3 text-slate-400 group-hover:text-indigo-500" />
-                                        {type === 'Basvuru' ? 'Başvuru Formu' : type === 'Tutanak' ? 'Son Tutanak' : 'Anlaşma Belgesi'}
-                                    </span>
-                                    <span className="opacity-0 group-hover:opacity-100 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Oluştur</span>
-                                </button>
-                            ))}
-                        </div>
                     </div>
+                    <button 
+                        onClick={() => setIsMeetingModalOpen(true)}
+                        className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center transition-all hover:scale-105 active:scale-95"
+                    >
+                        <Plus className="w-5 h-5 mr-2" /> Toplantı Ekle
+                    </button>
                 </div>
 
-                {/* Meetings Column */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-full">
-                        <h3 className="text-lg font-bold text-slate-800 mb-8 flex items-center">
-                            <Clock className="w-5 h-5 mr-2 text-blue-600" />
-                            Süreç Zaman Çizelgesi
-                        </h3>
-                        
-                        {activeMediationData.meetings.length > 0 ? (
-                            <div className="space-y-8 relative pl-8 border-l-2 border-slate-100 ml-2">
-                                {activeMediationData.meetings.map((meeting, idx) => (
-                                    <div key={meeting.id} className="relative group">
-                                        <div className={`absolute -left-[41px] top-0 w-6 h-6 rounded-full border-4 border-white shadow-sm z-10 flex items-center justify-center transition-transform group-hover:scale-110
-                                            ${meeting.outcome === 'Olumlu' ? 'bg-green-500' : meeting.outcome === 'Olumsuz' ? 'bg-red-500' : 'bg-blue-500'}`}>
-                                        </div>
-                                        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all hover:border-blue-200 group-hover:translate-x-1">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <span className="font-bold text-slate-800 block text-lg">{meeting.date.replace('T', ' ')}</span>
-                                                    <span className="text-xs text-slate-400 font-medium">Oturum #{idx + 1}</span>
-                                                </div>
-                                                {meeting.outcome && (
-                                                    <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide ${
-                                                        meeting.outcome === 'Olumlu' ? 'bg-green-100 text-green-700' : 
-                                                        meeting.outcome === 'Olumsuz' ? 'bg-red-100 text-red-700' : 'bg-blue-50 text-blue-700'
-                                                    }`}>
-                                                        {meeting.outcome}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center text-sm text-slate-600 mb-3 bg-slate-50 p-2 rounded-lg inline-block">
-                                                <User className="w-3 h-3 mr-2 text-slate-400" />
-                                                <span className="font-semibold mr-1">Katılımcılar:</span> {meeting.participants}
-                                            </div>
-                                            <div className="text-sm text-slate-600 leading-relaxed pl-3 border-l-2 border-slate-200">
-                                                {meeting.notes}
-                                            </div>
-                                        </div>
-                                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="space-y-6">
+                        {/* Info Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center pb-2 border-b border-slate-100">
+                                <Handshake className="w-5 h-5 mr-2 text-blue-600" />
+                                Başvuru Detayları
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-500 text-sm font-medium">Başvuru Tarihi</span>
+                                    <span className="text-slate-800 font-semibold text-sm bg-slate-50 px-2 py-1 rounded">{activeMediationData.applicationDate}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-500 text-sm font-medium">Arabulucu</span>
+                                    <span className="text-slate-800 font-semibold text-sm flex items-center">
+                                        <User className="w-3 h-3 mr-1 text-slate-400" />
+                                        {activeMediationData.mediatorName}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Parties Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center pb-2 border-b border-slate-100">
+                                <User className="w-5 h-5 mr-2 text-blue-600" />
+                                Taraf Bilgileri
+                            </h3>
+                            <div className="space-y-3">
+                                <div className="p-4 bg-green-50/50 rounded-xl border border-green-100/50 hover:border-green-200 transition">
+                                    <span className="text-[10px] uppercase tracking-wider text-green-600 font-bold block mb-1">BAŞVURUCU (MÜVEKKİL)</span>
+                                    <span className="text-slate-800 font-bold text-sm block">{activeMediationData.clientName}</span>
+                                </div>
+                                <div className="flex justify-center">
+                                    <div className="w-px h-4 bg-slate-200"></div>
+                                </div>
+                                <div className="p-4 bg-red-50/50 rounded-xl border border-red-100/50 hover:border-red-200 transition">
+                                    <span className="text-[10px] uppercase tracking-wider text-red-600 font-bold block mb-1">KARŞI TARAF</span>
+                                    <span className="text-slate-800 font-bold text-sm block">{activeMediationData.counterParty}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Document Generator */}
+                        <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl border border-indigo-100 p-6 shadow-sm">
+                             <h3 className="text-lg font-bold text-indigo-900 mb-2 flex items-center">
+                                <Printer className="w-5 h-5 mr-2" />
+                                Otomatik Şablonlar
+                            </h3>
+                            <p className="text-xs text-indigo-600/80 mb-5 leading-relaxed">
+                                Seçili dosya verilerini kullanarak aşağıdaki resmi evrakları tek tıkla oluşturabilirsiniz.
+                            </p>
+                            <div className="space-y-2.5">
+                                {['Basvuru', 'Tutanak', 'Anlasma'].map((type) => (
+                                    <button 
+                                        key={type}
+                                        onClick={() => handleGenerateDoc(type as any)}
+                                        className="w-full bg-white text-slate-700 border border-slate-200 hover:border-indigo-300 hover:shadow-md hover:text-indigo-700 py-3 px-4 rounded-xl text-sm font-medium transition-all text-left flex items-center justify-between group"
+                                    >
+                                        <span className="flex items-center">
+                                            <FileText className="w-4 h-4 mr-3 text-slate-400 group-hover:text-indigo-500" />
+                                            {type === 'Basvuru' ? 'Başvuru Formu' : type === 'Tutanak' ? 'Son Tutanak' : 'Anlaşma Belgesi'}
+                                        </span>
+                                        <span className="opacity-0 group-hover:opacity-100 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Oluştur</span>
+                                    </button>
                                 ))}
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-16 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
-                                <Calendar className="w-12 h-12 text-slate-300 mb-3" />
-                                <p className="text-slate-500 font-medium">Henüz toplantı kaydı girilmemiştir.</p>
-                                <button onClick={() => setIsMeetingModalOpen(true)} className="mt-3 text-blue-600 hover:underline text-sm">İlk toplantıyı planla</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-  }
-
-  return (
-    <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
-        {/* New Application Modal - Redesigned */}
-        {isApplicationModalOpen && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                    
-                    {/* Header */}
-                    <div className="bg-slate-50 px-8 py-6 border-b border-slate-200 flex justify-between items-start">
-                         <div>
-                             <h3 className="text-xl font-bold text-slate-800 flex items-center">
-                                <FileSignature className="w-6 h-6 mr-3 text-blue-600" />
-                                Yeni Arabuluculuk Dosyası
-                             </h3>
-                             <p className="text-sm text-slate-500 mt-1 ml-9">Başvuru bilgilerini girerek süreci başlatın.</p>
-                         </div>
-                         <button onClick={() => setIsApplicationModalOpen(false)} className="text-slate-400 hover:text-slate-600 bg-white p-1 rounded-full border border-slate-200 hover:border-slate-300 transition"><X className="w-5 h-5" /></button>
-                    </div>
-                    
-                    {/* Body */}
-                    <div className="p-8 overflow-y-auto custom-scrollbar">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Sol Kolon: Dosya Bilgileri */}
-                            <div className="space-y-5">
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2 mb-4">Dosya Bilgileri</h4>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Dosya Numarası</label>
-                                    <div className="relative">
-                                        <input type="text" className="w-full border border-slate-300 bg-slate-50 pl-3 pr-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 cursor-not-allowed" value={newApplication.fileNumber} readOnly />
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Uyuşmazlık Konusu</label>
-                                    <div className="relative">
-                                        <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                        <input type="text" className="w-full border border-slate-300 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="Örn: Kıdem Tazminatı" value={newApplication.subject} onChange={e => setNewApplication({...newApplication, subject: e.target.value})} />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Atanan Arabulucu</label>
-                                    <div className="relative">
-                                        <Scale className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                        <input type="text" className="w-full border border-slate-300 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="Arabulucu Adı Soyadı" value={newApplication.mediatorName} onChange={e => setNewApplication({...newApplication, mediatorName: e.target.value})} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Sağ Kolon: Taraf Bilgileri */}
-                            <div className="space-y-5">
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2 mb-4">Taraf Bilgileri</h4>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Başvurucu (Müvekkil)</label>
-                                    <div className="relative group">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-green-500 w-4 h-4 transition" />
-                                        <input type="text" className="w-full border border-slate-300 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm transition" placeholder="Müvekkil Seç veya Yaz" value={newApplication.clientName} onChange={e => setNewApplication({...newApplication, clientName: e.target.value})} />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Karşı Taraf</label>
-                                    <div className="relative group">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-500 w-4 h-4 transition" />
-                                        <input type="text" className="w-full border border-slate-300 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-sm transition" placeholder="Karşı Taraf Adı Soyadı" value={newApplication.counterParty} onChange={e => setNewApplication({...newApplication, counterParty: e.target.value})} />
-                                    </div>
-                                </div>
-                                
-                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
-                                    <p className="text-xs text-blue-800 leading-relaxed">
-                                        <span className="font-bold">Bilgi:</span> Yeni başvuru oluşturulduğunda durum otomatik olarak <span className="font-bold">"Başvuru"</span> statüsüne geçecektir.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="bg-slate-50 px-8 py-5 border-t border-slate-200 flex justify-end gap-3">
-                        <button onClick={() => setIsApplicationModalOpen(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-medium transition">Vazgeç</button>
-                        <button onClick={handleCreateApplication} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium shadow-lg hover:shadow-blue-600/30 transition transform active:scale-95 flex items-center">
-                            <Plus className="w-4 h-4 mr-2" /> Başvuruyu Oluştur
-                        </button>
+                    {/* Meetings Column */}
+                    <div className="lg:col-span-2">
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-full">
+                            <h3 className="text-lg font-bold text-slate-800 mb-8 flex items-center">
+                                <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                                Süreç Zaman Çizelgesi
+                            </h3>
+                            
+                            {activeMediationData.meetings.length > 0 ? (
+                                <div className="space-y-8 relative pl-8 border-l-2 border-slate-100 ml-2">
+                                    {activeMediationData.meetings.map((meeting, idx) => (
+                                        <div key={meeting.id} className="relative group">
+                                            <div className={`absolute -left-[41px] top-0 w-6 h-6 rounded-full border-4 border-white shadow-sm z-10 flex items-center justify-center transition-transform group-hover:scale-110
+                                                ${meeting.outcome === 'Olumlu' ? 'bg-green-500' : meeting.outcome === 'Olumsuz' ? 'bg-red-500' : 'bg-blue-500'}`}>
+                                            </div>
+                                            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all hover:border-blue-200 group-hover:translate-x-1">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <span className="font-bold text-slate-800 block text-lg">{meeting.date.replace('T', ' ')}</span>
+                                                        <span className="text-xs text-slate-400 font-medium">Oturum #{idx + 1}</span>
+                                                    </div>
+                                                    {meeting.outcome && (
+                                                        <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide ${
+                                                            meeting.outcome === 'Olumlu' ? 'bg-green-100 text-green-700' : 
+                                                            meeting.outcome === 'Olumsuz' ? 'bg-red-100 text-red-700' : 'bg-blue-50 text-blue-700'
+                                                        }`}>
+                                                            {meeting.outcome}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center text-sm text-slate-600 mb-3 bg-slate-50 p-2 rounded-lg inline-block">
+                                                    <User className="w-3 h-3 mr-2 text-slate-400" />
+                                                    <span className="font-semibold mr-1">Katılımcılar:</span> {meeting.participants}
+                                                </div>
+                                                <div className="text-sm text-slate-600 leading-relaxed pl-3 border-l-2 border-slate-200">
+                                                    {meeting.notes}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-16 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
+                                    <Calendar className="w-12 h-12 text-slate-300 mb-3" />
+                                    <p className="text-slate-500 font-medium">Henüz toplantı kaydı girilmemiştir.</p>
+                                    <button onClick={() => setIsMeetingModalOpen(true)} className="mt-3 text-blue-600 hover:underline text-sm">İlk toplantıyı planla</button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
-        )}
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Arabuluculuk Dosyaları</h1>
-          <p className="text-slate-500 mt-1">Başvuru, süreç ve anlaşma takibi</p>
-        </div>
-        <button 
-            onClick={() => setIsApplicationModalOpen(true)}
-            className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Yeni Başvuru
-        </button>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex space-x-4">
-             <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Arabuluculuk no, taraf ismi..."
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <button className="px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 flex items-center font-medium text-sm transition">
-                <Filter className="w-4 h-4 mr-2" /> Filtrele
-              </button>
-        </div>
-
-        <div className="overflow-x-auto">
-            <table className="w-full text-left">
-                <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 text-xs uppercase font-semibold tracking-wider">
-                        <th className="px-6 py-4">Dosya No</th>
-                        <th className="px-6 py-4">Konu</th>
-                        <th className="px-6 py-4">Müvekkil</th>
-                        <th className="px-6 py-4">Karşı Taraf</th>
-                        <th className="px-6 py-4">Durum</th>
-                        <th className="px-6 py-4">Başvuru Tar.</th>
-                        <th className="px-6 py-4 text-right">İşlem</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                    {filteredMediations.map(m => (
-                        <tr 
-                            key={m.id} 
-                            className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                            onClick={() => setSelectedMediation(m)}
-                        >
-                            <td className="px-6 py-4 font-bold text-slate-700 flex items-center">
-                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 group-hover:bg-blue-100 transition">
-                                     <Handshake className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+            </>
+            ) : (
+                // --- LIST VIEW ---
+                <>
+                {/* New Application Modal - Redesigned */}
+                {isApplicationModalOpen && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                            
+                            {/* Header */}
+                            <div className="bg-slate-50 px-8 py-6 border-b border-slate-200 flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-800 flex items-center">
+                                        <FileSignature className="w-6 h-6 mr-3 text-blue-600" />
+                                        Yeni Arabuluculuk Dosyası
+                                    </h3>
+                                    <p className="text-sm text-slate-500 mt-1 ml-9">Başvuru bilgilerini girerek süreci başlatın.</p>
                                 </div>
-                                {m.fileNumber}
-                            </td>
-                            <td className="px-6 py-4 text-sm text-slate-600 font-medium">{m.subject}</td>
-                            <td className="px-6 py-4 text-sm text-slate-600">{m.clientName}</td>
-                            <td className="px-6 py-4 text-sm text-slate-600">{m.counterParty}</td>
-                            <td className="px-6 py-4">
-                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(m.status)}`}>
-                                    {m.status}
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-slate-500">{m.applicationDate}</td>
-                            <td className="px-6 py-4 text-right">
-                                <button className="text-blue-600 hover:text-blue-800 text-sm font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
-                                    Yönet
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                     {filteredMediations.length === 0 && (
-                        <tr>
-                            <td colSpan={7} className="px-6 py-16 text-center">
-                                <div className="flex flex-col items-center">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                                        <Search className="w-8 h-8 text-slate-300" />
+                                <button onClick={() => setIsApplicationModalOpen(false)} className="text-slate-400 hover:text-slate-600 bg-white p-1 rounded-full border border-slate-200 hover:border-slate-300 transition"><X className="w-5 h-5" /></button>
+                            </div>
+                            
+                            {/* Body */}
+                            <div className="p-8 overflow-y-auto custom-scrollbar">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Sol Kolon: Dosya Bilgileri */}
+                                    <div className="space-y-5">
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2 mb-4">Dosya Bilgileri</h4>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Dosya Numarası</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full border border-slate-300 bg-white text-slate-900 pl-3 pr-3 py-2.5 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                                                    placeholder="2023/..." 
+                                                    value={newApplication.fileNumber} 
+                                                    onChange={e => setNewApplication({...newApplication, fileNumber: e.target.value})}
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Uyuşmazlık Konusu</label>
+                                            <div className="relative">
+                                                <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="Örn: Kıdem Tazminatı" value={newApplication.subject} onChange={e => setNewApplication({...newApplication, subject: e.target.value})} />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Atanan Arabulucu</label>
+                                            <div className="relative">
+                                                <Scale className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="Arabulucu Adı Soyadı" value={newApplication.mediatorName} onChange={e => setNewApplication({...newApplication, mediatorName: e.target.value})} />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="text-slate-500 font-medium">Aradığınız kriterlere uygun kayıt bulunamadı.</p>
+
+                                    {/* Sağ Kolon: Taraf Bilgileri */}
+                                    <div className="space-y-5">
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2 mb-4">Taraf Bilgileri</h4>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Başvurucu (Müvekkil)</label>
+                                            <div className="relative group">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-green-500 w-4 h-4 transition" />
+                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm transition" placeholder="Müvekkil Seç veya Yaz" value={newApplication.clientName} onChange={e => setNewApplication({...newApplication, clientName: e.target.value})} />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Karşı Taraf</label>
+                                            <div className="relative group">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-500 w-4 h-4 transition" />
+                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-sm transition" placeholder="Karşı Taraf Adı Soyadı" value={newApplication.counterParty} onChange={e => setNewApplication({...newApplication, counterParty: e.target.value})} />
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
+                                            <p className="text-xs text-blue-800 leading-relaxed">
+                                                <span className="font-bold">Bilgi:</span> Yeni başvuru oluşturulduğunda durum otomatik olarak <span className="font-bold">"Başvuru"</span> statüsüne geçecektir.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="bg-slate-50 px-8 py-5 border-t border-slate-200 flex justify-end gap-3">
+                                <button onClick={() => setIsApplicationModalOpen(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-medium transition">Vazgeç</button>
+                                <button onClick={handleCreateApplication} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium shadow-lg hover:shadow-blue-600/30 transition transform active:scale-95 flex items-center">
+                                    <Plus className="w-4 h-4 mr-2" /> Başvuruyu Oluştur
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
+                    <div>
+                    <h1 className="text-3xl font-bold text-slate-800">Arabuluculuk Dosyaları</h1>
+                    <p className="text-slate-500 mt-1">Başvuru, süreç ve anlaşma takibi</p>
+                    </div>
+                    <button 
+                        onClick={() => setIsApplicationModalOpen(true)}
+                        className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5"
+                    >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Yeni Başvuru
+                    </button>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="p-4 border-b border-slate-100 flex space-x-4">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                            <input
+                            type="text"
+                            placeholder="Arabuluculuk no, taraf ismi..."
+                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <button className="px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 flex items-center font-medium text-sm transition">
+                            <Filter className="w-4 h-4 mr-2" /> Filtrele
+                        </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 text-xs uppercase font-semibold tracking-wider">
+                                    <th className="px-6 py-4">Dosya No</th>
+                                    <th className="px-6 py-4">Konu</th>
+                                    <th className="px-6 py-4">Müvekkil</th>
+                                    <th className="px-6 py-4">Karşı Taraf</th>
+                                    <th className="px-6 py-4">Durum</th>
+                                    <th className="px-6 py-4">Başvuru Tar.</th>
+                                    <th className="px-6 py-4 text-right">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {filteredMediations.map(m => (
+                                    <tr 
+                                        key={m.id} 
+                                        className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                                        onClick={() => setSelectedMediation(m)}
+                                    >
+                                        <td className="px-6 py-4 font-bold text-slate-700 flex items-center">
+                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 group-hover:bg-blue-100 transition">
+                                                <Handshake className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                                            </div>
+                                            {m.fileNumber}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-600 font-medium">{m.subject}</td>
+                                        <td className="px-6 py-4 text-sm text-slate-600">{m.clientName}</td>
+                                        <td className="px-6 py-4 text-sm text-slate-600">{m.counterParty}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(m.status)}`}>
+                                                {m.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-500">{m.applicationDate}</td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button className="text-blue-600 hover:text-blue-800 text-sm font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
+                                                Yönet
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredMediations.length === 0 && (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-16 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                                    <Search className="w-8 h-8 text-slate-300" />
+                                                </div>
+                                                <p className="text-slate-500 font-medium">Aradığınız kriterlere uygun kayıt bulunamadı.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </>
+            )}
         </div>
-      </div>
-    </div>
-  );
+    );
 };

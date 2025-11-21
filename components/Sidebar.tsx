@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { LayoutDashboard, Scale, Users, Landmark, CalendarCheck, LogOut, Handshake, FileText } from 'lucide-react';
-import { ViewState, User } from '../types';
+import { LayoutDashboard, Scale, Users, Landmark, CalendarCheck, LogOut, Handshake, FileText, Shield } from 'lucide-react';
+import { ViewState, User, UserRole } from '../types';
 
 interface SidebarProps {
   currentView: ViewState;
@@ -20,6 +20,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
     { id: 'invoices', label: 'Faturalar (SMM)', icon: FileText },
     { id: 'tasks', label: 'Görevler', icon: CalendarCheck },
   ];
+
+  // Add Users menu only for ADMIN
+  if (currentUser.role === UserRole.ADMIN) {
+    menuItems.push({ id: 'users', label: 'Kullanıcılar', icon: Shield });
+  }
 
   return (
     <div className="w-64 bg-slate-900 text-white h-screen flex flex-col fixed left-0 top-0 z-50 shadow-xl">
