@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { DataProvider, useData } from './DataContext';
 import { Sidebar } from './components/Sidebar';
@@ -9,6 +10,7 @@ import { TasksManager } from './components/TasksManager';
 import { MediationManager } from './components/MediationManager';
 import { InvoiceManager } from './components/InvoiceManager';
 import { UserManager } from './components/UserManager';
+import { KnowledgeBase } from './components/KnowledgeBase';
 import { ViewState } from './types';
 import { Lock } from 'lucide-react';
 
@@ -41,6 +43,7 @@ const MainContent: React.FC<{
       case 'tasks': return <TasksManager />;
       case 'invoices': return <InvoiceManager />;
       case 'users': return <UserManager />;
+      case 'knowledge': return <KnowledgeBase />;
       default: return <Dashboard />;
     }
   };

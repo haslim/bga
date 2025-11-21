@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, Scale, Users, Landmark, CalendarCheck, LogOut, Handshake, FileText, Shield } from 'lucide-react';
+import { LayoutDashboard, Scale, Users, Landmark, CalendarCheck, LogOut, Handshake, FileText, Shield, BookOpen } from 'lucide-react';
 import { ViewState, User, UserRole } from '../types';
 
 interface SidebarProps {
@@ -10,21 +10,74 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  allowedRoles?: UserRole[]; // If undefined, accessible by all
+}
+
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, currentUser, onLogout }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Panel', icon: LayoutDashboard },
-    { id: 'cases', label: 'Dava Dosyaları', icon: Scale },
-    { id: 'mediation', label: 'Arabuluculuk', icon: Handshake },
-    { id: 'clients', label: 'Müvekkiller', icon: Users },
-    { id: 'finance', label: 'Finans & Kasa', icon: Landmark },
-    { id: 'invoices', label: 'Faturalar (SMM)', icon: FileText },
-    { id: 'tasks', label: 'Görevler', icon: CalendarCheck },
+  
+  const allMenuItems: MenuItem[] = [
+    { 
+      id: 'dashboard', 
+      label: 'Panel', 
+      icon: LayoutDashboard 
+    },
+    { 
+      id: 'cases', 
+      label: 'Dava Dosyaları', 
+      icon: Scale,
+      allowedRoles: [UserRole.ADMIN, UserRole.LAWYER, UserRole.INTERN, UserRole.SECRETARY]
+    },
+    { 
+      id: 'mediation', 
+      label: 'Arabuluculuk', 
+      icon: Handshake,
+      allowedRoles: [UserRole.ADMIN, UserRole.LAWYER]
+    },
+    { 
+      id: 'clients', 
+      label: 'Müvekkiller', 
+      icon: Users,
+      allowedRoles: [UserRole.ADMIN, UserRole.LAWYER, UserRole.SECRETARY]
+    },
+    { 
+      id: 'finance', 
+      label: 'Finans & Kasa', 
+      icon: Landmark,
+      allowedRoles: [UserRole.ADMIN, UserRole.FINANCE]
+    },
+    { 
+      id: 'invoices', 
+      label: 'Faturalar (SMM)', 
+      icon: FileText,
+      allowedRoles: [UserRole.ADMIN, UserRole.FINANCE]
+    },
+    { 
+      id: 'tasks', 
+      label: 'Görevler', 
+      icon: CalendarCheck 
+    },
+    {
+      id: 'knowledge',
+      label: 'Bilgi Bankası',
+      icon: BookOpen
+    },
+    { 
+      id: 'users', 
+      label: 'Kullanıcılar', 
+      icon: Shield,
+      allowedRoles: [UserRole.ADMIN]
+    },
   ];
 
-  // Add Users menu only for ADMIN
-  if (currentUser.role === UserRole.ADMIN) {
-    menuItems.push({ id: 'users', label: 'Kullanıcılar', icon: Shield });
-  }
+  // Filter menu items based on the current user's role
+  const filteredMenuItems = allMenuItems.filter(item => {
+    if (!item.allowedRoles) return true; // Public items
+    return item.allowedRoles.includes(currentUser.role);
+  });
 
   return (
     <div className="w-64 bg-slate-900 text-white h-screen flex flex-col fixed left-0 top-0 z-50 shadow-xl">
@@ -38,8 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
         </div>
       </div>
 
-      <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => {
+      <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+        {filteredMenuItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
           return (

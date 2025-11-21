@@ -1,5 +1,5 @@
 
-import { Case, CaseStatus, Client, FinancialRecord, Task, User, UserRole, Mediation, MediationStatus, Permission, AuditLog, Template } from './types';
+import { Case, CaseStatus, Client, FinancialRecord, Task, User, UserRole, Mediation, MediationStatus, Permission, AuditLog, Template, KnowledgeEntry } from './types';
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   [UserRole.ADMIN]: ['CASE_VIEW_ALL', 'CASE_EDIT', 'CASH_VIEW', 'DOC_UPLOAD', 'USER_MANAGE', 'CLIENT_MANAGE', 'REPORT_VIEW'],
@@ -201,6 +201,50 @@ export const DEFAULT_TEMPLATES: Template[] = [
     </tr>
   </table>
 </div>`
+  }
+];
+
+export const MOCK_KNOWLEDGE_BASE: KnowledgeEntry[] = [
+  {
+    id: 'kb1',
+    title: 'İşe İade Davalarında Arabuluculuk Süreci ve Yargıtay Kararı',
+    category: 'İçtihat',
+    tags: ['İş Hukuku', 'Yargıtay', 'İşe İade'],
+    author: 'Av. Burak G.',
+    createdAt: '2023-09-15',
+    content: `**Yargıtay 9. Hukuk Dairesi, 2022/1234 E., 2022/5678 K.**
+
+*Özet:* İşe iade davalarında arabuluculuk dava şartı olup, arabulucuya başvurulmadan açılan davaların usulden reddine karar verilmesi gerekir.
+
+*Detay:* Davacı işçi, iş akdinin haksız feshedildiğini iddia ederek doğrudan iş mahkemesine başvurmuştur. Ancak 7036 sayılı İş Mahkemeleri Kanunu'nun 3. maddesi uyarınca, kanuna, bireysel veya toplu iş sözleşmesine dayanan işçi veya işveren alacağı ve tazminatı ile işe iade talebiyle açılan davalarda, arabulucuya başvurulmuş olması dava şartıdır.`
+  },
+  {
+    id: 'kb2',
+    title: 'Boşanma Davası Protokol Örneği',
+    category: 'Dilekçe',
+    tags: ['Aile Hukuku', 'Anlaşmalı Boşanma', 'Protokol'],
+    author: 'Av. Selin Y.',
+    createdAt: '2023-08-20',
+    content: `**ANLAŞMALI BOŞANMA PROTOKOLÜ**
+
+1. **TARAFLAR:** ...
+2. **KONU:** Tarafların boşanma ve ferileri konusundaki anlaşmalarını içerir.
+3. **HÜKÜMLER:**
+   - Taraflar karşılıklı olarak boşanmayı kabul etmişlerdir.
+   - Müşterek çocuk ...'nın velayeti anneye verilecektir.
+   - Baba, çocuk için aylık 5.000 TL iştirak nafakası ödeyecektir.`
+  },
+  {
+    id: 'kb3',
+    title: 'Ofis İçi Dosya Kabul Prosedürü',
+    category: 'Not',
+    tags: ['Ofis Yönetimi', 'Prosedür'],
+    author: 'Av. Burak G.',
+    createdAt: '2023-01-10',
+    content: `1. Müvekkil ile görüşme yapılır ve notlar CRM modülüne girilir.
+2. Vekaletname bilgileri kontrol edilir.
+3. Masraf avansı tahsil edilmeden dosya açılışı yapılmaz.
+4. Fiziksel dosya oluşturulur ve sırtlık numarası verilir.`
   }
 ];
 

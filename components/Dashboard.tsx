@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { useData } from '../DataContext';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, defs, linearGradient } from 'recharts';
-import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign, BookOpen } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { cases, tasks, finance } = useData();
+  const { cases, tasks, finance, knowledgeBase } = useData();
 
   const today = new Date().toISOString().split('T')[0];
   const sevenDaysLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -84,6 +84,9 @@ export const Dashboard: React.FC = () => {
 
   // 6. AÇIK GÖREVLERİM
   const myOpenTasks = tasks.filter(t => t.assignedTo.includes('Burak') && !t.completed);
+
+  // 7. SON BİLGİ BANKASI KAYITLARI
+  const latestKnowledge = knowledgeBase.slice(0, 3);
 
   // Custom Tooltip for Chart
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -316,6 +319,34 @@ export const Dashboard: React.FC = () => {
                             </span>
                         </div>
                     ))}
+                 </div>
+            </div>
+            
+            {/* 7. BİLGİ BANKASI ÖZET (YENİ) */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                 <div className="p-4 border-b border-slate-100 bg-slate-50">
+                     <h3 className="font-bold text-slate-800 flex items-center">
+                        <BookOpen className="w-5 h-5 mr-2 text-purple-600" />
+                        Son Eklenen İçerikler
+                     </h3>
+                 </div>
+                 <div className="divide-y divide-slate-50">
+                    {latestKnowledge.length > 0 ? latestKnowledge.map((k) => (
+                        <div key={k.id} className="p-3 hover:bg-slate-50 transition cursor-pointer">
+                            <div className="flex justify-between items-start mb-1">
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase font-bold ${
+                                     k.category === 'İçtihat' ? 'bg-purple-50 text-purple-700 border-purple-100' : 
+                                     'bg-slate-50 text-slate-600 border-slate-200'
+                                }`}>
+                                    {k.category}
+                                </span>
+                                <span className="text-[10px] text-slate-400">{k.createdAt}</span>
+                            </div>
+                            <p className="text-sm font-medium text-slate-700 line-clamp-1">{k.title}</p>
+                        </div>
+                    )) : (
+                        <p className="text-xs text-slate-400 italic text-center py-4">İçerik bulunmuyor.</p>
+                    )}
                  </div>
             </div>
 

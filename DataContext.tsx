@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template } from './types';
-import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS } from './constants';
+import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry } from './types';
+import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE } from './constants';
 import { checkPermission } from './utils';
 
 interface DataContextType {
@@ -14,6 +14,7 @@ interface DataContextType {
   users: User[];
   auditLogs: AuditLog[];
   templates: Template[];
+  knowledgeBase: KnowledgeEntry[];
   currentUser: User;
   
   // Actions
@@ -29,6 +30,11 @@ interface DataContextType {
   addInvoice: (invoice: Invoice) => void;
   updateTemplate: (template: Template) => void;
   
+  // Knowledge Base Actions
+  addKnowledgeEntry: (entry: KnowledgeEntry) => void;
+  updateKnowledgeEntry: (entry: KnowledgeEntry) => void;
+  deleteKnowledgeEntry: (id: string) => void;
+
   // User & Auth
   addUser: (user: User) => void;
   updateUser: (user: User) => void;
@@ -49,6 +55,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(MOCK_LOGS);
   const [templates, setTemplates] = useState<Template[]>(DEFAULT_TEMPLATES);
+  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeEntry[]>(MOCK_KNOWLEDGE_BASE);
 
   // -- Helpers --
   const hasPermission = (permission: Permission): boolean => {
@@ -137,6 +144,22 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logAction('TEMPLATE_UPDATE', `${template.name} şablonu güncellendi`);
   };
 
+  // Knowledge Base
+  const addKnowledgeEntry = (entry: KnowledgeEntry) => {
+    setKnowledgeBase(prev => [entry, ...prev]);
+    logAction('KNOWLEDGE_ADD', `Bilgi bankası kaydı eklendi: ${entry.title}`);
+  };
+
+  const updateKnowledgeEntry = (entry: KnowledgeEntry) => {
+    setKnowledgeBase(prev => prev.map(e => e.id === entry.id ? entry : e));
+    logAction('KNOWLEDGE_UPDATE', `Bilgi bankası kaydı güncellendi: ${entry.title}`);
+  };
+
+  const deleteKnowledgeEntry = (id: string) => {
+    setKnowledgeBase(prev => prev.filter(e => e.id !== id));
+    logAction('KNOWLEDGE_DELETE', `Bilgi bankası kaydı silindi: ${id}`);
+  };
+
   // User Management
   const addUser = (user: User) => {
     setUsers(prev => [...prev, user]);
@@ -155,10 +178,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   return (
     <DataContext.Provider value={{
-      cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates,
+      cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates, knowledgeBase,
       currentUser: CURRENT_USER,
       addCase, updateCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
       addMediation, updateMediation, addInvoice, updateTemplate,
+      addKnowledgeEntry, updateKnowledgeEntry, deleteKnowledgeEntry,
       addUser, updateUser, deleteUser, hasPermission, logAction
     }}>
       {children}

@@ -170,4 +170,16 @@ export interface Task {
   caseId?: string; // Linked case ID
 }
 
-export type ViewState = 'dashboard' | 'cases' | 'mediation' | 'clients' | 'finance' | 'tasks' | 'invoices' | 'users';
+export type KnowledgeCategory = 'İçtihat' | 'Mevzuat' | 'Dilekçe' | 'Not' | 'Makale';
+
+export interface KnowledgeEntry {
+  id: string;
+  title: string;
+  content: string;
+  category: KnowledgeCategory;
+  tags: string[];
+  createdAt: string;
+  author: string;
+}
+
+export type ViewState = 'dashboard' | 'cases' | 'mediation' | 'clients' | 'finance' | 'tasks' | 'invoices' | 'users' | 'knowledge';
