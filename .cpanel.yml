@@ -1,13 +1,13 @@
 ---
 deployment:
   tasks:
-    # Terminal ciktiniza gore dogru klasor yolu:
-    # /home/haslim/public_html/ofis.billurguleraslim.av.tr/
+    # Hedef klasör: Subdomain klasörünüz
     - export DEPLOYPATH=/home/haslim/public_html/ofis.billurguleraslim.av.tr/
     
-    # 1. Dist klasöründeki (Bilgisayarinizda Build edilmiş) dosyaları sunucuya kopyala
-    # -R recursive (klasörlerle birlikte) kopyalar
+    # 1. Repodaki 'dist' klasörünün İÇİNDEKİLERİ sunucudaki hedef klasöre kopyala
+    # -R: Alt klasörlerle birlikte
+    # dist/* ifadesi dist klasörünün içeriğini ifade eder
     - /bin/cp -R dist/* $DEPLOYPATH
     
-    # 2. .htaccess dosyasını kopyala (Sayfa yönlendirmeleri için şart)
+    # 2. .htaccess dosyasını kopyala (Router ayarları için kritik)
     - /bin/cp .htaccess $DEPLOYPATH
