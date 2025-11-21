@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings } from './types';
-import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE, THEME_COLORS } from './constants';
+import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings, DeadlineTemplate } from './types';
+import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE, THEME_COLORS, DEFAULT_DEADLINE_TEMPLATES } from './constants';
 import { checkPermission } from './utils';
 
 interface DataContextType {
@@ -18,11 +18,12 @@ interface DataContextType {
   currentUser: User | null; // Can be null if not logged in
   mediatorProfile: MediatorProfile;
   siteSettings: SiteSettings;
+  deadlineTemplates: DeadlineTemplate[];
   
   // Actions
   addCase: (newCase: Case) => void;
   updateCase: (updatedCase: Case) => void;
-  deleteCase: (id: string) => void; // Added
+  deleteCase: (id: string) => void;
   addClient: (client: Client) => void;
   updateClient: (updatedClient: Client) => void;
   addFinanceRecord: (record: FinancialRecord) => void;
@@ -30,12 +31,16 @@ interface DataContextType {
   toggleTaskComplete: (taskId: string) => void;
   addMediation: (mediation: Mediation) => void;
   updateMediation: (mediation: Mediation) => void;
-  deleteMediation: (id: string) => void; // Added
+  deleteMediation: (id: string) => void;
   addInvoice: (invoice: Invoice) => void;
   updateTemplate: (template: Template) => void;
   updateMediatorProfile: (profile: MediatorProfile) => void;
   updateSiteSettings: (settings: SiteSettings) => void;
   updateUserTheme: (theme: string) => void;
+  
+  // Deadline Actions
+  addDeadlineTemplate: (template: DeadlineTemplate) => void;
+  deleteDeadlineTemplate: (id: string) => void;
   
   // Knowledge Base Actions
   addKnowledgeEntry: (entry: KnowledgeEntry) => void;
@@ -54,26 +59,66 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+// Helper to load from local storage or fall back to default
+function loadFromStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const storedItem = localStorage.getItem(key);
+    if (storedItem) {
+      return JSON.parse(storedItem);
+    }
+  } catch (error) {
+    console.warn(`Error loading ${key} from localStorage`, error);
+  }
+  return defaultValue;
+}
+
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [cases, setCases] = useState<Case[]>(MOCK_CASES);
-  const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
-  const [finance, setFinance] = useState<FinancialRecord[]>(MOCK_FINANCE);
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
-  const [mediations, setMediations] = useState<Mediation[]>(MOCK_MEDIATIONS);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(MOCK_LOGS);
-  const [templates, setTemplates] = useState<Template[]>(DEFAULT_TEMPLATES);
-  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeEntry[]>(MOCK_KNOWLEDGE_BASE);
-  const [mediatorProfile, setMediatorProfile] = useState<MediatorProfile>(DEFAULT_MEDIATOR_PROFILE);
-  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+  // Initialize state from LocalStorage to persist data across refreshes
+  const [cases, setCases] = useState<Case[]>(() => loadFromStorage('BGA_CASES', MOCK_CASES));
+  const [clients, setClients] = useState<Client[]>(() => loadFromStorage('BGA_CLIENTS', MOCK_CLIENTS));
+  const [finance, setFinance] = useState<FinancialRecord[]>(() => loadFromStorage('BGA_FINANCE', MOCK_FINANCE));
+  const [tasks, setTasks] = useState<Task[]>(() => loadFromStorage('BGA_TASKS', MOCK_TASKS));
+  const [mediations, setMediations] = useState<Mediation[]>(() => loadFromStorage('BGA_MEDIATIONS', MOCK_MEDIATIONS));
+  const [invoices, setInvoices] = useState<Invoice[]>(() => loadFromStorage('BGA_INVOICES', []));
+  const [users, setUsers] = useState<User[]>(() => loadFromStorage('BGA_USERS', MOCK_USERS));
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => loadFromStorage('BGA_LOGS', MOCK_LOGS));
+  const [templates, setTemplates] = useState<Template[]>(() => loadFromStorage('BGA_TEMPLATES', DEFAULT_TEMPLATES));
+  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeEntry[]>(() => loadFromStorage('BGA_KNOWLEDGE', MOCK_KNOWLEDGE_BASE));
+  const [mediatorProfile, setMediatorProfile] = useState<MediatorProfile>(() => loadFromStorage('BGA_PROFILE', DEFAULT_MEDIATOR_PROFILE));
+  const [deadlineTemplates, setDeadlineTemplates] = useState<DeadlineTemplate[]>(() => loadFromStorage('BGA_DEADLINE_TEMPLATES', DEFAULT_DEADLINE_TEMPLATES));
+  
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => loadFromStorage('BGA_SETTINGS', {
     title: 'BGAofis',
     subtitle: 'Hukuk Otomasyonu',
     logoUrl: ''
-  });
+  }));
   
-  // Auth State
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  // Auth State (Try to restore session)
+  const [currentUser, setCurrentUser] = useState<User | null>(() => loadFromStorage('BGA_SESSION', null));
+
+  // -- PERSISTENCE EFFECTS --
+  // Automatically save changes to LocalStorage
+  useEffect(() => localStorage.setItem('BGA_CASES', JSON.stringify(cases)), [cases]);
+  useEffect(() => localStorage.setItem('BGA_CLIENTS', JSON.stringify(clients)), [clients]);
+  useEffect(() => localStorage.setItem('BGA_FINANCE', JSON.stringify(finance)), [finance]);
+  useEffect(() => localStorage.setItem('BGA_TASKS', JSON.stringify(tasks)), [tasks]);
+  useEffect(() => localStorage.setItem('BGA_MEDIATIONS', JSON.stringify(mediations)), [mediations]);
+  useEffect(() => localStorage.setItem('BGA_INVOICES', JSON.stringify(invoices)), [invoices]);
+  useEffect(() => localStorage.setItem('BGA_USERS', JSON.stringify(users)), [users]);
+  useEffect(() => localStorage.setItem('BGA_LOGS', JSON.stringify(auditLogs)), [auditLogs]);
+  useEffect(() => localStorage.setItem('BGA_TEMPLATES', JSON.stringify(templates)), [templates]);
+  useEffect(() => localStorage.setItem('BGA_KNOWLEDGE', JSON.stringify(knowledgeBase)), [knowledgeBase]);
+  useEffect(() => localStorage.setItem('BGA_PROFILE', JSON.stringify(mediatorProfile)), [mediatorProfile]);
+  useEffect(() => localStorage.setItem('BGA_SETTINGS', JSON.stringify(siteSettings)), [siteSettings]);
+  useEffect(() => localStorage.setItem('BGA_DEADLINE_TEMPLATES', JSON.stringify(deadlineTemplates)), [deadlineTemplates]);
+  useEffect(() => {
+      if (currentUser) {
+          localStorage.setItem('BGA_SESSION', JSON.stringify(currentUser));
+      } else {
+          localStorage.removeItem('BGA_SESSION');
+      }
+  }, [currentUser]);
+
 
   // Apply Theme Effect
   useEffect(() => {
@@ -225,10 +270,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (currentUser) {
           const updatedUser = { ...currentUser, theme };
           setCurrentUser(updatedUser);
-          // Also update in users list
+          // Also update in users list to persist for next login
           setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
           logAction('THEME_UPDATE', `Kullanıcı teması güncellendi: ${theme}`);
       }
+  };
+
+  // Deadline Templates
+  const addDeadlineTemplate = (template: DeadlineTemplate) => {
+    setDeadlineTemplates(prev => [...prev, template]);
+    logAction('DEADLINE_TEMPLATE_ADD', `Yeni süre şablonu eklendi: ${template.name}`);
+  };
+
+  const deleteDeadlineTemplate = (id: string) => {
+    setDeadlineTemplates(prev => prev.filter(t => t.id !== id));
+    logAction('DEADLINE_TEMPLATE_DELETE', `Süre şablonu silindi: ${id}`);
   };
 
   // Knowledge Base
@@ -266,12 +322,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return (
     <DataContext.Provider value={{
       cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates, knowledgeBase,
-      currentUser, mediatorProfile, siteSettings,
+      currentUser, mediatorProfile, siteSettings, deadlineTemplates,
       addCase, updateCase, deleteCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
       addMediation, updateMediation, deleteMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings, updateUserTheme,
       addKnowledgeEntry, updateKnowledgeEntry, deleteKnowledgeEntry,
       addUser, updateUser, deleteUser, hasPermission, logAction,
-      login, logout
+      login, logout, addDeadlineTemplate, deleteDeadlineTemplate
     }}>
       {children}
     </DataContext.Provider>

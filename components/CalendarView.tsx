@@ -60,11 +60,21 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, cases }) => {
         (c.hearings || []).filter(h => h.date.startsWith(dateStr)).map(h => ({
             ...h, 
             caseNumber: c.caseNumber, 
-            title: c.title 
+            title: c.title,
+            kind: 'hearing'
         }))
     );
     
-    return { dayTasks, dayHearings, dateStr };
+    // Add Legal Deadlines
+    const dayDeadlines = cases.flatMap(c => 
+        (c.deadlines || []).filter(d => d.dueDate === dateStr && !d.isCompleted).map(d => ({
+            ...d,
+            caseNumber: c.caseNumber,
+            kind: 'deadline'
+        }))
+    );
+
+    return { dayTasks, dayHearings, dayDeadlines, dateStr };
   };
   
   const handleDayClick = (day: number) => {
@@ -91,18 +101,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, cases }) => {
   };
 
   // Derived state for Modal Content
-  let selectedDayEvents = { dayTasks: [] as Task[], dayHearings: [] as any[], dateStr: '' };
+  let selectedDayEvents = { dayTasks: [] as Task[], dayHearings: [] as any[], dayDeadlines: [] as any[], dateStr: '' };
   if (selectedDateStr) {
-      const selectedTasks = tasks.filter(t => t.dueDate === selectedDateStr);
-      const selectedHearings = cases.flatMap(c => 
-          (c.hearings || []).filter(h => h.date.startsWith(selectedDateStr)).map(h => ({
-              ...h, caseNumber: c.caseNumber, title: c.title 
-          }))
-      );
-      selectedDayEvents = { dayTasks: selectedTasks, dayHearings: selectedHearings, dateStr: selectedDateStr };
+      const parts = selectedDateStr.split('-');
+      const day = parseInt(parts[2]);
+      selectedDayEvents = getEventsForDay(day);
   }
 
-  const hasEvents = selectedDayEvents.dayTasks.length > 0 || selectedDayEvents.dayHearings.length > 0;
+  const hasEvents = selectedDayEvents.dayTasks.length > 0 || selectedDayEvents.dayHearings.length > 0 || selectedDayEvents.dayDeadlines.length > 0;
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
@@ -125,6 +131,28 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, cases }) => {
                   <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                       {hasEvents ? (
                           <div className="space-y-6">
+                              
+                              {/* Yasal Süreler */}
+                              {selectedDayEvents.dayDeadlines.length > 0 && (
+                                  <div>
+                                      <h4 className="text-xs font-bold text-red-500 uppercase mb-3 flex items-center animate-pulse">
+                                          <AlertCircle className="w-3 h-3 mr-1" /> Yasal Süreler (Son Gün)
+                                      </h4>
+                                      <div className="space-y-2">
+                                          {selectedDayEvents.dayDeadlines.map((d, i) => (
+                                              <div key={i} className="p-3 bg-red-100 border border-red-200 rounded-lg">
+                                                  <div className="flex justify-between items-start mb-1">
+                                                      <span className="font-bold text-red-900 text-sm">{d.caseNumber}</span>
+                                                      <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">KRİTİK</span>
+                                                  </div>
+                                                  <p className="text-sm text-red-800 font-bold mb-1">{d.title}</p>
+                                                  <p className="text-xs text-red-700">{d.description}</p>
+                                              </div>
+                                          ))}
+                                      </div>
+                                  </div>
+                              )}
+
                               {/* Duruşmalar */}
                               {selectedDayEvents.dayHearings.length > 0 && (
                                   <div>
@@ -133,10 +161,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, cases }) => {
                                       </h4>
                                       <div className="space-y-2">
                                           {selectedDayEvents.dayHearings.map((h, i) => (
-                                              <div key={i} className="p-3 bg-red-50 border border-red-100 rounded-lg">
+                                              <div key={i} className="p-3 bg-orange-50 border border-orange-100 rounded-lg">
                                                   <div className="flex justify-between items-start mb-1">
-                                                      <span className="font-bold text-red-800 text-sm">{h.caseNumber}</span>
-                                                      <span className="bg-white text-red-700 text-xs font-bold px-2 py-0.5 rounded shadow-sm">{h.date.split(' ')[1]}</span>
+                                                      <span className="font-bold text-orange-900 text-sm">{h.caseNumber}</span>
+                                                      <span className="bg-white text-orange-700 text-xs font-bold px-2 py-0.5 rounded shadow-sm">{h.date.split(' ')[1]}</span>
                                                   </div>
                                                   <p className="text-sm text-slate-700 font-medium mb-1">{h.title}</p>
                                                   <p className="text-xs text-slate-500">{h.description}</p>
@@ -287,9 +315,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, cases }) => {
         ))}
         
         {daysArray.map((day) => {
-            const { dayTasks, dayHearings, dateStr } = getEventsForDay(day);
+            const { dayTasks, dayHearings, dayDeadlines, dateStr } = getEventsForDay(day);
             const isToday = dateStr === todayStr;
-            const totalEvents = dayHearings.length + dayTasks.length;
+            const totalEvents = dayHearings.length + dayTasks.length + dayDeadlines.length;
 
             return (
                 <div 
@@ -309,8 +337,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, cases }) => {
                     </div>
                     
                     <div className="flex-1 space-y-1 overflow-y-auto custom-scrollbar max-h-[100px]">
+                        {/* Deadlines First (Critical) */}
+                        {dayDeadlines.map((d, i) => (
+                             <div key={`d-${i}`} className="text-[10px] bg-red-100 text-red-800 px-1.5 py-1 rounded border border-red-200 flex items-center truncate hover:bg-red-200 transition font-bold" title={`Süre Sonu: ${d.title}`}>
+                                <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                                <span className="truncate">{d.caseNumber}</span>
+                            </div>
+                        ))}
+
                         {dayHearings.map((h, i) => (
-                            <div key={`h-${i}`} className="text-[10px] bg-red-50 text-red-700 px-1.5 py-1 rounded border border-red-100 flex items-center truncate hover:bg-red-100 transition" title={`Duruşma: ${h.caseNumber} - ${h.description}`}>
+                            <div key={`h-${i}`} className="text-[10px] bg-orange-50 text-orange-700 px-1.5 py-1 rounded border border-orange-100 flex items-center truncate hover:bg-orange-100 transition" title={`Duruşma: ${h.caseNumber} - ${h.description}`}>
                                 <Gavel className="w-3 h-3 mr-1 flex-shrink-0" />
                                 <span className="truncate font-medium">{h.date.split(' ')[1]} {h.caseNumber}</span>
                             </div>
@@ -333,7 +369,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, cases }) => {
       {/* Legend */}
       <div className="p-3 flex gap-4 text-xs text-slate-500 bg-white rounded-b-xl">
           <div className="flex items-center">
-              <div className="w-3 h-3 bg-red-100 border border-red-200 rounded mr-1.5"></div>
+              <div className="w-3 h-3 bg-red-500 border border-red-600 rounded mr-1.5"></div>
+              <span className="font-bold text-slate-700">Yasal Süreler (Acil)</span>
+          </div>
+          <div className="flex items-center">
+              <div className="w-3 h-3 bg-orange-100 border border-orange-200 rounded mr-1.5"></div>
               <span>Duruşmalar</span>
           </div>
           <div className="flex items-center">

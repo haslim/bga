@@ -15,43 +15,97 @@ import { SettingsManager } from './components/SettingsManager';
 import { ViewState } from './types';
 import { Lock, AlertCircle, Menu, Scale, Quote, Mail, ArrowRight } from 'lucide-react';
 
-// Define assets for the random login screen
+// Define assets for the random login screen with diverse books and covers
 const LOGIN_ASSETS = [
   {
+    id: 1,
     quote: "Bir suç her şeyden önce kişinin kendi vicdanına karşı işlenmiş bir hatadır.",
     author: "Suç ve Ceza — Fyodor Dostoyevski",
-    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=2000", // Moody library background
-    coverUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=600" // Book cover style
+    // Moody dark library
+    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=2000", 
+    // Dark book cover vibe
+    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600" 
   },
   {
+    id: 2,
     quote: "Çoğunluğa bağlı olmayan tek şey insanın vicdanıdır.",
     author: "Bülbülü Öldürmek — Harper Lee",
-    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=2000", // Library shelves
-    coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600" // Open book
+    // Wooden desk, nostalgic
+    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=2000",
+    // Old yellowed book
+    coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600"
   },
   {
-    quote: "Adalet, evrenin ruhudur.",
-    author: "Ömer Hayyam",
-    image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=2000", // Scales of justice
-    coverUrl: "https://images.unsplash.com/photo-1589994965851-08d8095e267f?auto=format&fit=crop&q=80&w=600" // Gavel vertical
-  },
-  {
-    quote: "Kanun, adalet kavramını gerçekleştirmek için vardır.",
-    author: "Sefiller — Victor Hugo",
-    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=2000", // Open books
-    coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600" // Antique book
-  },
-  {
-    quote: "Doğru olanı yapmak, korkudan titrese bile, ileriye doğru bir adım atmaktır.",
-    author: "Dava — Franz Kafka",
-    image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=2000", // Antique books
-    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=600" // White book
-  },
-  {
+    id: 3,
     quote: "Adalet mülkün temelidir.",
     author: "Mustafa Kemal Atatürk",
-    image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=2000", // Gavel and book
-    coverUrl: "https://images.unsplash.com/photo-1505664063603-28e48ca204eb?auto=format&fit=crop&q=80&w=600" // Law code book
+    // Marble columns, court
+    image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=2000",
+    // Gavel and law book
+    coverUrl: "https://images.unsplash.com/photo-1589994965851-08d8095e267f?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 4,
+    quote: "Kanun, adalet kavramını gerçekleştirmek için vardır.",
+    author: "Sefiller — Victor Hugo",
+    // Old Paris vibes, dark bricks
+    image: "https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&q=80&w=2000",
+    // Classic leather book
+    coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 5,
+    quote: "Doğru olanı yapmak, korkudan titrese bile, ileriye doğru bir adım atmaktır.",
+    author: "Dava — Franz Kafka",
+    // Abstract, shadows, bureaucratic
+    image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=2000",
+    // Minimalist dark book
+    coverUrl: "https://images.unsplash.com/photo-1610116306796-6fea9f4fae38?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 6,
+    quote: "Özgürlük, iki kere ikinin dört ettiğini söyleyebilmektir. Buna izin verilirse, gerisi kendiliğinden gelir.",
+    author: "1984 — George Orwell",
+    // Industrial, grey, surveillance vibe
+    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2000",
+    // Red book cover
+    coverUrl: "https://images.unsplash.com/photo-1535905557558-afc4877a26fc?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 7,
+    quote: "Sorgulanmamış bir hayat, yaşanmaya değmez.",
+    author: "Sokrates'in Savunması — Platon",
+    // Ancient greek style, stone
+    image: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?auto=format&fit=crop&q=80&w=2000",
+    // Philosophy texts
+    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 8,
+    quote: "Bir şeyi gerçekten istersen, bütün evren onu gerçekleştirmen için işbirliği yapar.",
+    author: "Simyacı — Paulo Coelho",
+    // Desert, stars, mystical
+    image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=2000",
+    // Book with light
+    coverUrl: "https://images.unsplash.com/photo-1519681393784-d8e5b5a4570e?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 9,
+    quote: "Bizim mantığımızla hayatın mantığı asla uyuşmadı.",
+    author: "Tutunamayanlar — Oğuz Atay",
+    // Melancholic, rainy window or messy desk
+    image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=2000",
+    // Stack of books
+    coverUrl: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    id: 10,
+    quote: "Adalet peşinde koşmak, onu elde etmekten daha değerlidir.",
+    author: "Denemeler — Montaigne",
+    // Classic library, leather
+    image: "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&q=80&w=2000",
+    // Antique book spine
+    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600"
   }
 ];
 
@@ -130,12 +184,14 @@ const MainContent: React.FC = () => {
               <div className="flex flex-col items-center text-center animate-in slide-in-from-bottom-8 fade-in duration-1000">
                 
                 {/* Book Cover Image */}
-                <div className="relative group mb-8">
-                    <div className="absolute -inset-1 bg-white/20 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative group mb-8 perspective-1000">
+                    <div className="absolute -inset-2 bg-white/20 rounded-lg blur-xl opacity-20 group-hover:opacity-50 transition duration-1000"></div>
                     <img 
+                        key={randomAsset.id} // Force re-render for animation
                         src={randomAsset.coverUrl} 
                         alt="Book Cover" 
-                        className="relative w-40 md:w-48 h-auto aspect-[2/3] object-cover rounded-lg shadow-2xl border-4 border-white/10 transform group-hover:scale-105 transition duration-500 ease-out"
+                        className="relative w-40 md:w-48 h-auto aspect-[2/3] object-cover rounded-r-lg rounded-l-sm shadow-2xl border-l-4 border-l-white/20 border-y border-r border-white/10 transform group-hover:scale-105 group-hover:-rotate-2 transition duration-500 ease-out"
+                        style={{ boxShadow: '10px 10px 30px rgba(0,0,0,0.5)' }}
                     />
                 </div>
 

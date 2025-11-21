@@ -70,6 +70,22 @@ export interface Hearing {
   location?: string;
 }
 
+export interface DeadlineTemplate {
+  id: string;
+  name: string;
+  days: number;
+  color?: string;
+}
+
+export interface LegalDeadline {
+  id: string;
+  title: string; // e.g. "İstinaf Başvurusu"
+  triggerDate: string; // Tebliğ Tarihi
+  dueDate: string; // Bitiş Tarihi
+  isCompleted: boolean;
+  description?: string;
+}
+
 export interface Case {
   id: string;
   caseNumber: string;
@@ -82,6 +98,7 @@ export interface Case {
   assignedTo: string; // User name
   parties?: Party[];
   hearings?: Hearing[];
+  deadlines?: LegalDeadline[];
 }
 
 export enum MediationStatus {

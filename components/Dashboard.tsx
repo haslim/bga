@@ -2,7 +2,7 @@
 import React from 'react';
 import { useData } from '../DataContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign, BookOpen } from 'lucide-react';
+import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign, BookOpen, Clock } from 'lucide-react';
 import { ViewState } from '../types';
 
 interface DashboardProps {
@@ -24,20 +24,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
       time: c.hearings?.find(h => h.date.startsWith(today))?.date.split(' ')[1] || '09:00'
     }));
 
-  // 2. GELECEK 7 GÜN KRİTİK SÜRELER
-  const criticalDeadlines = [
-    ...cases.filter(c => c.nextHearingDate && c.nextHearingDate > today && c.nextHearingDate <= sevenDaysLater).map(c => ({
+  // 2. GELECEK 7 GÜN KRİTİK SÜRELER (Including Legal Deadlines now)
+  const upcomingHearings = cases.filter(c => c.nextHearingDate && c.nextHearingDate > today && c.nextHearingDate <= sevenDaysLater).map(c => ({
       type: 'Duruşma',
       title: c.title,
       date: c.nextHearingDate,
-      urgent: true
-    })),
-    ...tasks.filter(t => !t.completed && t.dueDate >= today && t.dueDate <= sevenDaysLater).map(t => ({
+      urgent: true,
+      color: 'text-orange-600'
+  }));
+
+  const upcomingTasks = tasks.filter(t => !t.completed && t.dueDate >= today && t.dueDate <= sevenDaysLater).map(t => ({
       type: 'Görev',
       title: t.title,
       date: t.dueDate,
-      urgent: t.priority === 'Yüksek'
-    }))
+      urgent: t.priority === 'Yüksek',
+      color: t.priority === 'Yüksek' ? 'text-red-600' : 'text-slate-600'
+  }));
+
+  const upcomingLegalDeadlines = cases.flatMap(c => (c.deadlines || [])
+      .filter(d => !d.isCompleted && d.dueDate >= today && d.dueDate <= sevenDaysLater)
+      .map(d => ({
+          type: 'Yasal Süre',
+          title: `${c.caseNumber} - ${d.title}`,
+          date: d.dueDate,
+          urgent: true,
+          color: 'text-red-700 font-bold'
+      }))
+  );
+
+  const criticalDeadlines = [
+    ...upcomingLegalDeadlines,
+    ...upcomingHearings,
+    ...upcomingTasks
   ].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
   // 3. EN AKTİF MÜVEKKİLLER
@@ -213,10 +231,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="bg-slate-50 p-4 border-b border-slate-200 flex items-center justify-between">
                     <div className="flex items-center">
-                        <AlertTriangle className="w-5 h-5 text-orange-600 mr-2" />
-                        <h3 className="font-bold text-slate-800 text-sm md:text-base">Önümüzdeki 7 Gün Kritik</h3>
+                        <AlertTriangle className="w-5 h-5 text-red-600 mr-2 animate-pulse" />
+                        <h3 className="font-bold text-slate-800 text-sm md:text-base">Kritik Süreler ve Ajanda (7 Gün)</h3>
                     </div>
-                    <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-bold whitespace-nowrap">
+                    <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-bold whitespace-nowrap">
                         {criticalDeadlines.length} Kayıt
                     </span>
                 </div>
@@ -224,15 +242,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                     {criticalDeadlines.map((item, idx) => (
                         <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50">
                             <div className="flex items-center space-x-3 overflow-hidden">
-                                <div className={`w-2 h-2 rounded-full shrink-0 ${item.urgent ? 'bg-red-500' : 'bg-orange-400'}`}></div>
+                                <div className={`w-2 h-2 rounded-full shrink-0 ${item.type === 'Yasal Süre' ? 'bg-red-600 animate-pulse' : item.urgent ? 'bg-orange-500' : 'bg-blue-400'}`}></div>
                                 <div className="overflow-hidden">
-                                    <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
-                                    <p className="text-xs text-slate-500">{item.type} • {item.urgent ? 'ACİL' : 'Normal'}</p>
+                                    <p className={`text-sm font-bold truncate ${item.color || 'text-slate-800'}`}>{item.title}</p>
+                                    <p className="text-xs text-slate-500 flex items-center mt-0.5">
+                                        {item.type === 'Yasal Süre' && <Clock className="w-3 h-3 mr-1 text-red-500" />}
+                                        {item.type} • {item.urgent ? 'ACİL' : 'Normal'}
+                                    </p>
                                 </div>
                             </div>
                             <div className="text-right ml-2 shrink-0">
                                 <p className="text-sm font-bold text-slate-700">{item.date}</p>
-                                <p className="text-xs text-slate-400">Tarihinde</p>
+                                <p className="text-xs text-slate-400">Son Tarih</p>
                             </div>
                         </div>
                     ))}

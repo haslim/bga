@@ -1,21 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
-import { UserRole } from '../types';
+import { UserRole, DeadlineTemplate } from '../types';
 import { THEME_COLORS } from '../constants';
-import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users } from 'lucide-react';
+import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus } from 'lucide-react';
 import { UserManager } from './UserManager';
 
 export const SettingsManager: React.FC = () => {
-  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme } = useData();
+  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme, deadlineTemplates, addDeadlineTemplate, deleteDeadlineTemplate } = useData();
   
-  const [activeTab, setActiveTab] = useState<'general' | 'users'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'deadlines'>('general');
 
   const [formData, setFormData] = useState({
     title: siteSettings.title,
     subtitle: siteSettings.subtitle,
     logoUrl: siteSettings.logoUrl || ''
   });
+
+  // Deadline form state
+  const [newDeadlineName, setNewDeadlineName] = useState('');
+  const [newDeadlineDays, setNewDeadlineDays] = useState(7);
 
   const [selectedTheme, setSelectedTheme] = useState(currentUser?.theme || 'blue');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -50,6 +54,19 @@ export const SettingsManager: React.FC = () => {
       updateUserTheme(themeKey);
   };
 
+  const handleAddDeadline = () => {
+      if (!newDeadlineName) return;
+      const newTemplate: DeadlineTemplate = {
+          id: `dt-${Date.now()}`,
+          name: newDeadlineName,
+          days: newDeadlineDays,
+          color: 'red'
+      };
+      addDeadlineTemplate(newTemplate);
+      setNewDeadlineName('');
+      setNewDeadlineDays(7);
+  };
+
   if (!currentUser) return null;
 
   const isAdmin = currentUser.role === UserRole.ADMIN;
@@ -62,19 +79,27 @@ export const SettingsManager: React.FC = () => {
       </header>
 
       {/* Settings Tabs */}
-      <div className="flex space-x-4 mb-6 border-b border-slate-200">
+      <div className="flex space-x-4 mb-6 border-b border-slate-200 overflow-x-auto">
           <button 
             onClick={() => setActiveTab('general')}
-            className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center ${activeTab === 'general' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'general' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
           >
               <Settings className="w-4 h-4 mr-2" />
               Genel Ayarlar
           </button>
           
+          <button 
+            onClick={() => setActiveTab('deadlines')}
+            className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'deadlines' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          >
+              <Clock className="w-4 h-4 mr-2" />
+              Yasal Süreler
+          </button>
+          
           {isAdmin && (
               <button 
                 onClick={() => setActiveTab('users')}
-                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center ${activeTab === 'users' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'users' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
               >
                   <Users className="w-4 h-4 mr-2" />
                   Kullanıcılar & Yetkiler
@@ -196,6 +221,74 @@ export const SettingsManager: React.FC = () => {
                 </div>
             )}
         </div>
+      )}
+
+      {activeTab === 'deadlines' && (
+          <div className="space-y-6 max-w-3xl animate-in slide-in-from-left-2 fade-in duration-300">
+             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center">
+                    <Clock className="w-5 h-5 mr-2 text-slate-600" />
+                    <h3 className="font-bold text-slate-700">Yasal Süre Şablonları</h3>
+                </div>
+                <div className="p-6">
+                    <p className="text-sm text-slate-600 mb-6">
+                        Dava dosyalarında sık kullanılan yasal süreleri buradan tanımlayabilirsiniz. 
+                        "Tebliğ Tarihi" girildiğinde otomatik olarak hesaplanacaktır.
+                    </p>
+
+                    <div className="flex gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Süre Adı</label>
+                            <input 
+                                type="text" 
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"
+                                placeholder="Örn: İstinaf Başvurusu"
+                                value={newDeadlineName}
+                                onChange={e => setNewDeadlineName(e.target.value)}
+                            />
+                        </div>
+                         <div className="w-32">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Gün</label>
+                            <input 
+                                type="number" 
+                                className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"
+                                placeholder="7"
+                                value={newDeadlineDays}
+                                onChange={e => setNewDeadlineDays(Number(e.target.value))}
+                            />
+                        </div>
+                         <button 
+                            onClick={handleAddDeadline}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow-sm transition h-[38px]"
+                        >
+                            <Plus className="w-4 h-4 mr-2" /> Ekle
+                        </button>
+                    </div>
+
+                    <div className="space-y-3">
+                        {deadlineTemplates.map((dt) => (
+                            <div key={dt.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-200 transition">
+                                <div className="flex items-center">
+                                    <Clock className="w-4 h-4 text-slate-400 mr-3" />
+                                    <span className="font-medium text-slate-800">{dt.name}</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded">
+                                        {dt.days} Gün
+                                    </span>
+                                    <button 
+                                        onClick={() => deleteDeadlineTemplate(dt.id)}
+                                        className="text-slate-400 hover:text-red-600 p-1 hover:bg-red-50 rounded transition"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+             </div>
+          </div>
       )}
 
       {activeTab === 'users' && isAdmin && (

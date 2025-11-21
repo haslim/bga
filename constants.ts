@@ -1,5 +1,5 @@
 
-import { Case, CaseStatus, Client, FinancialRecord, Task, User, UserRole, Mediation, MediationStatus, Permission, AuditLog, Template, KnowledgeEntry, MediatorProfile } from './types';
+import { Case, CaseStatus, Client, FinancialRecord, Task, User, UserRole, Mediation, MediationStatus, Permission, AuditLog, Template, KnowledgeEntry, MediatorProfile, DeadlineTemplate } from './types';
 
 export const THEME_COLORS: Record<string, { label: string, colors: Record<number, string> }> = {
   blue: {
@@ -127,6 +127,16 @@ export const DEFAULT_MEDIATOR_PROFILE: MediatorProfile = {
   email: 'arabulucu@bgaofis.com',
   iban: 'TR12 0000 0000 0000 0000 0000 00'
 };
+
+export const DEFAULT_DEADLINE_TEMPLATES: DeadlineTemplate[] = [
+  { id: 'dt1', name: 'Cevap Süresi (HMK)', days: 14, color: 'red' },
+  { id: 'dt2', name: 'İstinaf Başvurusu (HMK)', days: 14, color: 'orange' },
+  { id: 'dt3', name: 'İcra İtiraz Süresi', days: 7, color: 'red' },
+  { id: 'dt4', name: 'Temyiz Başvurusu (CMK)', days: 15, color: 'purple' },
+  { id: 'dt5', name: 'İşe İade Dava Açma', days: 30, color: 'blue' },
+  { id: 'dt6', name: 'İdari Yargı Dava Açma', days: 60, color: 'slate' },
+  { id: 'dt7', name: 'Bilirkişi Raporuna İtiraz', days: 14, color: 'orange' },
+];
 
 export const MOCK_USERS: User[] = [
   CURRENT_USER,
@@ -385,6 +395,9 @@ export const MOCK_CASES: Case[] = [
     hearings: [
       { id: 'h1', date: '2025-09-10 10:00', type: 'Ön İnceleme', location: 'İstanbul 5. Asliye Ticaret', description: 'Tarafların iddiaları incelendi.', result: 'Tahkikat aşamasına geçildi.' },
       { id: 'h2', date: `${today} 14:00`, type: 'Tahkikat', location: 'İstanbul 5. Asliye Ticaret', description: 'Bilirkişi raporu beklenecek.' }
+    ],
+    deadlines: [
+      { id: 'dl1', title: 'Bilirkişi Raporuna İtiraz', triggerDate: '2025-10-20', dueDate: '2025-11-03', isCompleted: false, description: 'Rapora karşı beyan ve itiraz süresi' }
     ]
   },
   {
@@ -459,85 +472,164 @@ export const MOCK_CASES: Case[] = [
   }
 ];
 
+export const MOCK_CLIENTS: Client[] = [
+  {
+    id: 'cl1',
+    name: 'Yılmaz Ticaret A.Ş.',
+    type: 'Kurumsal',
+    phone: '0212 111 22 33',
+    email: 'info@yilmazticaret.com',
+    status: 'Aktif',
+    balance: -15000,
+    address: 'Maslak Mah. Büyükdere Cad. No:1 Sarıyer/İstanbul',
+    taxNumber: '1234567890',
+    taxOffice: 'Maslak',
+    tags: ['VIP', 'Ticari']
+  },
+  {
+    id: 'cl2',
+    name: 'Mehmet Demir',
+    type: 'Bireysel',
+    phone: '0532 555 44 33',
+    email: 'mehmet.demir@gmail.com',
+    status: 'Aktif',
+    balance: 5000,
+    address: 'Beşiktaş/İstanbul',
+    tags: ['Referanslı']
+  },
+  {
+    id: 'cl3',
+    name: 'Vural Gayrimenkul',
+    type: 'Kurumsal',
+    phone: '0216 333 44 55',
+    email: 'ofis@vuralgayrimenkul.com',
+    status: 'Aktif',
+    balance: 0,
+    tags: ['Riskli']
+  }
+];
+
+export const MOCK_FINANCE: FinancialRecord[] = [
+  {
+    id: 'f1',
+    type: 'income',
+    category: 'Vekalet Ücreti',
+    amount: 15000,
+    date: '2025-10-15',
+    description: 'Yılmaz Ticaret Danışmanlık',
+    caseReference: '2025/145 E.'
+  },
+  {
+    id: 'f2',
+    type: 'expense',
+    category: 'Bilirkişi Ücreti',
+    amount: 3000,
+    date: '2025-10-18',
+    description: 'Demir Ailesi Dosyası Bilirkişi Avansı',
+    caseReference: '2025/89 E.'
+  },
+  {
+    id: 'f3',
+    type: 'income',
+    category: 'İcra Tahsilatı',
+    amount: 8500,
+    date: '2025-10-20',
+    description: 'Kira Alacağı Tahsilatı',
+    caseReference: '2025/900 E.'
+  },
+  {
+    id: 'f4',
+    type: 'expense',
+    category: 'Ofis Masrafı',
+    amount: 1500,
+    date: '2025-10-21',
+    description: 'Kırtasiye ve Toner',
+  },
+  {
+    id: 'f5',
+    type: 'income',
+    category: 'Danışmanlık',
+    amount: 5000,
+    date: '2025-10-22',
+    description: 'Sözleşme Hazırlama - ABC Ltd.'
+  }
+];
+
+export const MOCK_TASKS: Task[] = [
+  {
+    id: 't1',
+    title: 'Yılmaz Ticaret dava dilekçesi hazırlanacak',
+    dueDate: '2025-10-25',
+    priority: 'Yüksek',
+    completed: false,
+    assignedTo: 'Av. Burak G.',
+    caseId: 'c1'
+  },
+  {
+    id: 't2',
+    title: 'Mehmet Demir ile görüşme yapılacak',
+    dueDate: '2025-10-26',
+    priority: 'Orta',
+    completed: false,
+    assignedTo: 'Av. Selin Y.',
+    caseId: 'c2'
+  },
+  {
+    id: 't3',
+    title: 'Bilirkişi raporuna itiraz süresi',
+    dueDate: '2025-10-28',
+    priority: 'Yüksek',
+    completed: false,
+    assignedTo: 'Stj. Can K.',
+    caseId: 'c1'
+  },
+  {
+    id: 't4',
+    title: 'Ofis aidatı ödenecek',
+    dueDate: '2025-10-30',
+    priority: 'Düşük',
+    completed: true,
+    assignedTo: 'Ayşe M.'
+  }
+];
+
 export const MOCK_MEDIATIONS: Mediation[] = [
   {
     id: 'm1',
-    fileNumber: 'ARB-2025/104',
+    fileNumber: 'ARB-2025/45',
     applicationDate: '2025-10-01',
-    clientName: 'Yılmaz Ticaret A.Ş.',
-    counterParty: 'Hızlı Lojistik Ltd.',
-    subject: 'Fatura Alacağı ve Ticari Uyuşmazlık',
+    clientName: 'Ahmet Yılmaz',
+    counterParty: 'XYZ Lojistik A.Ş.',
+    subject: 'İşçilik Alacakları',
     mediatorName: 'Av. Arb. Burak G.',
     status: MediationStatus.PROCESS,
     meetings: [
-      { id: 'mm1', date: '2025-10-10 14:00', participants: 'Müvekkil, Karşı Taraf Vekili', notes: 'İlk oturum yapıldı, talepler iletildi.', outcome: 'Ertelendi' }
+      {
+        id: 'mm1',
+        date: '2025-10-10 14:00',
+        participants: 'Taraflar ve Vekilleri',
+        notes: 'İlk oturum yapıldı, talepler alındı.',
+        outcome: 'Ertelendi'
+      }
     ]
   },
   {
     id: 'm2',
-    fileNumber: 'ARB-2025/098',
-    applicationDate: '2025-09-15',
-    clientName: 'Ayşe Kaya',
-    counterParty: 'Mehmet Kaya',
-    subject: 'Mal Rejimi Tasfiyesi',
+    fileNumber: 'ARB-2025/52',
+    applicationDate: '2025-10-12',
+    clientName: 'Selin Kaya',
+    counterParty: 'Mehmet Öz',
+    subject: 'Kira Uyuşmazlığı',
     mediatorName: 'Av. Arb. Burak G.',
     status: MediationStatus.AGREEMENT,
     meetings: [
-      { id: 'mm2', date: '2025-09-20 10:00', participants: 'Taraflar Bizzat', notes: 'Anlaşma sağlandı, protokol imzalandı.', outcome: 'Olumlu' }
+      {
+        id: 'mm2',
+        date: '2025-10-20 10:00',
+        participants: 'Taraflar',
+        notes: 'Anlaşma sağlandı.',
+        outcome: 'Olumlu'
+      }
     ]
-  },
-  {
-    id: 'm3',
-    fileNumber: 'ARB-2025/112',
-    applicationDate: '2025-10-20',
-    clientName: 'Mehmet Demir',
-    counterParty: 'Sigorta Şirketi A.Ş.',
-    subject: 'Değer Kaybı Tazminatı',
-    mediatorName: 'Av. Arb. Burak G.',
-    status: MediationStatus.APPLIED,
-    meetings: []
   }
-];
-
-export const MOCK_CLIENTS: Client[] = [
-  { id: 'cl1', name: 'Yılmaz Ticaret A.Ş.', type: 'Kurumsal', phone: '0212 555 10 20', email: 'info@yilmaz.com', status: 'Aktif', balance: -15000, tags: ['VIP', 'Kurumsal'], taxNumber: '1234567890', address: 'Şişli, İstanbul' },
-  { id: 'cl2', name: 'Mehmet Demir', type: 'Bireysel', phone: '0532 555 20 30', email: 'mehmet@gmail.com', status: 'Aktif', balance: 0, tags: ['Bireysel'], taxNumber: '11111111111', address: 'Kadıköy, İstanbul' },
-  { id: 'cl3', name: 'Vural Gayrimenkul', type: 'Kurumsal', phone: '0216 444 30 40', email: 'contact@vural.com', status: 'Aktif', balance: -5000, tags: ['Kurumsal'], taxNumber: '2222222222' },
-  { id: 'cl4', name: 'Ayşe Kaya', type: 'Bireysel', phone: '0555 123 45 67', email: 'ayse.kaya@hotmail.com', status: 'Pasif', balance: 0, tags: ['Boşanma', 'Referanslı'] },
-];
-
-export const MOCK_FINANCE: FinancialRecord[] = [
-  // Current Month (October)
-  { id: 'f1', type: 'income', category: 'Vekalet Ücreti', amount: 25000, date: '2025-10-01', description: 'Yılmaz Ticaret Danışmanlık', caseReference: '2025/145 E.' },
-  { id: 'f2', type: 'expense', category: 'Harç', amount: 1200, date: '2025-10-03', description: 'Dava Açılış Harcı', caseReference: '2025/89 E.' },
-  { id: 'f3', type: 'income', category: 'Tahsilat', amount: 15000, date: '2025-10-05', description: 'İcra Tahsilatı', caseReference: '2024/550 E.' },
-  { id: 'f4', type: 'expense', category: 'Ofis Gideri', amount: 3500, date: '2025-10-10', description: 'Kırtasiye ve Aidat' },
-  { id: 'f5', type: 'income', category: 'Avans', amount: 5000, date: '2025-10-12', description: 'Yeni Dosya Avansı' },
-  
-  // September
-  { id: 'f6', type: 'income', category: 'Vekalet Ücreti', amount: 45000, date: '2025-09-15', description: 'Eylül Ayı Ödemeleri' },
-  { id: 'f7', type: 'expense', category: 'Ofis Gideri', amount: 12000, date: '2025-09-28', description: 'Kira ve Stopaj' },
-  
-  // August
-  { id: 'f8', type: 'income', category: 'Danışmanlık', amount: 32000, date: '2025-08-10', description: 'Ağustos Danışmanlık' },
-  { id: 'f9', type: 'expense', category: 'Maaş', amount: 28000, date: '2025-08-31', description: 'Personel Maaşları' },
-  
-  // July
-  { id: 'f10', type: 'income', category: 'Tahsilat', amount: 55000, date: '2025-07-20', description: 'Büyük İcra Tahsilatı' },
-  { id: 'f11', type: 'expense', category: 'Harç', amount: 8000, date: '2025-07-05', description: 'Toplu Dava Harçları' },
-
-  // June
-  { id: 'f12', type: 'income', category: 'Avans', amount: 28000, date: '2025-06-15', description: 'Haziran Gelirleri' },
-  { id: 'f13', type: 'expense', category: 'Vergi', amount: 15000, date: '2025-06-25', description: 'Geçici Vergi' },
-  
-  // May
-  { id: 'f14', type: 'income', category: 'Vekalet Ücreti', amount: 40000, date: '2025-05-10', description: 'Mayıs Ayı' },
-  { id: 'f15', type: 'expense', category: 'Ofis Gideri', amount: 10000, date: '2025-05-02', description: 'Ofis Tadilatı' },
-];
-
-export const MOCK_TASKS: Task[] = [
-  { id: 't1', title: 'Bilirkişi raporuna itiraz dilekçesi', dueDate: threeDaysLater, priority: 'Yüksek', completed: false, assignedTo: 'Av. Burak G.', caseId: 'c1' },
-  { id: 't2', title: 'Müvekkil ile toplantı (Yılmaz Tic.)', dueDate: tomorrow, priority: 'Orta', completed: false, assignedTo: 'Av. Burak G.', caseId: 'c1' },
-  { id: 't3', title: 'İcra dairesi dosya fotokopisi', dueDate: '2025-10-30', priority: 'Düşük', completed: true, assignedTo: 'Stj. Can K.', caseId: 'c3' },
-  { id: 't4', title: 'Uyap kontrolü', dueDate: today, priority: 'Yüksek', completed: true, assignedTo: 'Av. Selin Y.', caseId: 'c2' },
 ];

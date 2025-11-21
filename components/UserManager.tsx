@@ -2,18 +2,26 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
 import { User, UserRole } from '../types';
-import { Shield, User as UserIcon, Plus, Trash2, Edit2, Save, X, Activity, Clock, Search, Lock, RefreshCw, Image as ImageIcon } from 'lucide-react';
+import { Shield, User as UserIcon, Plus, Trash2, Edit2, Save, X, Activity, Clock, Search, Lock, RefreshCw, Image as ImageIcon, Flag } from 'lucide-react';
 
 interface UserManagerProps {
   isEmbedded?: boolean;
 }
 
 export const UserManager: React.FC<UserManagerProps> = ({ isEmbedded = false }) => {
-  const { users, auditLogs, currentUser, addUser, updateUser, deleteUser, hasPermission } = useData();
+  const { users, auditLogs, currentUser, addUser, updateUser, deleteUser, hasPermission, siteSettings } = useData();
   const [activeTab, setActiveTab] = useState<'users' | 'logs'>('users');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   
+  // Helper to determine default avatar
+  const getDefaultAvatar = () => {
+    if (siteSettings.logoUrl && siteSettings.logoUrl.trim().length > 0) {
+        return siteSettings.logoUrl;
+    }
+    return 'https://flagcdn.com/w320/tr.png';
+  };
+
   // User Form State
   const [formData, setFormData] = useState<Partial<User>>({
       name: '', email: '', role: UserRole.INTERN, password: '', avatarUrl: ''
@@ -42,7 +50,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ isEmbedded = false }) 
               email: '', 
               role: UserRole.INTERN, 
               password: '',
-              avatarUrl: `https://ui-avatars.com/api/?name=Yeni+Kullanici&background=random`
+              avatarUrl: getDefaultAvatar()
           });
       }
       setIsModalOpen(true);
@@ -62,7 +70,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ isEmbedded = false }) 
       } else {
           const newUser: User = {
               id: `u-${Date.now()}`,
-              avatarUrl: formData.avatarUrl || `https://ui-avatars.com/api/?name=${formData.name}&background=random`,
+              avatarUrl: formData.avatarUrl || getDefaultAvatar(),
               lastLogin: '-',
               ipAddress: '-',
               ...formData as User,
@@ -79,6 +87,10 @@ export const UserManager: React.FC<UserManagerProps> = ({ isEmbedded = false }) 
           const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random&size=200`;
           setFormData({...formData, avatarUrl: url});
       }
+  };
+
+  const setAvatarToDefault = () => {
+      setFormData({...formData, avatarUrl: getDefaultAvatar()});
   };
 
   return (
@@ -98,20 +110,28 @@ export const UserManager: React.FC<UserManagerProps> = ({ isEmbedded = false }) 
                       <div className="flex flex-col items-center mb-4">
                           <div className="relative group">
                               <img 
-                                src={formData.avatarUrl} 
+                                src={formData.avatarUrl || getDefaultAvatar()} 
                                 alt="Avatar" 
-                                className="w-20 h-20 rounded-full border-2 border-slate-200 object-cover"
-                                onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${formData.name || 'User'}&background=random` }}
+                                className="w-24 h-24 rounded-full border-4 border-slate-100 shadow-sm object-cover bg-white"
+                                onError={(e) => { (e.target as HTMLImageElement).src = getDefaultAvatar() }}
                               />
                           </div>
                           <div className="flex gap-2 mt-3">
                               <button 
                                 type="button"
                                 onClick={generateAvatar}
-                                className="text-xs flex items-center px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 transition"
+                                className="text-xs flex items-center px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 transition border border-slate-200"
                                 title="İsimden Otomatik Oluştur"
                               >
                                   <RefreshCw className="w-3 h-3 mr-1" /> Oto. Oluştur
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={setAvatarToDefault}
+                                className="text-xs flex items-center px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 transition border border-slate-200"
+                                title="Varsayılan (Logo veya Bayrak)"
+                              >
+                                  <Flag className="w-3 h-3 mr-1" /> Varsayılan
                               </button>
                           </div>
                           
@@ -242,7 +262,12 @@ export const UserManager: React.FC<UserManagerProps> = ({ isEmbedded = false }) 
                     {users.map(user => (
                         <tr key={user.id} className="hover:bg-slate-50/50">
                             <td className="px-6 py-4 flex items-center">
-                                <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full mr-3 border border-slate-200 object-cover" />
+                                <img 
+                                    src={user.avatarUrl || getDefaultAvatar()} 
+                                    alt="" 
+                                    className="w-8 h-8 rounded-full mr-3 border border-slate-200 object-cover bg-white"
+                                    onError={(e) => { (e.target as HTMLImageElement).src = getDefaultAvatar() }}
+                                />
                                 <span className="font-medium text-slate-800">{user.name}</span>
                             </td>
                             <td className="px-6 py-4 text-slate-600 text-sm">{user.email}</td>

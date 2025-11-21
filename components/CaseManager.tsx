@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
-import { Case, CaseStatus, FinancialRecord, Task, Hearing } from '../types';
-import { Search, Plus, Filter, FileText, ArrowLeft, User, Gavel, DollarSign, Calendar, MapPin, CheckSquare, Clock, Trash2, X, HelpCircle, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import { Case, CaseStatus, FinancialRecord, Task, Hearing, LegalDeadline } from '../types';
+import { Search, Plus, Filter, FileText, ArrowLeft, User, Gavel, DollarSign, Calendar, MapPin, CheckSquare, Clock, Trash2, X, HelpCircle, AlertCircle, TrendingUp, TrendingDown, AlarmClock } from 'lucide-react';
 
 export const CaseManager: React.FC = () => {
-  const { cases, tasks, finance, addCase, updateCase, deleteCase, addTask, addFinanceRecord } = useData();
+  const { cases, tasks, finance, addCase, updateCase, deleteCase, addTask, addFinanceRecord, deadlineTemplates } = useData();
   
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [activeCaseData, setActiveCaseData] = useState<Case | null>(null);
@@ -32,6 +32,14 @@ export const CaseManager: React.FC = () => {
   const [newCase, setNewCase] = useState<Partial<Case>>({ 
       caseNumber: '', title: '', clientName: '', type: 'Dava', status: CaseStatus.OPEN, description: '', assignedTo: 'Av. Burak G.' 
   });
+
+  // Deadline Form State
+  const [deadlineTriggerDate, setDeadlineTriggerDate] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [customDeadlineName, setCustomDeadlineName] = useState('');
+  const [customDeadlineDays, setCustomDeadlineDays] = useState(7);
+  const [isCustomDeadline, setIsCustomDeadline] = useState(false);
+
 
   // Derived local lists for display
   const [caseTasks, setCaseTasks] = useState<Task[]>([]);
@@ -152,7 +160,66 @@ export const CaseManager: React.FC = () => {
       addFinanceRecord(financeToAdd);
       setIsFinanceModalOpen(false);
       setNewFinance({ type: 'expense', amount: 0, description: '', category: 'Gider Avansı', date: new Date().toISOString().split('T')[0] });
-  }
+  };
+
+  // LEGAL DEADLINE LOGIC
+  const handleAddDeadline = () => {
+      if (!activeCaseData || !deadlineTriggerDate) return;
+
+      let title = '';
+      let days = 0;
+
+      if (isCustomDeadline) {
+          title = customDeadlineName;
+          days = customDeadlineDays;
+      } else {
+          const template = deadlineTemplates.find(t => t.id === selectedTemplateId);
+          if (!template) return;
+          title = template.name;
+          days = template.days;
+      }
+
+      if (!title) return;
+
+      const trigger = new Date(deadlineTriggerDate);
+      const due = new Date(trigger);
+      due.setDate(trigger.getDate() + days);
+      const dueDateStr = due.toISOString().split('T')[0];
+
+      const newDeadline: LegalDeadline = {
+          id: `ld-${Date.now()}`,
+          title: title,
+          triggerDate: deadlineTriggerDate,
+          dueDate: dueDateStr,
+          isCompleted: false,
+          description: `${days} Günlük Yasal Süre`
+      };
+
+      const updatedDeadlines = [...(activeCaseData.deadlines || []), newDeadline];
+      updateCase({ ...activeCaseData, deadlines: updatedDeadlines });
+      
+      // Reset form
+      setDeadlineTriggerDate('');
+      setSelectedTemplateId('');
+      setCustomDeadlineName('');
+      setIsCustomDeadline(false);
+  };
+
+  const handleCompleteDeadline = (deadlineId: string) => {
+      if (!activeCaseData) return;
+      const updatedDeadlines = activeCaseData.deadlines?.map(d => 
+          d.id === deadlineId ? { ...d, isCompleted: !d.isCompleted } : d
+      );
+      updateCase({ ...activeCaseData, deadlines: updatedDeadlines });
+  };
+
+  const handleDeleteDeadline = (deadlineId: string) => {
+      if (!activeCaseData) return;
+      if(window.confirm('Bu süreyi silmek istediğinizden emin misiniz?')) {
+        const updatedDeadlines = activeCaseData.deadlines?.filter(d => d.id !== deadlineId);
+        updateCase({ ...activeCaseData, deadlines: updatedDeadlines });
+      }
+  };
 
   if (activeCaseData) {
     const totalExpense = caseFinance.filter(f => f.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
@@ -351,8 +418,113 @@ export const CaseManager: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-          {/* Left Column: Info & Parties */}
+          {/* Left Column: Info & Parties & DEADLINES */}
           <div className="space-y-6 md:space-y-8">
+            
+            {/* LEGAL DEADLINE TRACKING */}
+            <div className="bg-white rounded-xl shadow-sm border border-red-100 p-4 md:p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-red-50 rounded-bl-full -mr-8 -mt-8 z-0"></div>
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center relative z-10">
+                    <AlarmClock className="w-5 h-5 mr-2 text-red-600" />
+                    Yasal Süre Takibi
+                </h3>
+                
+                <div className="space-y-3 mb-4 relative z-10">
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tebliğ Tarihi</label>
+                        <input 
+                            type="date" 
+                            className="w-full border border-slate-200 rounded p-1.5 text-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-red-500" 
+                            value={deadlineTriggerDate}
+                            onChange={e => setDeadlineTriggerDate(e.target.value)}
+                        />
+                    </div>
+                    
+                    {isCustomDeadline ? (
+                         <div className="flex gap-2">
+                            <div className="flex-1">
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Süre Adı</label>
+                                <input type="text" className="w-full border border-slate-200 rounded p-1.5 text-sm bg-white text-slate-900" value={customDeadlineName} onChange={e => setCustomDeadlineName(e.target.value)} placeholder="Örn: Ek Süre" />
+                            </div>
+                             <div className="w-20">
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gün</label>
+                                <input type="number" className="w-full border border-slate-200 rounded p-1.5 text-sm bg-white text-slate-900" value={customDeadlineDays} onChange={e => setCustomDeadlineDays(Number(e.target.value))} />
+                            </div>
+                         </div>
+                    ) : (
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Şablon Seçin</label>
+                            <select 
+                                className="w-full border border-slate-200 rounded p-1.5 text-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-red-500"
+                                value={selectedTemplateId}
+                                onChange={e => setSelectedTemplateId(e.target.value)}
+                            >
+                                <option value="">Seçiniz...</option>
+                                {deadlineTemplates.map(dt => (
+                                    <option key={dt.id} value={dt.id}>{dt.name} ({dt.days} Gün)</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    <div className="flex justify-between items-center mt-2">
+                         <button 
+                            onClick={() => setIsCustomDeadline(!isCustomDeadline)}
+                            className="text-xs text-blue-600 underline hover:text-blue-800"
+                         >
+                             {isCustomDeadline ? 'Şablon Listesine Dön' : 'Manuel Giriş Yap'}
+                         </button>
+                         <button 
+                            onClick={handleAddDeadline}
+                            disabled={!deadlineTriggerDate || (!isCustomDeadline && !selectedTemplateId) || (isCustomDeadline && !customDeadlineName)}
+                            className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded hover:bg-red-700 disabled:bg-slate-300 transition"
+                         >
+                             Hesapla & Ekle
+                         </button>
+                    </div>
+                </div>
+
+                {/* List of Deadlines */}
+                {activeCaseData.deadlines && activeCaseData.deadlines.length > 0 ? (
+                    <div className="space-y-2 mt-4 pt-4 border-t border-slate-100 relative z-10">
+                        {activeCaseData.deadlines.map(dl => {
+                            const today = new Date();
+                            const due = new Date(dl.dueDate);
+                            const diffTime = due.getTime() - today.getTime();
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                            
+                            return (
+                                <div key={dl.id} className={`p-2.5 rounded-lg border flex flex-col ${dl.isCompleted ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-red-100 hover:border-red-300'}`}>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className={`text-xs font-bold ${dl.isCompleted ? 'line-through text-slate-500' : 'text-slate-800'}`}>{dl.title}</span>
+                                        {!dl.isCompleted && (
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${diffDays <= 3 ? 'bg-red-500 text-white animate-pulse' : 'bg-orange-100 text-orange-700'}`}>
+                                                {diffDays > 0 ? `${diffDays} Gün Kaldı` : 'SÜRESİ DOLDU'}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <div className="text-[10px] text-slate-500">
+                                            Son Gün: <span className="font-semibold">{dl.dueDate}</span>
+                                        </div>
+                                        <div className="flex space-x-2">
+                                             <button onClick={() => handleCompleteDeadline(dl.id)} className={`p-1 rounded transition ${dl.isCompleted ? 'text-green-600 bg-green-50' : 'text-slate-400 hover:text-green-600'}`} title="Tamamlandı İşaretle">
+                                                 <CheckSquare className="w-3.5 h-3.5" />
+                                             </button>
+                                             <button onClick={() => handleDeleteDeadline(dl.id)} className="p-1 rounded text-slate-400 hover:text-red-600 transition" title="Sil">
+                                                 <Trash2 className="w-3.5 h-3.5" />
+                                             </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                ) : (
+                    <p className="text-xs text-slate-400 italic text-center mt-2">Aktif süre takibi yok.</p>
+                )}
+            </div>
+
             {/* Case Details Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
               <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
