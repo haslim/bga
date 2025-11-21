@@ -1,12 +1,13 @@
 ---
 deployment:
   tasks:
-    # Hedef klasör (Genellikle public_html). 
-    # Hata mesajindaki kullanıcı adınıza (haslim) göre ayarlanmıştır.
-    - export DEPLOYPATH=/home/haslim/public_html/
+    # Terminal ciktiniza gore dogru klasor yolu:
+    # /home/haslim/public_html/ofis.billurguleraslim.av.tr/
+    - export DEPLOYPATH=/home/haslim/public_html/ofis.billurguleraslim.av.tr/
     
-    # 1. Dist klasöründeki (Build edilmiş) dosyaları ana dizine kopyala
+    # 1. Dist klasöründeki (Bilgisayarinizda Build edilmiş) dosyaları sunucuya kopyala
+    # -R recursive (klasörlerle birlikte) kopyalar
     - /bin/cp -R dist/* $DEPLOYPATH
     
-    # 2. .htaccess dosyasını kopyala (Sayfa yenileme hatalarını önlemek için)
+    # 2. .htaccess dosyasını kopyala (Sayfa yönlendirmeleri için şart)
     - /bin/cp .htaccess $DEPLOYPATH
