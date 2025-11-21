@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile } from '../types';
 import { processTemplate } from '../utils';
-import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, AlertCircle, ArrowRight, Activity, Users } from 'lucide-react';
+import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, AlertCircle, ArrowRight, Activity, Users, Trash2 } from 'lucide-react';
 
 export const MediationManager: React.FC = () => {
-  const { mediations, addMediation, updateMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile } = useData();
+  const { mediations, addMediation, updateMediation, deleteMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile } = useData();
   
   const [selectedMediation, setSelectedMediation] = useState<Mediation | null>(null);
   const [activeMediationData, setActiveMediationData] = useState<Mediation | null>(null);
@@ -74,6 +74,16 @@ export const MediationManager: React.FC = () => {
       case MediationStatus.PROCESS: return 'bg-blue-100 text-blue-700 border-blue-200';
       case MediationStatus.APPLIED: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const handleDeleteMediation = (id: string, event?: React.MouseEvent) => {
+    if(event) event.stopPropagation();
+    if (window.confirm('Bu arabuluculuk dosyasını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+        deleteMediation(id);
+        if (selectedMediation && selectedMediation.id === id) {
+            setSelectedMediation(null);
+        }
     }
   };
 
@@ -512,12 +522,20 @@ export const MediationManager: React.FC = () => {
                             {activeMediationData.subject}
                         </p>
                     </div>
-                    <button 
-                        onClick={() => setIsMeetingModalOpen(true)}
-                        className="bg-brand-600 text-white px-5 py-2.5 rounded-xl hover:bg-brand-700 shadow-lg shadow-brand-600/20 flex items-center transition-all hover:scale-105 active:scale-95"
-                    >
-                        <Plus className="w-5 h-5 mr-2" /> Toplantı Ekle
-                    </button>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={(e) => handleDeleteMediation(activeMediationData.id, e)}
+                            className="bg-red-50 text-red-600 border border-red-200 px-5 py-2.5 rounded-xl hover:bg-red-100 flex items-center transition-all"
+                        >
+                            <Trash2 className="w-5 h-5 mr-2" /> Dosyayı Sil
+                        </button>
+                        <button 
+                            onClick={() => setIsMeetingModalOpen(true)}
+                            className="bg-brand-600 text-white px-5 py-2.5 rounded-xl hover:bg-brand-700 shadow-lg shadow-brand-600/20 flex items-center transition-all hover:scale-105 active:scale-95"
+                        >
+                            <Plus className="w-5 h-5 mr-2" /> Toplantı Ekle
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -843,9 +861,18 @@ export const MediationManager: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-500">{m.applicationDate}</td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-brand-600 hover:text-brand-800 text-sm font-bold bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition flex items-center ml-auto">
-                                                Yönet <ArrowRight className="w-3 h-3 ml-1" />
-                                            </button>
+                                            <div className="flex items-center justify-end space-x-2">
+                                                <button 
+                                                    onClick={(e) => handleDeleteMediation(m.id, e)}
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    title="Sil"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                                <button className="text-brand-600 hover:text-brand-800 text-sm font-bold bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition flex items-center ml-auto">
+                                                    Yönet <ArrowRight className="w-3 h-3 ml-1" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 )})}

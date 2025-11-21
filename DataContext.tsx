@@ -22,6 +22,7 @@ interface DataContextType {
   // Actions
   addCase: (newCase: Case) => void;
   updateCase: (updatedCase: Case) => void;
+  deleteCase: (id: string) => void; // Added
   addClient: (client: Client) => void;
   updateClient: (updatedClient: Client) => void;
   addFinanceRecord: (record: FinancialRecord) => void;
@@ -29,6 +30,7 @@ interface DataContextType {
   toggleTaskComplete: (taskId: string) => void;
   addMediation: (mediation: Mediation) => void;
   updateMediation: (mediation: Mediation) => void;
+  deleteMediation: (id: string) => void; // Added
   addInvoice: (invoice: Invoice) => void;
   updateTemplate: (template: Template) => void;
   updateMediatorProfile: (profile: MediatorProfile) => void;
@@ -142,6 +144,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logAction('CASE_UPDATE', `${updatedCase.caseNumber} dosyası güncellendi`, 'CASE', updatedCase.id);
   };
 
+  const deleteCase = (id: string) => {
+    const caseToDelete = cases.find(c => c.id === id);
+    setCases(prev => prev.filter(c => c.id !== id));
+    logAction('CASE_DELETE', `Dava dosyası silindi: ${caseToDelete?.caseNumber || id}`, 'CASE', id);
+  };
+
   const addClient = (client: Client) => {
     setClients(prev => [client, ...prev]);
     logAction('CLIENT_ADD', `Yeni müvekkil eklendi: ${client.name}`, 'CLIENT', client.id);
@@ -173,6 +181,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateMediation = (mediation: Mediation) => {
     setMediations(prev => prev.map(m => m.id === mediation.id ? mediation : m));
+  };
+
+  const deleteMediation = (id: string) => {
+    const mToDelete = mediations.find(m => m.id === id);
+    setMediations(prev => prev.filter(m => m.id !== id));
+    logAction('MEDIATION_DELETE', `Arabuluculuk dosyası silindi: ${mToDelete?.fileNumber || id}`);
   };
 
   const addInvoice = (invoice: Invoice) => {
@@ -253,8 +267,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <DataContext.Provider value={{
       cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates, knowledgeBase,
       currentUser, mediatorProfile, siteSettings,
-      addCase, updateCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
-      addMediation, updateMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings, updateUserTheme,
+      addCase, updateCase, deleteCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
+      addMediation, updateMediation, deleteMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings, updateUserTheme,
       addKnowledgeEntry, updateKnowledgeEntry, deleteKnowledgeEntry,
       addUser, updateUser, deleteUser, hasPermission, logAction,
       login, logout

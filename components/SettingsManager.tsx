@@ -20,7 +20,7 @@ export const SettingsManager: React.FC = () => {
   const [selectedTheme, setSelectedTheme] = useState(currentUser?.theme || 'blue');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Sync with global state if it changes externally (though less likely here)
+  // Sync with global state if it changes externally
   useEffect(() => {
     setFormData({
         title: siteSettings.title,

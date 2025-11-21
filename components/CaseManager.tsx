@@ -5,7 +5,7 @@ import { Case, CaseStatus, FinancialRecord, Task, Hearing } from '../types';
 import { Search, Plus, Filter, FileText, ArrowLeft, User, Gavel, DollarSign, Calendar, MapPin, CheckSquare, Clock, Trash2, X, HelpCircle, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 
 export const CaseManager: React.FC = () => {
-  const { cases, tasks, finance, addCase, updateCase, addTask, addFinanceRecord } = useData();
+  const { cases, tasks, finance, addCase, updateCase, deleteCase, addTask, addFinanceRecord } = useData();
   
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [activeCaseData, setActiveCaseData] = useState<Case | null>(null);
@@ -88,6 +88,16 @@ export const CaseManager: React.FC = () => {
       setIsNewCaseModalOpen(false);
       setNewCase({ caseNumber: '', title: '', clientName: '', type: 'Dava', status: CaseStatus.OPEN, description: '', assignedTo: 'Av. Burak G.' });
   }
+
+  const handleDeleteCase = (id: string, event?: React.MouseEvent) => {
+    if(event) event.stopPropagation();
+    if (window.confirm('Bu dava dosyasını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+        deleteCase(id);
+        if (selectedCase && selectedCase.id === id) {
+            setSelectedCase(null);
+        }
+    }
+  };
 
   const handleAddHearing = () => {
       if (!activeCaseData || !newHearing.date || !newHearing.type) return;
@@ -327,6 +337,13 @@ export const CaseManager: React.FC = () => {
             <p className="text-slate-500 mt-1 max-w-2xl text-sm md:text-base">{activeCaseData.description}</p>
           </div>
           <div className="flex gap-3">
+            <button 
+                onClick={() => handleDeleteCase(activeCaseData.id)} 
+                className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 shadow-sm text-sm md:text-base flex items-center"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Dosyayı Sil
+            </button>
             <button className="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 shadow-sm text-sm md:text-base">
               Dava Detaylarını Düzenle
             </button>
@@ -697,7 +714,7 @@ export const CaseManager: React.FC = () => {
                 <th className="px-6 py-4 whitespace-nowrap">Tür</th>
                 <th className="px-6 py-4 whitespace-nowrap">Durum</th>
                 <th className="px-6 py-4 whitespace-nowrap">Duruşma</th>
-                <th className="px-6 py-4 text-right whitespace-nowrap">Detay</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">İşlem</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -734,9 +751,18 @@ export const CaseManager: React.FC = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right whitespace-nowrap">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
-                      Görüntüle
-                    </button>
+                    <div className="flex items-center justify-end space-x-2">
+                        <button 
+                            onClick={(e) => handleDeleteCase(c.id, e)}
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Sil"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button className="text-blue-600 hover:text-blue-800 text-sm font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
+                        Görüntüle
+                        </button>
+                    </div>
                   </td>
                 </tr>
               ))}
