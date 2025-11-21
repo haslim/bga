@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission } from './types';
-import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, ROLE_PERMISSIONS } from './constants';
+import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template } from './types';
+import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS } from './constants';
 import { checkPermission } from './utils';
 
 interface DataContextType {
@@ -13,6 +13,7 @@ interface DataContextType {
   invoices: Invoice[];
   users: User[];
   auditLogs: AuditLog[];
+  templates: Template[];
   currentUser: User;
   
   // Actions
@@ -26,6 +27,7 @@ interface DataContextType {
   addMediation: (mediation: Mediation) => void;
   updateMediation: (mediation: Mediation) => void;
   addInvoice: (invoice: Invoice) => void;
+  updateTemplate: (template: Template) => void;
   
   // User & Auth
   addUser: (user: User) => void;
@@ -46,6 +48,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(MOCK_LOGS);
+  const [templates, setTemplates] = useState<Template[]>(DEFAULT_TEMPLATES);
 
   // -- Helpers --
   const hasPermission = (permission: Permission): boolean => {
@@ -129,6 +132,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const updateTemplate = (template: Template) => {
+    setTemplates(prev => prev.map(t => t.id === template.id ? template : t));
+    logAction('TEMPLATE_UPDATE', `${template.name} şablonu güncellendi`);
+  };
+
   // User Management
   const addUser = (user: User) => {
     setUsers(prev => [...prev, user]);
@@ -147,10 +155,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   return (
     <DataContext.Provider value={{
-      cases, clients, finance, tasks, mediations, invoices, users, auditLogs,
+      cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates,
       currentUser: CURRENT_USER,
       addCase, updateCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
-      addMediation, updateMediation, addInvoice,
+      addMediation, updateMediation, addInvoice, updateTemplate,
       addUser, updateUser, deleteUser, hasPermission, logAction
     }}>
       {children}

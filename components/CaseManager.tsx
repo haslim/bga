@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
 import { Case, CaseStatus, FinancialRecord, Task, Hearing } from '../types';
-import { Search, Plus, Filter, FileText, ArrowLeft, User, Gavel, DollarSign, Calendar, MapPin, CheckSquare, Clock, Trash2, X, HelpCircle, AlertCircle } from 'lucide-react';
+import { Search, Plus, Filter, FileText, ArrowLeft, User, Gavel, DollarSign, Calendar, MapPin, CheckSquare, Clock, Trash2, X, HelpCircle, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 
 export const CaseManager: React.FC = () => {
   const { cases, tasks, finance, addCase, updateCase, addTask, addFinanceRecord } = useData();
@@ -20,7 +21,13 @@ export const CaseManager: React.FC = () => {
   // Form states
   const [newHearing, setNewHearing] = useState<Partial<Hearing>>({ date: '', type: 'Duruşma', description: '' });
   const [newTask, setNewTask] = useState<Partial<Task>>({ title: '', priority: 'Orta', dueDate: '' });
-  const [newFinance, setNewFinance] = useState<Partial<FinancialRecord>>({ type: 'expense', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+  const [newFinance, setNewFinance] = useState<Partial<FinancialRecord>>({ 
+    type: 'expense', 
+    amount: 0, 
+    description: '', 
+    category: 'Gider Avansı',
+    date: new Date().toISOString().split('T')[0] 
+  });
   
   const [newCase, setNewCase] = useState<Partial<Case>>({ 
       caseNumber: '', title: '', clientName: '', type: 'Dava', status: CaseStatus.OPEN, description: '', assignedTo: 'Av. Burak G.' 
@@ -36,6 +43,7 @@ export const CaseManager: React.FC = () => {
       const updatedCase = cases.find(c => c.id === selectedCase.id) || selectedCase;
       setActiveCaseData({...updatedCase});
       setCaseTasks(tasks.filter(t => t.caseId === updatedCase.id));
+      // Filter finance records by case number
       setCaseFinance(finance.filter(f => f.caseReference === updatedCase.caseNumber));
     } else {
       setActiveCaseData(null);
@@ -127,18 +135,19 @@ export const CaseManager: React.FC = () => {
           amount: Number(newFinance.amount),
           description: newFinance.description || '',
           date: newFinance.date || '',
-          category: newFinance.type === 'income' ? 'Vekalet Ücreti' : 'Masraf',
-          caseReference: activeCaseData.caseNumber
+          category: newFinance.category || (newFinance.type === 'income' ? 'Vekalet Ücreti' : 'Masraf'),
+          caseReference: activeCaseData.caseNumber // Automatically link to current case
       };
       
       addFinanceRecord(financeToAdd);
       setIsFinanceModalOpen(false);
-      setNewFinance({ type: 'expense', amount: 0, description: '', date: new Date().toISOString().split('T')[0] });
+      setNewFinance({ type: 'expense', amount: 0, description: '', category: 'Gider Avansı', date: new Date().toISOString().split('T')[0] });
   }
 
   if (activeCaseData) {
     const totalExpense = caseFinance.filter(f => f.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
     const totalIncome = caseFinance.filter(f => f.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+    const netBalance = totalIncome - totalExpense;
 
     return (
       <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative">
@@ -209,24 +218,77 @@ export const CaseManager: React.FC = () => {
         {isFinanceModalOpen && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                 <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
-                    <h3 className="text-lg font-bold mb-4">Finansal İşlem Ekle</h3>
+                    <h3 className="text-lg font-bold mb-4 flex items-center">
+                        <DollarSign className="w-5 h-5 mr-2 text-green-600" />
+                        Finansal İşlem Ekle
+                    </h3>
                     <div className="space-y-3">
+                        <div>
+                            <label className="block text-xs font-medium text-slate-500 mb-1">Dosya No</label>
+                            <input type="text" disabled className="w-full border p-2 rounded bg-slate-100 text-slate-600" value={activeCaseData.caseNumber} />
+                        </div>
+
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">İşlem Türü</label>
                             <div className="flex space-x-2">
                                 <button 
-                                    className={`flex-1 py-2 rounded border ${newFinance.type === 'expense' ? 'bg-red-100 border-red-500 text-red-700' : 'bg-white border-slate-200 text-slate-600'}`}
-                                    onClick={() => setNewFinance({...newFinance, type: 'expense'})}
-                                >Gider / Masraf</button>
+                                    className={`flex-1 py-2 rounded border font-medium transition ${newFinance.type === 'expense' ? 'bg-red-100 border-red-500 text-red-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                                    onClick={() => setNewFinance({...newFinance, type: 'expense', category: 'Gider Avansı'})}
+                                >
+                                    Gider / Masraf
+                                </button>
                                 <button 
-                                    className={`flex-1 py-2 rounded border ${newFinance.type === 'income' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-white border-slate-200 text-slate-600'}`}
-                                    onClick={() => setNewFinance({...newFinance, type: 'income'})}
-                                >Gelir / Tahsilat</button>
+                                    className={`flex-1 py-2 rounded border font-medium transition ${newFinance.type === 'income' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                                    onClick={() => setNewFinance({...newFinance, type: 'income', category: 'Vekalet Ücreti'})}
+                                >
+                                    Gelir / Tahsilat
+                                </button>
                             </div>
                         </div>
+                        
+                        <div>
+                            <label className="block text-xs font-medium text-slate-500 mb-1">Kategori</label>
+                            <select 
+                                className="w-full border p-2 rounded bg-white text-slate-900" 
+                                value={newFinance.category} 
+                                onChange={e => setNewFinance({...newFinance, category: e.target.value})}
+                            >
+                                {newFinance.type === 'expense' ? (
+                                    <>
+                                        <option>Gider Avansı</option>
+                                        <option>Başvurma Harcı</option>
+                                        <option>Peşin Harç</option>
+                                        <option>Vekalet Harcı</option>
+                                        <option>Bilirkişi Ücreti</option>
+                                        <option>Tebligat Gideri</option>
+                                        <option>Yol Gideri</option>
+                                        <option>Ofis Masrafı</option>
+                                        <option>Diğer Masraf</option>
+                                    </>
+                                ) : (
+                                    <>
+                                        <option>Vekalet Ücreti</option>
+                                        <option>Danışmanlık</option>
+                                        <option>Masraf İadesi</option>
+                                        <option>İcra Tahsilatı</option>
+                                        <option>Diğer Gelir</option>
+                                    </>
+                                )}
+                            </select>
+                        </div>
+
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Tutar (TL)</label>
-                            <input type="number" className="w-full border p-2 rounded bg-white text-slate-900" value={newFinance.amount} onChange={e => setNewFinance({...newFinance, amount: Number(e.target.value)})} />
+                            <div className="relative">
+                                <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    className="w-full border p-2 rounded bg-white text-slate-900 pl-8" 
+                                    value={newFinance.amount} 
+                                    onChange={e => setNewFinance({...newFinance, amount: Number(e.target.value)})} 
+                                />
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₺</span>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-slate-500 mb-1">Açıklama</label>
@@ -340,40 +402,53 @@ export const CaseManager: React.FC = () => {
                     </h3>
                     <button 
                         onClick={() => setIsFinanceModalOpen(true)}
-                        className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 font-medium"
+                        className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 font-medium flex items-center shadow-sm"
                     >
-                        + İşlem Ekle
+                        <Plus className="w-3 h-3 mr-1" /> İşlem Ekle
                     </button>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="p-3 bg-green-50 rounded-lg border border-green-100">
                         <p className="text-xs text-green-600 font-medium mb-1">Tahsilat</p>
-                        <p className="text-lg font-bold text-green-700">{totalIncome} ₺</p>
+                        <p className="text-lg font-bold text-green-700">{totalIncome.toLocaleString('tr-TR')} ₺</p>
                     </div>
                     <div className="p-3 bg-red-50 rounded-lg border border-red-100">
                         <p className="text-xs text-red-600 font-medium mb-1">Masraf</p>
-                        <p className="text-lg font-bold text-red-700">{totalExpense} ₺</p>
+                        <p className="text-lg font-bold text-red-700">{totalExpense.toLocaleString('tr-TR')} ₺</p>
+                    </div>
+                     <div className={`p-3 rounded-lg border ${netBalance >= 0 ? 'bg-slate-50 border-slate-200' : 'bg-orange-50 border-orange-200'}`}>
+                        <p className="text-xs text-slate-500 font-medium mb-1">Net Bakiye</p>
+                        <p className={`text-lg font-bold ${netBalance >= 0 ? 'text-slate-700' : 'text-orange-700'}`}>{netBalance.toLocaleString('tr-TR')} ₺</p>
                     </div>
                 </div>
 
-                {caseFinance.length > 0 ? (
-                    <ul className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                        {caseFinance.map(f => (
-                            <li key={f.id} className="flex justify-between text-sm p-2 hover:bg-slate-50 rounded border-b border-slate-100 last:border-0">
-                                <div>
-                                    <p className="font-medium text-slate-700">{f.description}</p>
-                                    <p className="text-xs text-slate-400">{f.date}</p>
-                                </div>
-                                <span className={`font-bold ${f.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                    {f.type === 'income' ? '+' : '-'}{f.amount}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-xs text-slate-400 italic text-center">Bu dosyaya ait finansal kayıt yok.</p>
-                )}
+                <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 border-b border-slate-100 pb-2">Son İşlemler</h4>
+                    {caseFinance.length > 0 ? (
+                        <ul className="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                            {caseFinance.map(f => (
+                                <li key={f.id} className="flex items-start justify-between text-sm p-2.5 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-100 transition">
+                                    <div className="flex items-start space-x-3">
+                                        <div className={`mt-1 p-1.5 rounded-full ${f.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                            {f.type === 'income' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-slate-700 text-xs">{f.category}</p>
+                                            <p className="text-slate-600 text-xs">{f.description}</p>
+                                            <p className="text-[10px] text-slate-400 mt-0.5">{f.date}</p>
+                                        </div>
+                                    </div>
+                                    <span className={`font-bold text-sm ${f.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                        {f.type === 'income' ? '+' : '-'}{f.amount.toLocaleString('tr-TR')} ₺
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-xs text-slate-400 italic text-center py-4">Bu dosyaya ait finansal kayıt bulunmuyor.</p>
+                    )}
+                </div>
             </div>
           </div>
 

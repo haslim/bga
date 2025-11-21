@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { useData } from '../DataContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, defs, linearGradient } from 'recharts';
+import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { cases, tasks, finance } = useData();
@@ -19,7 +19,7 @@ export const Dashboard: React.FC = () => {
       time: c.hearings?.find(h => h.date.startsWith(today))?.date.split(' ')[1] || '09:00'
     }));
 
-  // 2. GELECEK 7 GÜN KRİTİK SÜRELER (Duruşmalar + Görevler)
+  // 2. GELECEK 7 GÜN KRİTİK SÜRELER
   const criticalDeadlines = [
     ...cases.filter(c => c.nextHearingDate && c.nextHearingDate > today && c.nextHearingDate <= sevenDaysLater).map(c => ({
       type: 'Duruşma',
@@ -50,14 +50,61 @@ export const Dashboard: React.FC = () => {
   const completedTasks = tasks.filter(t => t.completed).length;
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   
-  // 5. BU AY TAHSİLAT/MASRAF (Basit simülasyon)
-  const financeData = [
-    { name: 'Gelir', value: finance.filter(f => f.type === 'income').reduce((a, b) => a + b.amount, 0) },
-    { name: 'Gider', value: finance.filter(f => f.type === 'expense').reduce((a, b) => a + b.amount, 0) },
-  ];
+  // 5. GELİŞMİŞ FİNANSAL TREND ANALİZİ (Son 6 Ay)
+  const getTrendData = () => {
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      months.push(d);
+    }
+
+    return months.map(date => {
+      const monthKey = date.toLocaleString('default', { month: 'short' }); // 'Eki', 'Kas' vs.
+      const yearMonth = date.toISOString().slice(0, 7); // 2023-10
+      
+      // Filter records belonging to this month
+      const monthRecords = finance.filter(f => f.date.startsWith(yearMonth));
+      
+      const income = monthRecords.filter(f => f.type === 'income').reduce((sum, r) => sum + r.amount, 0);
+      const expense = monthRecords.filter(f => f.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
+
+      return {
+        name: monthKey,
+        Gelir: income,
+        Gider: expense
+      };
+    });
+  };
+
+  const trendData = getTrendData();
+  const currentMonthIncome = trendData[trendData.length - 1].Gelir;
+  const currentMonthExpense = trendData[trendData.length - 1].Gider;
+  const netBalance = finance.filter(f => f.type === 'income').reduce((a,b) => a + b.amount, 0) - finance.filter(f => f.type === 'expense').reduce((a,b) => a + b.amount, 0);
 
   // 6. AÇIK GÖREVLERİM
   const myOpenTasks = tasks.filter(t => t.assignedTo.includes('Burak') && !t.completed);
+
+  // Custom Tooltip for Chart
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-slate-200 rounded-lg shadow-xl">
+          <p className="font-bold text-slate-700 mb-2">{label}</p>
+          <p className="text-sm text-green-600 font-medium">
+            Gelir: {payload[0].value.toLocaleString('tr-TR')} ₺
+          </p>
+          <p className="text-sm text-red-600 font-medium">
+            Gider: {payload[1].value.toLocaleString('tr-TR')} ₺
+          </p>
+          <div className="border-t border-slate-100 mt-2 pt-2">
+             <p className="text-xs text-slate-500">Net: {(payload[0].value - payload[1].value).toLocaleString('tr-TR')} ₺</p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="p-8 space-y-6 bg-gray-50 min-h-screen animate-in fade-in">
@@ -97,13 +144,13 @@ export const Dashboard: React.FC = () => {
         </div>
          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Net Kasa (Tüm)</p>
+             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Toplam Net Kasa</p>
              <h3 className="text-2xl font-bold text-slate-700 mt-1">
-               {(financeData[0].value - financeData[1].value).toLocaleString('tr-TR')} ₺
+               {netBalance.toLocaleString('tr-TR')} ₺
              </h3>
           </div>
           <div className="p-3 bg-slate-100 text-slate-600 rounded-lg">
-            <TrendingUp className="w-6 h-6" />
+            <DollarSign className="w-6 h-6" />
           </div>
         </div>
       </div>
@@ -204,24 +251,47 @@ export const Dashboard: React.FC = () => {
 
         {/* RIGHT COLUMN: STATS */}
         <div className="space-y-6">
-            {/* 5. FİNANSAL GRAFİK */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-80">
-                <h3 className="font-bold text-slate-800 mb-4 flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
-                    Genel Finans Durumu
-                </h3>
-                <ResponsiveContainer width="100%" height="80%">
-                    <BarChart data={financeData}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                    <YAxis axisLine={false} tickLine={false} />
-                    <Tooltip cursor={{fill: 'transparent'}} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={50}>
-                        {financeData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={index === 0 ? '#4ade80' : '#f87171'} />
-                        ))}
-                    </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+            {/* 5. FİNANSAL GRAFİK (YENİ - AREA CHART) */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-[400px] flex flex-col">
+                <div className="mb-4 flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-slate-800 flex items-center">
+                        <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
+                        Finansal Trend (Son 6 Ay)
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1">Aylık Gelir/Gider Akışı</p>
+                  </div>
+                  <div className="text-right">
+                     <p className="text-xs text-slate-400">Bu Ay</p>
+                     <div className="flex flex-col items-end">
+                       <span className="text-xs font-bold text-green-600">+{currentMonthIncome.toLocaleString('tr-TR')}</span>
+                       <span className="text-xs font-bold text-red-500">-{currentMonthExpense.toLocaleString('tr-TR')}</span>
+                     </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 w-full h-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trendData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#16a34a" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#dc2626" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }} />
+                      <Area type="monotone" dataKey="Gelir" stroke="#16a34a" strokeWidth={2} fillOpacity={1} fill="url(#colorIncome)" activeDot={{ r: 6 }} />
+                      <Area type="monotone" dataKey="Gider" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorExpense)" activeDot={{ r: 6 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
             </div>
 
              {/* 3. EN AKTİF MÜVEKKİLLER */}

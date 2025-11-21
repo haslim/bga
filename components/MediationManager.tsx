@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useData } from '../DataContext';
-import { Mediation, MediationStatus, MediationMeeting } from '../types';
-import { generateMediationTemplate } from '../utils';
-import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare } from 'lucide-react';
+import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType } from '../types';
+import { processTemplate } from '../utils';
+import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3 } from 'lucide-react';
 
 export const MediationManager: React.FC = () => {
-  const { mediations, addMediation, updateMediation } = useData();
+  const { mediations, addMediation, updateMediation, templates, updateTemplate } = useData();
   
   const [selectedMediation, setSelectedMediation] = useState<Mediation | null>(null);
   const [activeMediationData, setActiveMediationData] = useState<Mediation | null>(null);
@@ -16,7 +16,13 @@ export const MediationManager: React.FC = () => {
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [templateContent, setTemplateContent] = useState('');
+  const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
+  
+  const [templatePreviewContent, setTemplatePreviewContent] = useState('');
+  
+  // Template Editing State
+  const [selectedTemplateToEdit, setSelectedTemplateToEdit] = useState<Template | null>(null);
+  const [editedTemplateContent, setEditedTemplateContent] = useState('');
 
   const [newMeeting, setNewMeeting] = useState<Partial<MediationMeeting>>({ date: '', participants: '', notes: '' });
   const [newApplication, setNewApplication] = useState<Partial<Mediation>>({
@@ -49,10 +55,18 @@ export const MediationManager: React.FC = () => {
     }
   };
 
-  const handleGenerateDoc = (docType: 'Basvuru' | 'Tutanak' | 'Anlasma') => {
+  const handleGenerateDoc = (docType: TemplateType) => {
       if (!activeMediationData) return;
-      const html = generateMediationTemplate(docType, activeMediationData);
-      setTemplateContent(html);
+      
+      // Find the current template from global state
+      const template = templates.find(t => t.type === docType);
+      if (!template) {
+          alert('Şablon bulunamadı!');
+          return;
+      }
+
+      const html = processTemplate(template.content, activeMediationData);
+      setTemplatePreviewContent(html);
       setIsTemplateModalOpen(true);
   };
 
@@ -60,13 +74,34 @@ export const MediationManager: React.FC = () => {
       const printWindow = window.open('', '', 'height=600,width=800');
       if(printWindow) {
           printWindow.document.write('<html><head><title>Yazdır</title></head><body>');
-          printWindow.document.write(templateContent);
+          printWindow.document.write(templatePreviewContent);
           printWindow.document.write('</body></html>');
           printWindow.document.close();
           printWindow.focus();
           printWindow.print();
       }
   };
+
+  // --- Template Editor Handlers ---
+  const openTemplateEditor = (type: TemplateType) => {
+      const template = templates.find(t => t.type === type);
+      if (template) {
+          setSelectedTemplateToEdit(template);
+          setEditedTemplateContent(template.content);
+          setIsTemplateEditorOpen(true);
+      }
+  };
+
+  const saveTemplate = () => {
+      if (selectedTemplateToEdit) {
+          updateTemplate({
+              ...selectedTemplateToEdit,
+              content: editedTemplateContent
+          });
+          setIsTemplateEditorOpen(false);
+      }
+  };
+  // -------------------------------
 
   const handleAddMeeting = () => {
     if (!activeMediationData || !newMeeting.date || !newMeeting.notes) return;
@@ -129,13 +164,87 @@ export const MediationManager: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto p-8 bg-gray-100">
-                             <div className="bg-white shadow-lg p-10 min-h-full mx-auto" dangerouslySetInnerHTML={{ __html: templateContent }} />
+                             <div className="bg-white shadow-lg p-10 min-h-full mx-auto" dangerouslySetInnerHTML={{ __html: templatePreviewContent }} />
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Add Meeting Modal - Redesigned */}
+            {/* Template Editor Modal */}
+            {isTemplateEditorOpen && selectedTemplateToEdit && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <div>
+                                <h3 className="font-bold text-slate-800 flex items-center text-lg">
+                                    <Edit3 className="w-5 h-5 mr-2 text-indigo-600" />
+                                    Şablon Düzenle: {selectedTemplateToEdit.name}
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1">HTML formatında düzenleme yapabilirsiniz. Değişkenleri süslü parantez içinde kullanın.</p>
+                            </div>
+                            <button onClick={() => setIsTemplateEditorOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="flex flex-1 overflow-hidden">
+                            {/* Editor Area */}
+                            <div className="flex-1 p-0 border-r border-slate-200 flex flex-col">
+                                <div className="bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-500 border-b border-slate-200">HTML Editör</div>
+                                <textarea 
+                                    className="flex-1 w-full h-full p-4 font-mono text-sm outline-none resize-none bg-white text-slate-800"
+                                    value={editedTemplateContent}
+                                    onChange={(e) => setEditedTemplateContent(e.target.value)}
+                                />
+                            </div>
+                            
+                            {/* Sidebar: Variables */}
+                            <div className="w-64 bg-slate-50 p-4 overflow-y-auto">
+                                <h4 className="text-sm font-bold text-slate-700 mb-3">Kullanılabilir Değişkenler</h4>
+                                <div className="space-y-2">
+                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{DOSYA_NO}}')}>
+                                        <span className="font-bold text-blue-600">{'{{DOSYA_NO}}'}</span>
+                                        <p className="text-slate-500 mt-1">Dosya Numarası</p>
+                                    </div>
+                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{MUVEKKIL}}')}>
+                                        <span className="font-bold text-blue-600">{'{{MUVEKKIL}}'}</span>
+                                        <p className="text-slate-500 mt-1">Başvurucu Adı</p>
+                                    </div>
+                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{KARSI_TARAF}}')}>
+                                        <span className="font-bold text-blue-600">{'{{KARSI_TARAF}}'}</span>
+                                        <p className="text-slate-500 mt-1">Karşı Taraf Adı</p>
+                                    </div>
+                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{KONU}}')}>
+                                        <span className="font-bold text-blue-600">{'{{KONU}}'}</span>
+                                        <p className="text-slate-500 mt-1">Uyuşmazlık Konusu</p>
+                                    </div>
+                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{ARABULUCU}}')}>
+                                        <span className="font-bold text-blue-600">{'{{ARABULUCU}}'}</span>
+                                        <p className="text-slate-500 mt-1">Arabulucu Adı</p>
+                                    </div>
+                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{BUGUN}}')}>
+                                        <span className="font-bold text-blue-600">{'{{BUGUN}}'}</span>
+                                        <p className="text-slate-500 mt-1">Bugünün Tarihi</p>
+                                    </div>
+                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{SONUC_METNI}}')}>
+                                        <span className="font-bold text-blue-600">{'{{SONUC_METNI}}'}</span>
+                                        <p className="text-slate-500 mt-1">Otomatik Sonuç (Anlaştı/Anlaşamadı)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+                            <button onClick={() => setIsTemplateEditorOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium transition">İptal</button>
+                            <button onClick={saveTemplate} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md flex items-center">
+                                <Save className="w-4 h-4 mr-2" /> Şablonu Kaydet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Meeting Modal */}
             {isMeetingModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
@@ -270,17 +379,25 @@ export const MediationManager: React.FC = () => {
                             </p>
                             <div className="space-y-2.5">
                                 {['Basvuru', 'Tutanak', 'Anlasma'].map((type) => (
-                                    <button 
-                                        key={type}
-                                        onClick={() => handleGenerateDoc(type as any)}
-                                        className="w-full bg-white text-slate-700 border border-slate-200 hover:border-indigo-300 hover:shadow-md hover:text-indigo-700 py-3 px-4 rounded-xl text-sm font-medium transition-all text-left flex items-center justify-between group"
-                                    >
-                                        <span className="flex items-center">
-                                            <FileText className="w-4 h-4 mr-3 text-slate-400 group-hover:text-indigo-500" />
-                                            {type === 'Basvuru' ? 'Başvuru Formu' : type === 'Tutanak' ? 'Son Tutanak' : 'Anlaşma Belgesi'}
-                                        </span>
-                                        <span className="opacity-0 group-hover:opacity-100 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Oluştur</span>
-                                    </button>
+                                    <div key={type} className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => handleGenerateDoc(type as TemplateType)}
+                                            className="flex-1 bg-white text-slate-700 border border-slate-200 hover:border-indigo-300 hover:shadow-md hover:text-indigo-700 py-3 px-4 rounded-xl text-sm font-medium transition-all text-left flex items-center justify-between group"
+                                        >
+                                            <span className="flex items-center">
+                                                <FileText className="w-4 h-4 mr-3 text-slate-400 group-hover:text-indigo-500" />
+                                                {type === 'Basvuru' ? 'Başvuru Formu' : type === 'Tutanak' ? 'Son Tutanak' : 'Anlaşma Belgesi'}
+                                            </span>
+                                            <span className="opacity-0 group-hover:opacity-100 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Oluştur</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => openTemplateEditor(type as TemplateType)}
+                                            className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                                            title="Şablonu Düzenle"
+                                        >
+                                            <Settings className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
                         </div>

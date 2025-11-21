@@ -104,6 +104,15 @@ export interface Mediation {
   meetings: MediationMeeting[];
 }
 
+export type TemplateType = 'Basvuru' | 'Tutanak' | 'Anlasma';
+
+export interface Template {
+  id: string;
+  type: TemplateType;
+  name: string;
+  content: string; // HTML content with placeholders like {{MÜVEKKİL}}
+}
+
 export interface Client {
   id: string;
   name: string;

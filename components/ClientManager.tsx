@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { useData } from '../DataContext';
 import { Client } from '../types';
-import { Mail, Phone, MoreHorizontal, User as UserIcon, Building, Plus, Search, Filter, MapPin, Tag, X, Save, CreditCard } from 'lucide-react';
+import { Mail, Phone, MoreHorizontal, User as UserIcon, Building, Plus, Search, Filter, MapPin, Tag, X, Save, CreditCard, FileText } from 'lucide-react';
 import { validateTaxNumber } from '../utils';
 
 export const ClientManager: React.FC = () => {
@@ -271,9 +272,12 @@ export const ClientManager: React.FC = () => {
                         {clientCases.length > 0 ? (
                             <ul className="space-y-2">
                                 {clientCases.map(c => (
-                                    <li key={c.id} className="text-sm p-2 bg-slate-50 rounded border border-slate-100">
-                                        <div className="font-medium text-slate-800">{c.caseNumber}</div>
-                                        <div className="text-slate-500 text-xs truncate">{c.title}</div>
+                                    <li key={c.id} className="text-sm p-2 bg-slate-50 rounded border border-slate-100 group hover:border-blue-200 transition">
+                                        <div className="font-medium text-slate-800 flex items-center">
+                                            <FileText className="w-3 h-3 mr-2 text-slate-400" />
+                                            {c.caseNumber}
+                                        </div>
+                                        <div className="text-slate-500 text-xs truncate pl-5">{c.title}</div>
                                     </li>
                                 ))}
                             </ul>
@@ -359,7 +363,9 @@ export const ClientManager: React.FC = () => {
         
         {/* Grid for Clients */}
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredClients.map(client => (
+            {filteredClients.map(client => {
+            const caseCount = cases.filter(c => c.clientName === client.name).length;
+            return (
             <div key={client.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all group relative">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center space-x-3">
@@ -402,11 +408,17 @@ export const ClientManager: React.FC = () => {
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <div>
-                        <p className="text-xs text-slate-400 font-medium">Bakiye</p>
-                        <p className={`font-bold ${client.balance < 0 ? 'text-red-600' : client.balance > 0 ? 'text-green-600' : 'text-slate-600'}`}>
-                            {client.balance.toLocaleString('tr-TR')} ₺
-                        </p>
+                    <div className="flex gap-5">
+                        <div>
+                            <p className="text-xs text-slate-400 font-medium">Dosya</p>
+                            <p className="font-bold text-slate-700">{caseCount}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-slate-400 font-medium">Bakiye</p>
+                            <p className={`font-bold ${client.balance < 0 ? 'text-red-600' : client.balance > 0 ? 'text-green-600' : 'text-slate-600'}`}>
+                                {client.balance.toLocaleString('tr-TR')} ₺
+                            </p>
+                        </div>
                     </div>
                     <button 
                         onClick={() => { setSelectedClient(client); setIsDetailOpen(true); }}
@@ -416,7 +428,7 @@ export const ClientManager: React.FC = () => {
                     </button>
                 </div>
             </div>
-            ))}
+            )})}
         </div>
       </div>
     </div>
