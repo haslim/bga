@@ -15,6 +15,46 @@ import { SettingsManager } from './components/SettingsManager';
 import { ViewState } from './types';
 import { Lock, AlertCircle, Menu, Scale, Quote, Mail, ArrowRight } from 'lucide-react';
 
+// Define assets for the random login screen
+const LOGIN_ASSETS = [
+  {
+    quote: "Bir suç her şeyden önce kişinin kendi vicdanına karşı işlenmiş bir hatadır.",
+    author: "Suç ve Ceza — Fyodor Dostoyevski",
+    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=2000", // Moody library background
+    coverUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=600" // Book cover style
+  },
+  {
+    quote: "Çoğunluğa bağlı olmayan tek şey insanın vicdanıdır.",
+    author: "Bülbülü Öldürmek — Harper Lee",
+    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=2000", // Library shelves
+    coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600" // Open book
+  },
+  {
+    quote: "Adalet, evrenin ruhudur.",
+    author: "Ömer Hayyam",
+    image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=2000", // Scales of justice
+    coverUrl: "https://images.unsplash.com/photo-1589994965851-08d8095e267f?auto=format&fit=crop&q=80&w=600" // Gavel vertical
+  },
+  {
+    quote: "Kanun, adalet kavramını gerçekleştirmek için vardır.",
+    author: "Sefiller — Victor Hugo",
+    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=2000", // Open books
+    coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600" // Antique book
+  },
+  {
+    quote: "Doğru olanı yapmak, korkudan titrese bile, ileriye doğru bir adım atmaktır.",
+    author: "Dava — Franz Kafka",
+    image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=2000", // Antique books
+    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=600" // White book
+  },
+  {
+    quote: "Adalet mülkün temelidir.",
+    author: "Mustafa Kemal Atatürk",
+    image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=2000", // Gavel and book
+    coverUrl: "https://images.unsplash.com/photo-1505664063603-28e48ca204eb?auto=format&fit=crop&q=80&w=600" // Law code book
+  }
+];
+
 const MainContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile Sidebar State
@@ -22,10 +62,16 @@ const MainContent: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   
+  // Random Asset State
+  const [randomAsset, setRandomAsset] = useState(LOGIN_ASSETS[0]);
+  
   const { currentUser, login, logout, siteSettings } = useData();
 
   useEffect(() => {
     document.title = `${siteSettings.title} - ${siteSettings.subtitle}`;
+    // Select a random asset on mount
+    const randomIndex = Math.floor(Math.random() * LOGIN_ASSETS.length);
+    setRandomAsset(LOGIN_ASSETS[randomIndex]);
   }, [siteSettings]);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -61,32 +107,51 @@ const MainContent: React.FC = () => {
         {/* Left Side - Branding & Aesthetics (Hidden on Mobile) */}
         <div className="hidden lg:flex w-1/2 bg-slate-900 relative overflow-hidden items-center justify-center">
            {/* Dynamic Brand Background Overlay */}
-           <div className="absolute inset-0 bg-brand-900 opacity-90 z-10"></div>
-           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center z-0"></div>
+           <div className="absolute inset-0 bg-brand-900 opacity-80 z-10 mix-blend-multiply"></div>
+           <div 
+              className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-1000 ease-in-out transform scale-105"
+              style={{ backgroundImage: `url('${randomAsset.image}')` }}
+           ></div>
            
-           <div className="relative z-20 p-16 flex flex-col h-full justify-between text-white w-full max-w-2xl">
+           <div className="relative z-20 p-12 flex flex-col h-full justify-between text-white w-full max-w-2xl">
+              {/* Top Logo Area */}
               <div className="flex items-center space-x-3">
-                 <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/20">
+                 <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/20 shadow-lg">
                     {siteSettings.logoUrl ? (
                         <img src={siteSettings.logoUrl} alt="Logo" className="w-full h-full object-cover rounded-lg" />
                     ) : (
                         <Scale className="text-white w-6 h-6" />
                     )}
                  </div>
-                 <span className="font-bold text-xl tracking-wide">{siteSettings.title}</span>
+                 <span className="font-bold text-xl tracking-wide drop-shadow-md">{siteSettings.title}</span>
               </div>
 
-              <div>
-                <Quote className="w-12 h-12 text-brand-400 mb-6 opacity-50" />
-                <blockquote className="text-3xl font-bold leading-tight mb-6">
-                  "Adalet mülkün temelidir."
+              {/* Center Content with Book Cover & Quote */}
+              <div className="flex flex-col items-center text-center animate-in slide-in-from-bottom-8 fade-in duration-1000">
+                
+                {/* Book Cover Image */}
+                <div className="relative group mb-8">
+                    <div className="absolute -inset-1 bg-white/20 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                    <img 
+                        src={randomAsset.coverUrl} 
+                        alt="Book Cover" 
+                        className="relative w-40 md:w-48 h-auto aspect-[2/3] object-cover rounded-lg shadow-2xl border-4 border-white/10 transform group-hover:scale-105 transition duration-500 ease-out"
+                    />
+                </div>
+
+                <Quote className="w-8 h-8 text-brand-400 mb-4 opacity-80" />
+                <blockquote className="text-2xl md:text-3xl font-bold leading-tight mb-6 drop-shadow-lg font-serif italic max-w-lg">
+                  "{randomAsset.quote}"
                 </blockquote>
-                <p className="text-lg text-brand-100 opacity-80 font-light">
-                  Modern hukuk bürosu yönetim sistemi ile süreçlerinizi hızlandırın, müvekkillerinize odaklanın.
+                <p className="text-lg text-brand-100 opacity-90 font-medium flex items-center justify-center">
+                  <span className="w-8 h-px bg-brand-300 mr-3"></span>
+                  {randomAsset.author}
+                  <span className="w-8 h-px bg-brand-300 ml-3"></span>
                 </p>
               </div>
 
-              <div className="text-sm text-brand-200/60">
+              {/* Footer Copyright */}
+              <div className="text-sm text-brand-200/60 text-center">
                  © 2025 {siteSettings.title} Yazılım Sistemleri.
               </div>
            </div>
