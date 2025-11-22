@@ -4,10 +4,10 @@ import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile, Document, MediationParty } from '../types';
 import { processTemplate } from '../utils';
 import { VideoRoom } from './VideoRoom';
-import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon, Bell, Video, PenTool, Send, Loader2, AlertTriangle, Check } from 'lucide-react';
+import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon, Bell, Video, PenTool, Send, Loader2, AlertTriangle, Check, FileCheck } from 'lucide-react';
 
 export const MediationManager: React.FC = () => {
-  const { mediations, addMediation, updateMediation, deleteMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile, notificationSettings, addNotification } = useData();
+  const { mediations, addMediation, updateMediation, deleteMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile, notificationSettings, addNotification, siteSettings } = useData();
   
   const [selectedMediation, setSelectedMediation] = useState<Mediation | null>(null);
   const [activeMediationData, setActiveMediationData] = useState<Mediation | null>(null);
@@ -21,6 +21,7 @@ export const MediationManager: React.FC = () => {
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // Oturum iptal/erteleme
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false); // Report Modal
   const [meetingToCancel, setMeetingToCancel] = useState<MediationMeeting | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   
@@ -508,6 +509,36 @@ export const MediationManager: React.FC = () => {
     setTimeout(() => { if (textareaRef.current) textareaRef.current.focus(); }, 0);
   };
 
+  // --- REPORT PRINTING LOGIC ---
+  const handlePrintReport = () => {
+      const reportContent = document.getElementById('printable-report');
+      if (!reportContent) return;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+          printWindow.document.write(`
+              <html>
+              <head>
+                  <title>Arabuluculuk Raporu - ${activeMediationData?.fileNumber}</title>
+                  <script src="https://cdn.tailwindcss.com"></script>
+                  <style>
+                      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                      body { font-family: 'Inter', sans-serif; -webkit-print-color-adjust: exact; }
+                      @page { size: A4; margin: 1cm; }
+                  </style>
+              </head>
+              <body class="bg-white p-8">
+                  ${reportContent.innerHTML}
+                  <script>
+                      window.onload = function() { window.print(); window.close(); }
+                  </script>
+              </body>
+              </html>
+          `);
+          printWindow.document.close();
+      }
+  };
+
   // --- RENDER ---
   if (activeVideoMeeting) {
       return <VideoRoom meetingId={activeVideoMeeting} participantName={mediatorProfile.name} onLeave={() => setActiveVideoMeeting(null)} />;
@@ -519,6 +550,171 @@ export const MediationManager: React.FC = () => {
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative dark:bg-slate-900 dark:text-white">
         
+        {/* Report Modal */}
+        {isReportModalOpen && activeMediationData && (
+            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 shrink-0">
+                        <h3 className="font-bold text-lg text-slate-800 dark:text-white flex items-center">
+                            <FileCheck className="w-5 h-5 mr-2 text-brand-600" />
+                            Dosya Durum Raporu
+                        </h3>
+                        <button onClick={() => setIsReportModalOpen(false)}><X className="w-6 h-6 text-slate-400 hover:text-slate-600" /></button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-8 bg-slate-100 dark:bg-slate-900">
+                        {/* Printable Area */}
+                        <div id="printable-report" className="bg-white text-slate-900 p-10 shadow-lg max-w-[210mm] mx-auto min-h-[297mm]">
+                            {/* Header */}
+                            <div className="border-b-2 border-slate-800 pb-6 mb-8 flex justify-between items-end">
+                                <div>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        {siteSettings.logoUrl ? (
+                                            <img src={siteSettings.logoUrl} alt="Logo" className="h-12 object-contain" />
+                                        ) : (
+                                            <Scale className="w-10 h-10 text-slate-800" />
+                                        )}
+                                        <div>
+                                            <h1 className="text-2xl font-bold uppercase tracking-wide">{siteSettings.title}</h1>
+                                            <p className="text-sm text-slate-500 font-medium">{siteSettings.subtitle}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-slate-400 uppercase font-bold">Rapor Tarihi</p>
+                                    <p className="font-mono font-bold">{new Date().toLocaleDateString('tr-TR')}</p>
+                                </div>
+                            </div>
+
+                            <h2 className="text-xl font-bold text-center underline mb-8">ARABULUCULUK SÜREÇ RAPORU</h2>
+
+                            {/* Section 1: General Info */}
+                            <div className="mb-8">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">1. Dosya Künyesi</h3>
+                                <div className="grid grid-cols-2 gap-y-3 gap-x-8 text-sm">
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Dosya No:</span>
+                                        <span>{activeMediationData.fileNumber}</span>
+                                    </div>
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Başvuru Tarihi:</span>
+                                        <span>{activeMediationData.applicationDate}</span>
+                                    </div>
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Arabulucu:</span>
+                                        <span>{activeMediationData.mediatorName}</span>
+                                    </div>
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Dosya Durumu:</span>
+                                        <span className="uppercase font-bold">{activeMediationData.status}</span>
+                                    </div>
+                                    <div className="col-span-2 flex flex-col mt-2">
+                                        <span className="font-bold mb-1">Uyuşmazlık Konusu:</span>
+                                        <p className="text-justify bg-slate-50 p-2 rounded border border-slate-100 text-xs leading-relaxed">
+                                            {activeMediationData.subject}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 2: Parties */}
+                            <div className="mb-8">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">2. Taraf Bilgileri</h3>
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Applicants */}
+                                    <div className="border border-slate-200 rounded p-3">
+                                        <h4 className="text-xs font-bold text-center border-b border-slate-200 pb-2 mb-2 bg-slate-50">BAŞVURUCU(LAR)</h4>
+                                        <ul className="space-y-2 text-sm">
+                                            {activeMediationData.parties?.filter(p => p.role === 'Başvurucu').map((p, i) => (
+                                                <li key={i} className="flex flex-col">
+                                                    <span className="font-bold">• {p.name}</span>
+                                                    <span className="text-xs text-slate-500 ml-3">Tel: {p.phone}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    {/* Counter Parties */}
+                                    <div className="border border-slate-200 rounded p-3">
+                                        <h4 className="text-xs font-bold text-center border-b border-slate-200 pb-2 mb-2 bg-slate-50">KARŞI TARAF(LAR)</h4>
+                                        <ul className="space-y-2 text-sm">
+                                            {activeMediationData.parties?.filter(p => p.role === 'Karşı Taraf').map((p, i) => (
+                                                <li key={i} className="flex flex-col">
+                                                    <span className="font-bold">• {p.name}</span>
+                                                    <span className="text-xs text-slate-500 ml-3">Tel: {p.phone}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 3: Process History */}
+                            <div className="mb-8">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">3. Süreç Geçmişi ve Oturumlar</h3>
+                                {activeMediationData.meetings.length > 0 ? (
+                                    <table className="w-full text-sm border-collapse border border-slate-200">
+                                        <thead>
+                                            <tr className="bg-slate-50 text-xs uppercase">
+                                                <th className="border border-slate-200 p-2 text-left">Tarih</th>
+                                                <th className="border border-slate-200 p-2 text-left">Oturum Türü</th>
+                                                <th className="border border-slate-200 p-2 text-left">Katılımcılar</th>
+                                                <th className="border border-slate-200 p-2 text-left">Sonuç / Not</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {activeMediationData.meetings.map((m, i) => (
+                                                <tr key={i}>
+                                                    <td className="border border-slate-200 p-2 font-mono text-xs">{new Date(m.date).toLocaleString('tr-TR')}</td>
+                                                    <td className="border border-slate-200 p-2">{m.type}</td>
+                                                    <td className="border border-slate-200 p-2">{m.participants}</td>
+                                                    <td className="border border-slate-200 p-2">
+                                                        <span className={`font-bold text-xs px-1 rounded ${m.outcome === 'İptal' ? 'bg-red-100 text-red-700' : 'bg-slate-100'}`}>{m.outcome}</span>
+                                                        {m.cancellationReason && <span className="block text-xs italic text-red-600">({m.cancellationReason})</span>}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-sm text-slate-500 italic border border-slate-200 p-4 text-center">Henüz yapılmış veya planlanmış bir oturum kaydı bulunmamaktadır.</p>
+                                )}
+                            </div>
+
+                            {/* Section 4: Result */}
+                            <div className="mb-12">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">4. Sonuç ve Kanaat</h3>
+                                <div className="border border-slate-200 p-4 rounded text-sm leading-relaxed min-h-[100px]">
+                                    <p>
+                                        İşbu arabuluculuk dosyası <strong>{activeMediationData.status}</strong> ile sonuçlanmıştır. 
+                                        {activeMediationData.meetings.length} adet oturum gerçekleştirilmiştir.
+                                    </p>
+                                    <p className="mt-2">
+                                        Süreç sonunda tarafların iradeleri tutanak altına alınmış ve sistemde arşivlenmiştir.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Footer Signature */}
+                            <div className="flex justify-end mt-16">
+                                <div className="text-center w-64">
+                                    <p className="font-bold mb-12 border-b border-slate-300 pb-2">Arabulucu</p>
+                                    <p className="font-bold">{mediatorProfile.name}</p>
+                                    <p className="text-xs text-slate-500">Sicil No: {mediatorProfile.registrationNumber}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 shrink-0">
+                        <button onClick={() => setIsReportModalOpen(false)} className="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">Kapat</button>
+                        <button onClick={handlePrintReport} className="bg-brand-600 text-white px-6 py-2.5 rounded-lg hover:bg-brand-700 font-bold shadow-lg flex items-center">
+                            <Printer className="w-4 h-4 mr-2" /> Yazdır / PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         {/* Meeting Cancel Modal */}
         {isCancelModalOpen && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
@@ -948,7 +1144,10 @@ export const MediationManager: React.FC = () => {
                              >
                                  <Trash2 className="w-5 h-5" />
                              </button>
-                             <button className="bg-brand-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-brand-700 flex items-center">
+                             <button 
+                                onClick={() => setIsReportModalOpen(true)}
+                                className="bg-brand-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-brand-700 flex items-center"
+                             >
                                  <Printer className="w-4 h-4 mr-2" /> Rapor Al
                              </button>
                          </div>
@@ -1330,6 +1529,171 @@ export const MediationManager: React.FC = () => {
                            <div className="bg-white shadow-lg p-10 min-h-full mx-auto text-black" dangerouslySetInnerHTML={{ __html: templatePreviewContent }} />
                       </div>
                  </div>
+            </div>
+        )}
+
+        {/* Report Modal */}
+        {isReportModalOpen && activeMediationData && (
+            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 shrink-0">
+                        <h3 className="font-bold text-lg text-slate-800 dark:text-white flex items-center">
+                            <FileCheck className="w-5 h-5 mr-2 text-brand-600" />
+                            Dosya Durum Raporu
+                        </h3>
+                        <button onClick={() => setIsReportModalOpen(false)}><X className="w-6 h-6 text-slate-400 hover:text-slate-600" /></button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-8 bg-slate-100 dark:bg-slate-900">
+                        {/* Printable Area */}
+                        <div id="printable-report" className="bg-white text-slate-900 p-10 shadow-lg max-w-[210mm] mx-auto min-h-[297mm]">
+                            {/* Header */}
+                            <div className="border-b-2 border-slate-800 pb-6 mb-8 flex justify-between items-end">
+                                <div>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        {siteSettings.logoUrl ? (
+                                            <img src={siteSettings.logoUrl} alt="Logo" className="h-12 object-contain" />
+                                        ) : (
+                                            <Scale className="w-10 h-10 text-slate-800" />
+                                        )}
+                                        <div>
+                                            <h1 className="text-2xl font-bold uppercase tracking-wide">{siteSettings.title}</h1>
+                                            <p className="text-sm text-slate-500 font-medium">{siteSettings.subtitle}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-slate-400 uppercase font-bold">Rapor Tarihi</p>
+                                    <p className="font-mono font-bold">{new Date().toLocaleDateString('tr-TR')}</p>
+                                </div>
+                            </div>
+
+                            <h2 className="text-xl font-bold text-center underline mb-8">ARABULUCULUK SÜREÇ RAPORU</h2>
+
+                            {/* Section 1: General Info */}
+                            <div className="mb-8">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">1. Dosya Künyesi</h3>
+                                <div className="grid grid-cols-2 gap-y-3 gap-x-8 text-sm">
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Dosya No:</span>
+                                        <span>{activeMediationData.fileNumber}</span>
+                                    </div>
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Başvuru Tarihi:</span>
+                                        <span>{activeMediationData.applicationDate}</span>
+                                    </div>
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Arabulucu:</span>
+                                        <span>{activeMediationData.mediatorName}</span>
+                                    </div>
+                                    <div className="flex border-b border-slate-100 pb-1">
+                                        <span className="font-bold w-32">Dosya Durumu:</span>
+                                        <span className="uppercase font-bold">{activeMediationData.status}</span>
+                                    </div>
+                                    <div className="col-span-2 flex flex-col mt-2">
+                                        <span className="font-bold mb-1">Uyuşmazlık Konusu:</span>
+                                        <p className="text-justify bg-slate-50 p-2 rounded border border-slate-100 text-xs leading-relaxed">
+                                            {activeMediationData.subject}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 2: Parties */}
+                            <div className="mb-8">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">2. Taraf Bilgileri</h3>
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Applicants */}
+                                    <div className="border border-slate-200 rounded p-3">
+                                        <h4 className="text-xs font-bold text-center border-b border-slate-200 pb-2 mb-2 bg-slate-50">BAŞVURUCU(LAR)</h4>
+                                        <ul className="space-y-2 text-sm">
+                                            {activeMediationData.parties?.filter(p => p.role === 'Başvurucu').map((p, i) => (
+                                                <li key={i} className="flex flex-col">
+                                                    <span className="font-bold">• {p.name}</span>
+                                                    <span className="text-xs text-slate-500 ml-3">Tel: {p.phone}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    {/* Counter Parties */}
+                                    <div className="border border-slate-200 rounded p-3">
+                                        <h4 className="text-xs font-bold text-center border-b border-slate-200 pb-2 mb-2 bg-slate-50">KARŞI TARAF(LAR)</h4>
+                                        <ul className="space-y-2 text-sm">
+                                            {activeMediationData.parties?.filter(p => p.role === 'Karşı Taraf').map((p, i) => (
+                                                <li key={i} className="flex flex-col">
+                                                    <span className="font-bold">• {p.name}</span>
+                                                    <span className="text-xs text-slate-500 ml-3">Tel: {p.phone}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 3: Process History */}
+                            <div className="mb-8">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">3. Süreç Geçmişi ve Oturumlar</h3>
+                                {activeMediationData.meetings.length > 0 ? (
+                                    <table className="w-full text-sm border-collapse border border-slate-200">
+                                        <thead>
+                                            <tr className="bg-slate-50 text-xs uppercase">
+                                                <th className="border border-slate-200 p-2 text-left">Tarih</th>
+                                                <th className="border border-slate-200 p-2 text-left">Oturum Türü</th>
+                                                <th className="border border-slate-200 p-2 text-left">Katılımcılar</th>
+                                                <th className="border border-slate-200 p-2 text-left">Sonuç / Not</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {activeMediationData.meetings.map((m, i) => (
+                                                <tr key={i}>
+                                                    <td className="border border-slate-200 p-2 font-mono text-xs">{new Date(m.date).toLocaleString('tr-TR')}</td>
+                                                    <td className="border border-slate-200 p-2">{m.type}</td>
+                                                    <td className="border border-slate-200 p-2">{m.participants}</td>
+                                                    <td className="border border-slate-200 p-2">
+                                                        <span className={`font-bold text-xs px-1 rounded ${m.outcome === 'İptal' ? 'bg-red-100 text-red-700' : 'bg-slate-100'}`}>{m.outcome}</span>
+                                                        {m.cancellationReason && <span className="block text-xs italic text-red-600">({m.cancellationReason})</span>}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-sm text-slate-500 italic border border-slate-200 p-4 text-center">Henüz yapılmış veya planlanmış bir oturum kaydı bulunmamaktadır.</p>
+                                )}
+                            </div>
+
+                            {/* Section 4: Result */}
+                            <div className="mb-12">
+                                <h3 className="text-sm font-bold bg-slate-100 p-2 border-l-4 border-slate-800 mb-4 uppercase">4. Sonuç ve Kanaat</h3>
+                                <div className="border border-slate-200 p-4 rounded text-sm leading-relaxed min-h-[100px]">
+                                    <p>
+                                        İşbu arabuluculuk dosyası <strong>{activeMediationData.status}</strong> ile sonuçlanmıştır. 
+                                        {activeMediationData.meetings.length} adet oturum gerçekleştirilmiştir.
+                                    </p>
+                                    <p className="mt-2">
+                                        Süreç sonunda tarafların iradeleri tutanak altına alınmış ve sistemde arşivlenmiştir.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Footer Signature */}
+                            <div className="flex justify-end mt-16">
+                                <div className="text-center w-64">
+                                    <p className="font-bold mb-12 border-b border-slate-300 pb-2">Arabulucu</p>
+                                    <p className="font-bold">{mediatorProfile.name}</p>
+                                    <p className="text-xs text-slate-500">Sicil No: {mediatorProfile.registrationNumber}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 shrink-0">
+                        <button onClick={() => setIsReportModalOpen(false)} className="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">Kapat</button>
+                        <button onClick={handlePrintReport} className="bg-brand-600 text-white px-6 py-2.5 rounded-lg hover:bg-brand-700 font-bold shadow-lg flex items-center">
+                            <Printer className="w-4 h-4 mr-2" /> Yazdır / PDF
+                        </button>
+                    </div>
+                </div>
             </div>
         )}
     </div>
