@@ -622,6 +622,140 @@ export const MediationManager: React.FC = () => {
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative dark:bg-slate-900 dark:text-white">
         
+        {/* Add Meeting Modal */}
+        {isMeetingModalOpen && (
+            <Portal>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md flex flex-col animate-in zoom-in-95">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center rounded-t-xl">
+                             <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+                                <Calendar className="w-5 h-5 mr-2 text-brand-600" />
+                                Yeni Oturum Planla
+                             </h3>
+                             <button onClick={() => setIsMeetingModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Tarih ve Saat</label>
+                                <input 
+                                    type="datetime-local" 
+                                    className={inputClass}
+                                    value={newMeeting.date}
+                                    onChange={e => setNewMeeting({...newMeeting, date: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Görüşme Tipi</label>
+                                <div className="flex space-x-2">
+                                    <button 
+                                        onClick={() => setNewMeeting({...newMeeting, type: 'Fiziksel'})}
+                                        className={`flex-1 py-2 rounded-lg border text-sm font-bold transition ${newMeeting.type === 'Fiziksel' ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 text-blue-700 dark:text-blue-400' : 'border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                                    >
+                                        Fiziksel
+                                    </button>
+                                    <button 
+                                        onClick={() => setNewMeeting({...newMeeting, type: 'Online'})}
+                                        className={`flex-1 py-2 rounded-lg border text-sm font-bold transition ${newMeeting.type === 'Online' ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-200 text-purple-700 dark:text-purple-400' : 'border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                                    >
+                                        Online
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {newMeeting.type === 'Fiziksel' ? (
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Konum / Adres</label>
+                                    <input 
+                                        type="text" 
+                                        className={inputClass}
+                                        value={newMeeting.location}
+                                        onChange={e => setNewMeeting({...newMeeting, location: e.target.value})}
+                                        placeholder="Örn: Ofis Toplantı Odası"
+                                    />
+                                </div>
+                            ) : (
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Görüşme Linki (Otomatik Oluşur)</label>
+                                    <input 
+                                        type="text" 
+                                        className={inputClass}
+                                        value={newMeeting.link}
+                                        onChange={e => setNewMeeting({...newMeeting, link: e.target.value})}
+                                        placeholder="Boş bırakırsanız sistem link üretir"
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Katılımcılar</label>
+                                <input 
+                                    type="text" 
+                                    className={inputClass}
+                                    value={newMeeting.participants}
+                                    onChange={e => setNewMeeting({...newMeeting, participants: e.target.value})}
+                                    placeholder="Örn: Taraflar ve Vekilleri"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Notlar</label>
+                                <textarea 
+                                    className={inputClass}
+                                    rows={3}
+                                    value={newMeeting.notes}
+                                    onChange={e => setNewMeeting({...newMeeting, notes: e.target.value})}
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 rounded-b-xl">
+                            <button onClick={() => setIsMeetingModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
+                            <button onClick={handleAddMeeting} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg">
+                                <Save className="w-4 h-4 mr-2" /> Kaydet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Portal>
+        )}
+
+        {/* Cancel Modal */}
+        {isCancelModalOpen && meetingToCancel && (
+            <Portal>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md flex flex-col animate-in zoom-in-95">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center rounded-t-xl">
+                             <h3 className="text-lg font-bold text-red-600 flex items-center">
+                                <AlertTriangle className="w-5 h-5 mr-2" />
+                                Oturum İptal / Erteleme
+                             </h3>
+                             <button onClick={() => setIsCancelModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-sm text-slate-600 dark:text-slate-300">
+                                <strong>{meetingToCancel.date}</strong> tarihli oturumu iptal etmek üzeresiniz. Lütfen iptal veya erteleme gerekçesini belirtiniz. Bu gerekçe taraflara iletilecektir.
+                            </p>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Gerekçe / Mazeret</label>
+                                <textarea 
+                                    className={inputClass}
+                                    rows={4}
+                                    value={cancelReason}
+                                    onChange={e => setCancelReason(e.target.value)}
+                                    placeholder="Örn: Tarafların ortak talebi üzerine..."
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 rounded-b-xl">
+                            <button onClick={() => setIsCancelModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">Vazgeç</button>
+                            <button onClick={handleCancelMeeting} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 flex items-center font-medium shadow-lg">
+                                <Send className="w-4 h-4 mr-2" /> İptal Bildirimi Gönder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Portal>
+        )}
+
         {/* Report Modal - Portal */}
         {isReportModalOpen && activeMediationData && (
             <Portal>

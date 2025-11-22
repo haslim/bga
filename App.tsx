@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { DataProvider, useData } from './DataContext';
 import { Sidebar } from './components/Sidebar';
@@ -12,7 +13,7 @@ import { UserManager } from './components/UserManager';
 import { KnowledgeBase } from './components/KnowledgeBase';
 import { SettingsManager } from './components/SettingsManager';
 import { ViewState } from './types';
-import { Lock, AlertCircle, Menu, Scale, Quote, Mail, ArrowRight, Bell, X, Check, MessageSquare } from 'lucide-react';
+import { Lock, AlertCircle, Menu, Scale, Quote, Mail, ArrowRight, Bell, X, Check, MessageSquare, Sun, Moon } from 'lucide-react';
 
 // Expanded assets for a "limitless" feel - 30 Unique Entries
 const LOGIN_ASSETS = [
@@ -44,7 +45,7 @@ const MainContent: React.FC = () => {
   // Random Asset State
   const [randomAsset, setRandomAsset] = useState(LOGIN_ASSETS[0]);
   
-  const { currentUser, login, logout, siteSettings, notifications, unreadNotificationCount, markAllNotificationsAsRead, markNotificationAsRead } = useData();
+  const { currentUser, login, logout, siteSettings, updateSiteSettings, notifications, unreadNotificationCount, markAllNotificationsAsRead, markNotificationAsRead } = useData();
 
   useEffect(() => {
     document.title = `${siteSettings.title} - ${siteSettings.subtitle}`;
@@ -61,6 +62,13 @@ const MainContent: React.FC = () => {
           setLoginError('E-posta veya şifre hatalı. Lütfen kontrol ediniz.');
       }
     }
+  };
+
+  const toggleDarkMode = () => {
+    updateSiteSettings({
+      ...siteSettings,
+      darkMode: !siteSettings.darkMode
+    });
   };
 
   const renderView = () => {
@@ -301,6 +309,12 @@ const MainContent: React.FC = () => {
         </div>
         <div className="flex items-center space-x-2">
             <button 
+                onClick={toggleDarkMode}
+                className="p-2 rounded hover:bg-slate-800 transition-colors"
+            >
+                {siteSettings.darkMode ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-slate-300" />}
+            </button>
+            <button 
                 onClick={() => setIsNotificationOpen(true)}
                 className="p-2 rounded hover:bg-slate-800 relative"
             >
@@ -326,8 +340,16 @@ const MainContent: React.FC = () => {
         onClose={() => setIsSidebarOpen(false)}
       />
       
-      {/* Floating Notification Bell (Desktop) */}
-      <div className="fixed top-4 right-4 z-40 hidden lg:block">
+      {/* Floating Desktop Header (Notifications & Theme) */}
+      <div className="fixed top-4 right-4 z-40 hidden lg:flex items-center gap-3">
+          <button 
+            onClick={toggleDarkMode}
+            className="bg-white dark:bg-slate-800 p-2.5 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-brand-600 hover:scale-105 transition-all"
+            title={siteSettings.darkMode ? "Aydınlık Mod" : "Karanlık Mod"}
+          >
+              {siteSettings.darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5" />}
+          </button>
+
           <button 
             onClick={() => setIsNotificationOpen(true)}
             className="bg-white dark:bg-slate-800 p-2.5 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-brand-600 hover:scale-105 transition-all relative group"
