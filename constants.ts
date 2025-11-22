@@ -325,6 +325,78 @@ export const DEFAULT_TEMPLATES: Template[] = [
     </tr>
   </table>
 </div>`
+  },
+  {
+    id: 't4',
+    type: 'Davet',
+    name: 'İlk Toplantı Davet Mektubu',
+    content: `
+<div style="font-family: 'Times New Roman', serif; line-height: 1.6; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
+  <h2 style="text-align: center; font-weight: bold; margin-bottom: 30px; text-decoration: underline;">ARABULUCULUK İLK OTURUM DAVET MEKTUBU</h2>
+  
+  <div style="margin-bottom: 20px;">
+    <p><strong>Sayın {{KARSI_TARAF}},</strong></p>
+    <p>Tarafınız ile {{MUVEKKIL}} arasındaki {{KONU}} konulu uyuşmazlık nedeniyle, 6325 sayılı Hukuk Uyuşmazlıklarında Arabuluculuk Kanunu gereğince arabuluculuk süreci başlatılmıştır.</p>
+  </div>
+  
+  <div style="margin-bottom: 20px;">
+    <p>Bu kapsamda, ilk arabuluculuk toplantısının aşağıda belirtilen tarih ve saatte yapılmasına karar verilmiştir. Katılımınız yasal bir zorunluluk olmamakla birlikte, katılım sağlamamanız durumunda ileride açılacak olası bir davada haklı çıksanız dahi yargılama giderlerinin tamamından sorumlu tutulabileceğinizi (HUAK m. 18/A-11) hatırlatırız.</p>
+  </div>
+
+  <div style="background-color: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+    <p><strong>Dosya No:</strong> {{DOSYA_NO}}</p>
+    <p><strong>Toplantı Tarihi:</strong> .../.../2025 Saat: 14:00</p>
+    <p><strong>Toplantı Yeri:</strong> {{ARABULUCU_ADRES}} (VEYA ONLINE)</p>
+    <p><strong>Online Bağlantı:</strong> https://meet.bgaofis.com/{{DOSYA_NO}}</p>
+  </div>
+
+  <div style="margin-top: 40px;">
+    <p>Saygılarımla,</p>
+    <p><strong>Arabulucu {{ARABULUCU}}</strong></p>
+    <p>Sicil No: {{ARABULUCU_SICIL}}</p>
+    <p>Tel: {{ARABULUCU_TELEFON}}</p>
+  </div>
+</div>`
+  },
+  {
+    id: 't5',
+    type: 'Ucret',
+    name: 'Ücret Sözleşmesi',
+    content: `
+<div style="font-family: 'Times New Roman', serif; line-height: 1.6; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
+  <h2 style="text-align: center; font-weight: bold; margin-bottom: 30px; text-decoration: underline;">ARABULUCULUK ÜCRET SÖZLEŞMESİ</h2>
+  
+  <p>İşbu sözleşme, Arabulucu {{ARABULUCU}} ile taraflar arasında, {{DOSYA_NO}} numaralı dosya kapsamında yürütülecek arabuluculuk faaliyeti nedeniyle ödenecek ücretin belirlenmesi amacıyla düzenlenmiştir.</p>
+
+  <ol style="margin-top: 20px;">
+    <li>Arabuluculuk ücreti, Adalet Bakanlığı Arabuluculuk Asgari Ücret Tarifesi hükümleri saklı kalmak kaydıyla, uyuşmazlık konusu miktar üzerinden <strong>%6</strong> olarak belirlenmiştir.</li>
+    <li>Ücret, aksi kararlaştırılmadıkça taraflarca eşit olarak karşılanır.</li>
+    <li>Ödemeler, aşağıdaki IBAN numarasına yapılacaktır:<br/>
+    <strong>{{ARABULUCU_IBAN}}</strong></li>
+  </ol>
+
+  <table style="width: 100%; margin-top: 60px; text-align: center;">
+    <tr>
+      <td style="padding: 20px;">
+        <strong>BAŞVURUCU</strong><br/>
+        {{MUVEKKIL}}<br/>
+        (İmza)
+      </td>
+      <td style="padding: 20px;">
+        <strong>KARŞI TARAF</strong><br/>
+        {{KARSI_TARAF}}<br/>
+        (İmza)
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding: 40px;">
+        <strong>ARABULUCU</strong><br/>
+        {{ARABULUCU}}<br/>
+        (İmza)
+      </td>
+    </tr>
+  </table>
+</div>`
   }
 ];
 
@@ -603,13 +675,18 @@ export const MOCK_MEDIATIONS: Mediation[] = [
     subject: 'İşçilik Alacakları',
     mediatorName: 'Av. Arb. Burak G.',
     status: MediationStatus.PROCESS,
+    documents: [
+       { id: 'd1', name: 'Başvuru Formu', type: 'Davet', createdDate: '2025-10-01', status: 'İmzalandı', signedBy: ['Ahmet Yılmaz'] }
+    ],
     meetings: [
       {
         id: 'mm1',
         date: '2025-10-10 14:00',
         participants: 'Taraflar ve Vekilleri',
         notes: 'İlk oturum yapıldı, talepler alındı.',
-        outcome: 'Ertelendi'
+        outcome: 'Ertelendi',
+        type: 'Fiziksel',
+        location: 'Ofis Toplantı Odası'
       }
     ]
   },
@@ -622,13 +699,16 @@ export const MOCK_MEDIATIONS: Mediation[] = [
     subject: 'Kira Uyuşmazlığı',
     mediatorName: 'Av. Arb. Burak G.',
     status: MediationStatus.AGREEMENT,
+    documents: [],
     meetings: [
       {
         id: 'mm2',
         date: '2025-10-20 10:00',
         participants: 'Taraflar',
         notes: 'Anlaşma sağlandı.',
-        outcome: 'Olumlu'
+        outcome: 'Olumlu',
+        type: 'Online',
+        link: 'https://meet.bgaofis.com/arb-2025-52'
       }
     ]
   }

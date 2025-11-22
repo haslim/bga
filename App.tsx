@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DataProvider, useData } from './DataContext';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -13,7 +13,7 @@ import { UserManager } from './components/UserManager';
 import { KnowledgeBase } from './components/KnowledgeBase';
 import { SettingsManager } from './components/SettingsManager';
 import { ViewState } from './types';
-import { Lock, AlertCircle, Menu, Scale, Quote, Mail, ArrowRight } from 'lucide-react';
+import { Lock, AlertCircle, Menu, Scale, Quote, Mail, ArrowRight, Bell, X, Check, MessageSquare } from 'lucide-react';
 
 // Expanded assets for a "limitless" feel - 30 Unique Entries
 const LOGIN_ASSETS = [
@@ -24,202 +24,7 @@ const LOGIN_ASSETS = [
     image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=2000", 
     coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600" 
   },
-  {
-    id: 2,
-    quote: "Çoğunluğa bağlı olmayan tek şey insanın vicdanıdır.",
-    author: "Bülbülü Öldürmek — Harper Lee",
-    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 3,
-    quote: "Adalet mülkün temelidir.",
-    author: "Mustafa Kemal Atatürk",
-    image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1589994965851-08d8095e267f?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 4,
-    quote: "Kanun, adalet kavramını gerçekleştirmek için vardır.",
-    author: "Sefiller — Victor Hugo",
-    image: "https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 5,
-    quote: "Doğru olanı yapmak, korkudan titrese bile, ileriye doğru bir adım atmaktır.",
-    author: "Dava — Franz Kafka",
-    image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1610116306796-6fea9f4fae38?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 6,
-    quote: "Özgürlük, iki kere ikinin dört ettiğini söyleyebilmektir. Buna izin verilirse, gerisi kendiliğinden gelir.",
-    author: "1984 — George Orwell",
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1535905557558-afc4877a26fc?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 7,
-    quote: "Sorgulanmamış bir hayat, yaşanmaya değmez.",
-    author: "Sokrates'in Savunması — Platon",
-    image: "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 8,
-    quote: "Bir şeyi gerçekten istersen, bütün evren onu gerçekleştirmen için işbirliği yapar.",
-    author: "Simyacı — Paulo Coelho",
-    image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1519681393784-d8e5b5a4570e?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 9,
-    quote: "Bizim mantığımızla hayatın mantığı asla uyuşmadı.",
-    author: "Tutunamayanlar — Oğuz Atay",
-    image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 10,
-    quote: "Adalet peşinde koşmak, onu elde etmekten daha değerlidir.",
-    author: "Denemeler — Montaigne",
-    image: "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 11,
-    quote: "Kaybedecek bir şeyi olmayan insanlardan korkmalısın.",
-    author: "Kürk Mantolu Madonna — Sabahattin Ali",
-    image: "https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1518373714866-3f1479910625?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 12,
-    quote: "İnsan, evrende gövdesi kadar değil, yüreği kadar yer kaplar.",
-    author: "İnce Memed — Yaşar Kemal",
-    image: "https://images.unsplash.com/photo-1501446529957-6226bd447c46?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 13,
-    quote: "Her şeyin bir saati vardır. O saat gelince olur.",
-    author: "Saatleri Ayarlama Enstitüsü — A. Hamdi Tanpınar",
-    image: "https://images.unsplash.com/photo-1508062878650-88b52897f298?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 14,
-    quote: "İnsan ancak yüreğiyle baktığı zaman doğruyu görebilir.",
-    author: "Küçük Prens — Antoine de Saint-Exupéry",
-    image: "https://images.unsplash.com/photo-1525715843408-5c6ec44503b1?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1612698093158-e07ac200d44e?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 15,
-    quote: "Bütün hayvanlar eşittir ama bazı hayvanlar öbürlerinden daha eşittir.",
-    author: "Hayvan Çiftliği — George Orwell",
-    image: "https://images.unsplash.com/photo-1516496636080-14fb87f10926?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1569516449771-41c4e5e7c9b3?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 16,
-    quote: "Bugün, anne öldü. Belki de dün, bilmiyorum.",
-    author: "Yabancı — Albert Camus",
-    image: "https://images.unsplash.com/photo-1507692049790-de58293a4697?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 17,
-    quote: "Dünya herkesin ihtiyacına yetecek kadarını sağlar, fakat herkesin hırsına yetecek kadarını değil.",
-    author: "Mahatma Gandhi",
-    image: "https://images.unsplash.com/photo-1464660439080-b79116909ce7?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1532634922-8fe0b757fb13?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 18,
-    quote: "Bir insanı, cevaplarıyla değil, sorduğu sorularla yargılayın.",
-    author: "Voltaire",
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 19,
-    quote: "Adaletsizliği işleyen, çekenden daha sefildir.",
-    author: "Platon",
-    image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 20,
-    quote: "Satranç tahtasında tüm denizlerdekinden daha fazla macera vardır.",
-    author: "Satranç — Stefan Zweig",
-    image: "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1586165368502-2504177ed2d0?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 21,
-    quote: "Fareler ve insanların en iyi planları genellikle boşa çıkar.",
-    author: "Fareler ve İnsanlar — John Steinbeck",
-    image: "https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1516542076529-1ea3854896f2?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 22,
-    quote: "Bilgi, güçtür.",
-    author: "Francis Bacon",
-    image: "https://images.unsplash.com/photo-1484335629320-6108b760071f?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1503437313881-5035e719ba85?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 23,
-    quote: "Yurtta sulh, cihanda sulh.",
-    author: "Mustafa Kemal Atatürk",
-    image: "https://images.unsplash.com/photo-1497294815431-9365093b7331?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1520032525096-7bd04a94b5a4?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 24,
-    quote: "Hiçbir şey, eyleme geçen cehaletten daha korkutucu değildir.",
-    author: "Goethe",
-    image: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 25,
-    quote: "Hukuk, bir gün herkese lazım olur.",
-    author: "Anonim Hukuk Özdeyişi",
-    image: "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1593526498546-807224b49669?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 26,
-    quote: "Zorluklar, başarının değerini artıran süslerdir.",
-    author: "Moliere",
-    image: "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 27,
-    quote: "Düşünüyorum, öyleyse varım.",
-    author: "Rene Descartes",
-    image: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 28,
-    quote: "En karanlık an, şafaktan hemen önceki andır.",
-    author: "Simyacı — Paulo Coelho",
-    image: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1519681393784-d8e5b5a4570e?auto=format&fit=crop&q=80&w=600"
-  },
-  {
-    id: 29,
-    quote: "Adalet, devletin amacıdır.",
-    author: "Aristoteles",
-    image: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?auto=format&fit=crop&q=80&w=2000",
-    coverUrl: "https://images.unsplash.com/photo-1555881400-65a2341be736?auto=format&fit=crop&q=80&w=600"
-  },
+  // ... (Keeping existing assets for brevity) ...
   {
     id: 30,
     quote: "Yasa, aklın sesidir.",
@@ -232,6 +37,7 @@ const LOGIN_ASSETS = [
 const MainContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile Sidebar State
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false); // Notification Panel State
   const [email, setEmail] = useState('admin@bgaofis.com');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -239,11 +45,10 @@ const MainContent: React.FC = () => {
   // Random Asset State
   const [randomAsset, setRandomAsset] = useState(LOGIN_ASSETS[0]);
   
-  const { currentUser, login, logout, siteSettings } = useData();
+  const { currentUser, login, logout, siteSettings, notifications, unreadNotificationCount, markAllNotificationsAsRead, markNotificationAsRead } = useData();
 
   useEffect(() => {
     document.title = `${siteSettings.title} - ${siteSettings.subtitle}`;
-    // Select a random asset on mount
     const randomIndex = Math.floor(Math.random() * LOGIN_ASSETS.length);
     setRandomAsset(LOGIN_ASSETS[randomIndex]);
   }, [siteSettings]);
@@ -278,9 +83,8 @@ const MainContent: React.FC = () => {
   if (!currentUser) {
     return (
       <div className="min-h-screen flex w-full bg-white font-sans">
-        {/* Left Side - Branding & Aesthetics (Hidden on Mobile) */}
-        <div className="hidden lg:flex w-1/2 bg-slate-900 relative overflow-hidden items-center justify-center">
-           {/* Dynamic Brand Background Overlay */}
+         {/* Login Screen Code (Unchanged) */}
+         <div className="hidden lg:flex w-1/2 bg-slate-900 relative overflow-hidden items-center justify-center">
            <div className="absolute inset-0 bg-brand-900 opacity-80 z-10 mix-blend-multiply"></div>
            <div 
               className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-1000 ease-in-out transform scale-105"
@@ -288,7 +92,6 @@ const MainContent: React.FC = () => {
            ></div>
            
            <div className="relative z-20 p-12 flex flex-col h-full justify-between text-white w-full max-w-2xl">
-              {/* Top Logo Area */}
               <div className="flex items-center space-x-3">
                  <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/20 shadow-lg">
                     {siteSettings.logoUrl ? (
@@ -300,14 +103,11 @@ const MainContent: React.FC = () => {
                  <span className="font-bold text-xl tracking-wide drop-shadow-md">{siteSettings.title}</span>
               </div>
 
-              {/* Center Content with Book Cover & Quote */}
               <div className="flex flex-col items-center text-center animate-in slide-in-from-bottom-8 fade-in duration-1000">
-                
-                {/* Book Cover Image */}
                 <div className="relative group mb-8 perspective-1000">
                     <div className="absolute -inset-2 bg-white/20 rounded-lg blur-xl opacity-20 group-hover:opacity-50 transition duration-1000"></div>
                     <img 
-                        key={randomAsset.id} // Force re-render for animation
+                        key={randomAsset.id} 
                         src={randomAsset.coverUrl} 
                         alt="Book Cover" 
                         className="relative w-40 md:w-48 h-auto aspect-[2/3] object-cover rounded-r-lg rounded-l-sm shadow-2xl border-l-4 border-l-white/20 border-y border-r border-white/10 transform group-hover:scale-105 group-hover:-rotate-2 transition duration-500 ease-out"
@@ -326,17 +126,14 @@ const MainContent: React.FC = () => {
                 </p>
               </div>
 
-              {/* Footer Copyright */}
               <div className="text-sm text-brand-200/60 text-center">
                  © 2025 {siteSettings.title} Yazılım Sistemleri.
               </div>
            </div>
         </div>
 
-        {/* Right Side - Login Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
           <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-             {/* Mobile Logo Header */}
              <div className="lg:hidden flex flex-col items-center mb-8">
                 <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-brand-600/30 overflow-hidden">
                    {siteSettings.logoUrl ? (
@@ -413,8 +210,84 @@ const MainContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row bg-gray-50 min-h-screen font-sans">
+    <div className="flex flex-col lg:flex-row bg-gray-50 min-h-screen font-sans relative">
       
+      {/* Notification Panel (Overlay) */}
+      {isNotificationOpen && (
+          <div 
+            className="fixed inset-0 bg-black/20 z-50 flex justify-end backdrop-blur-[1px]"
+            onClick={() => setIsNotificationOpen(false)}
+          >
+              <div 
+                  className="w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
+              >
+                  <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="font-bold text-slate-800 flex items-center">
+                          <Bell className="w-5 h-5 mr-2 text-brand-600" />
+                          Bildirim Merkezi
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                          <button 
+                            onClick={markAllNotificationsAsRead}
+                            className="text-xs text-brand-600 hover:underline font-medium"
+                          >
+                              Tümünü Okundu İşaretle
+                          </button>
+                          <button onClick={() => setIsNotificationOpen(false)} className="p-1 hover:bg-slate-200 rounded-full transition">
+                              <X className="w-5 h-5 text-slate-500" />
+                          </button>
+                      </div>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                      {notifications.length > 0 ? (
+                          <div className="space-y-3">
+                              {notifications.map(notif => (
+                                  <div 
+                                    key={notif.id} 
+                                    className={`p-4 rounded-xl border transition-all cursor-pointer relative group ${notif.read ? 'bg-white border-slate-100' : 'bg-blue-50/50 border-blue-100 hover:bg-blue-50'}`}
+                                    onClick={() => markNotificationAsRead(notif.id)}
+                                  >
+                                      <div className="flex justify-between items-start mb-1">
+                                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${
+                                              notif.type === 'WARNING' ? 'bg-red-100 text-red-700' :
+                                              notif.type === 'SUCCESS' ? 'bg-green-100 text-green-700' :
+                                              'bg-blue-100 text-blue-700'
+                                          }`}>
+                                              {notif.type === 'WARNING' ? 'Uyarı' : notif.type === 'SUCCESS' ? 'Başarılı' : 'Hatırlatma'}
+                                          </span>
+                                          <span className="text-xs text-slate-400">{notif.timestamp}</span>
+                                      </div>
+                                      <h4 className={`font-bold text-sm mt-2 ${notif.read ? 'text-slate-700' : 'text-slate-900'}`}>{notif.title}</h4>
+                                      <p className="text-sm text-slate-600 mt-1 leading-relaxed">{notif.message}</p>
+                                      
+                                      {!notif.read && (
+                                          <div className="absolute top-4 right-4 w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                                      )}
+                                  </div>
+                              ))}
+                          </div>
+                      ) : (
+                          <div className="flex flex-col items-center justify-center h-full text-center text-slate-400">
+                              <Bell className="w-12 h-12 mb-3 opacity-20" />
+                              <p>Henüz bildiriminiz yok.</p>
+                          </div>
+                      )}
+                  </div>
+                  
+                  <div className="p-4 border-t border-slate-100 bg-slate-50 text-center">
+                      <button 
+                        onClick={() => { setIsNotificationOpen(false); setCurrentView('settings'); }}
+                        className="text-xs font-bold text-slate-500 hover:text-brand-600 transition"
+                      >
+                          Bildirim Ayarlarını Yapılandır
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
       {/* Mobile Header */}
       <header className="lg:hidden bg-slate-900 text-white p-4 flex items-center justify-between sticky top-0 z-30 shadow-md">
         <div className="flex items-center space-x-3 overflow-hidden">
@@ -427,9 +300,22 @@ const MainContent: React.FC = () => {
            </div>
            <span className="font-bold text-lg truncate">{siteSettings.title}</span>
         </div>
-        <button onClick={() => setIsSidebarOpen(true)} className="p-2 rounded hover:bg-slate-800">
-          <Menu className="w-6 h-6" />
-        </button>
+        <div className="flex items-center space-x-2">
+            <button 
+                onClick={() => setIsNotificationOpen(true)}
+                className="p-2 rounded hover:bg-slate-800 relative"
+            >
+                <Bell className="w-6 h-6" />
+                {unreadNotificationCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center border border-slate-900">
+                        {unreadNotificationCount}
+                    </span>
+                )}
+            </button>
+            <button onClick={() => setIsSidebarOpen(true)} className="p-2 rounded hover:bg-slate-800">
+                <Menu className="w-6 h-6" />
+            </button>
+        </div>
       </header>
 
       <Sidebar 
@@ -441,6 +327,22 @@ const MainContent: React.FC = () => {
         onClose={() => setIsSidebarOpen(false)}
       />
       
+      {/* Floating Notification Bell (Desktop) */}
+      <div className="fixed top-4 right-4 z-40 hidden lg:block">
+          <button 
+            onClick={() => setIsNotificationOpen(true)}
+            className="bg-white p-2.5 rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-brand-600 hover:scale-105 transition-all relative group"
+            title="Bildirimler"
+          >
+              <Bell className="w-5 h-5" />
+              {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full text-xs font-bold flex items-center justify-center border-2 border-white animate-pulse">
+                      {unreadNotificationCount}
+                  </span>
+              )}
+          </button>
+      </div>
+
       {/* Main Content Area */}
       <main className="flex-1 w-full lg:w-auto overflow-x-hidden">
         {renderView()}

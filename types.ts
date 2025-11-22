@@ -20,6 +20,34 @@ export interface SiteSettings {
   title: string;
   subtitle: string;
   logoUrl: string;
+  darkMode?: boolean;
+}
+
+export interface NotificationSettings {
+  smsEnabled: boolean;
+  emailEnabled: boolean;
+  pushEnabled: boolean;
+  calendarSync: boolean;
+  rules: {
+    meetingReminder24h: boolean; // Oturumdan 24 saat önce
+    unsignedDocWarning: boolean; // Belge imzalanmadıysa
+    inviteWarning: boolean; // Karşı tarafa davet gitmediyse
+  };
+  integrations: {
+    smsProvider: string; // 'Twilio' | 'Netgsm'
+    emailProvider: string; // 'SMTP' | 'SendGrid'
+    calendarProvider: string; // 'Google' | 'Outlook'
+  }
+}
+
+export interface Notification {
+  id: string;
+  type: 'SYSTEM' | 'REMINDER' | 'WARNING' | 'SUCCESS';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  actionLink?: string;
 }
 
 export interface User {
@@ -114,7 +142,20 @@ export interface MediationMeeting {
   date: string;
   participants: string;
   notes: string;
-  outcome?: 'Olumlu' | 'Olumsuz' | 'Ertelendi';
+  outcome?: 'Olumlu' | 'Olumsuz' | 'Ertelendi' | 'İptal';
+  type: 'Online' | 'Fiziksel';
+  link?: string; // Online ise link
+  location?: string; // Fiziksel ise adres
+  cancellationReason?: string; // İptal sebebi
+}
+
+export interface Document {
+  id: string;
+  name: string;
+  type: 'Tutanak' | 'Davet' | 'Sözleşme' | 'Diğer';
+  createdDate: string;
+  status: 'Taslak' | 'İmzada' | 'İmzalandı';
+  signedBy?: string[]; // İzalayanların listesi
 }
 
 export interface Mediation {
@@ -127,6 +168,8 @@ export interface Mediation {
   mediatorName: string;
   status: MediationStatus;
   meetings: MediationMeeting[];
+  documents?: Document[]; // Generated documents
+  invitationSent?: boolean; // For notification rule
 }
 
 export interface MediatorProfile {
@@ -138,7 +181,7 @@ export interface MediatorProfile {
   iban?: string;
 }
 
-export type TemplateType = 'Basvuru' | 'Tutanak' | 'Anlasma';
+export type TemplateType = 'Basvuru' | 'Tutanak' | 'Anlasma' | 'Davet' | 'Ucret';
 
 export interface Template {
   id: string;

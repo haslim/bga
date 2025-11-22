@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings, DeadlineTemplate } from './types';
+import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings, DeadlineTemplate, Notification, NotificationSettings } from './types';
 import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE, THEME_COLORS, DEFAULT_DEADLINE_TEMPLATES } from './constants';
 import { checkPermission } from './utils';
 
@@ -19,6 +19,11 @@ interface DataContextType {
   mediatorProfile: MediatorProfile;
   siteSettings: SiteSettings;
   deadlineTemplates: DeadlineTemplate[];
+  
+  // Notification & Settings
+  notifications: Notification[];
+  notificationSettings: NotificationSettings;
+  unreadNotificationCount: number;
   
   // Actions
   addCase: (newCase: Case) => void;
@@ -47,6 +52,12 @@ interface DataContextType {
   updateKnowledgeEntry: (entry: KnowledgeEntry) => void;
   deleteKnowledgeEntry: (id: string) => void;
 
+  // Notification Actions
+  addNotification: (notification: Notification) => void;
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
+  updateNotificationSettings: (settings: NotificationSettings) => void;
+
   // User & Auth
   login: (email: string, password: string) => boolean;
   logout: () => void;
@@ -72,6 +83,29 @@ function loadFromStorage<T>(key: string, defaultValue: T): T {
   return defaultValue;
 }
 
+const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+    smsEnabled: true,
+    emailEnabled: true,
+    pushEnabled: true,
+    calendarSync: false,
+    rules: {
+        meetingReminder24h: true,
+        unsignedDocWarning: true,
+        inviteWarning: true
+    },
+    integrations: {
+        smsProvider: 'Netgsm',
+        emailProvider: 'SMTP',
+        calendarProvider: 'Google'
+    }
+};
+
+const MOCK_NOTIFICATIONS: Notification[] = [
+    { id: 'n1', type: 'WARNING', title: 'Davet Mektubu Gönderilmedi', message: 'ARB-2025/52 dosyasında karşı tarafa henüz davet gönderilmedi.', timestamp: '10 dk önce', read: false },
+    { id: 'n2', type: 'REMINDER', title: 'Yarınki Oturum', message: 'Ahmet Yılmaz dosyası için yarın 14:00\'da oturum var. SMS hatırlatması gönderildi.', timestamp: '1 saat önce', read: false },
+    { id: 'n3', type: 'SUCCESS', title: 'Tahsilat Başarılı', message: 'Yılmaz Ticaret vekalet ücreti ödemesi alındı.', timestamp: '3 saat önce', read: true }
+];
+
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Initialize state from LocalStorage to persist data across refreshes
   const [cases, setCases] = useState<Case[]>(() => loadFromStorage('BGA_CASES', MOCK_CASES));
@@ -87,6 +121,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [mediatorProfile, setMediatorProfile] = useState<MediatorProfile>(() => loadFromStorage('BGA_PROFILE', DEFAULT_MEDIATOR_PROFILE));
   const [deadlineTemplates, setDeadlineTemplates] = useState<DeadlineTemplate[]>(() => loadFromStorage('BGA_DEADLINE_TEMPLATES', DEFAULT_DEADLINE_TEMPLATES));
   
+  const [notifications, setNotifications] = useState<Notification[]>(() => loadFromStorage('BGA_NOTIFICATIONS', MOCK_NOTIFICATIONS));
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => loadFromStorage('BGA_NOTIF_SETTINGS', DEFAULT_NOTIFICATION_SETTINGS));
+
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => loadFromStorage('BGA_SETTINGS', {
     title: 'BGAofis',
     subtitle: 'Hukuk Otomasyonu',
@@ -97,7 +134,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentUser, setCurrentUser] = useState<User | null>(() => loadFromStorage('BGA_SESSION', null));
 
   // -- PERSISTENCE EFFECTS --
-  // Automatically save changes to LocalStorage
   useEffect(() => localStorage.setItem('BGA_CASES', JSON.stringify(cases)), [cases]);
   useEffect(() => localStorage.setItem('BGA_CLIENTS', JSON.stringify(clients)), [clients]);
   useEffect(() => localStorage.setItem('BGA_FINANCE', JSON.stringify(finance)), [finance]);
@@ -111,6 +147,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => localStorage.setItem('BGA_PROFILE', JSON.stringify(mediatorProfile)), [mediatorProfile]);
   useEffect(() => localStorage.setItem('BGA_SETTINGS', JSON.stringify(siteSettings)), [siteSettings]);
   useEffect(() => localStorage.setItem('BGA_DEADLINE_TEMPLATES', JSON.stringify(deadlineTemplates)), [deadlineTemplates]);
+  useEffect(() => localStorage.setItem('BGA_NOTIFICATIONS', JSON.stringify(notifications)), [notifications]);
+  useEffect(() => localStorage.setItem('BGA_NOTIF_SETTINGS', JSON.stringify(notificationSettings)), [notificationSettings]);
+  
   useEffect(() => {
       if (currentUser) {
           localStorage.setItem('BGA_SESSION', JSON.stringify(currentUser));
@@ -137,6 +176,37 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
     }
   }, [currentUser]);
+
+  // --- AUTOMATED RULES SIMULATION (Run once on load or when data changes) ---
+  useEffect(() => {
+      if (!notificationSettings.rules) return;
+
+      // Rule: Invite Warning (Davet gönderilmedi -> Sistem uyarısı)
+      if (notificationSettings.rules.inviteWarning) {
+          const newWarnings: Notification[] = [];
+          mediations.forEach(m => {
+              // Mock check: if status is APPLIED and no meetings scheduled yet (implies invite issue for demo)
+              if (m.status === 'Başvuru' && m.meetings.length === 0 && !m.invitationSent) {
+                  // Avoid duplicates in real app, simple check here
+                  const exists = notifications.some(n => n.title === 'Davet Gönderilmedi' && n.message.includes(m.fileNumber));
+                  if (!exists) {
+                      newWarnings.push({
+                          id: `sys-inv-${Date.now()}-${m.id}`,
+                          type: 'WARNING',
+                          title: 'Davet Gönderilmedi',
+                          message: `${m.fileNumber} nolu dosya için karşı tarafa henüz davet gönderilmemiş görünüyor.`,
+                          timestamp: 'Şimdi',
+                          read: false
+                      });
+                  }
+              }
+          });
+          if (newWarnings.length > 0) {
+              setNotifications(prev => [...newWarnings, ...prev]);
+          }
+      }
+  }, [mediations, notificationSettings]);
+
 
   // -- Helpers --
   const hasPermission = (permission: Permission): boolean => {
@@ -303,6 +373,24 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logAction('KNOWLEDGE_DELETE', `Bilgi bankası kaydı silindi: ${id}`);
   };
 
+  // Notification Actions
+  const addNotification = (notification: Notification) => {
+    setNotifications(prev => [notification, ...prev]);
+  };
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const updateNotificationSettings = (settings: NotificationSettings) => {
+    setNotificationSettings(settings);
+    logAction('SETTINGS_UPDATE', 'Bildirim ve entegrasyon ayarları güncellendi.');
+  };
+
   // User Management
   const addUser = (user: User) => {
     setUsers(prev => [...prev, user]);
@@ -323,11 +411,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <DataContext.Provider value={{
       cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates, knowledgeBase,
       currentUser, mediatorProfile, siteSettings, deadlineTemplates,
+      notifications, notificationSettings, unreadNotificationCount: notifications.filter(n => !n.read).length,
       addCase, updateCase, deleteCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
       addMediation, updateMediation, deleteMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings, updateUserTheme,
       addKnowledgeEntry, updateKnowledgeEntry, deleteKnowledgeEntry,
       addUser, updateUser, deleteUser, hasPermission, logAction,
-      login, logout, addDeadlineTemplate, deleteDeadlineTemplate
+      login, logout, addDeadlineTemplate, deleteDeadlineTemplate,
+      addNotification, markNotificationAsRead, markAllNotificationsAsRead, updateNotificationSettings
     }}>
       {children}
     </DataContext.Provider>
