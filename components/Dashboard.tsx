@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useData } from '../DataContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -38,7 +37,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
       title: t.title,
       date: t.dueDate,
       urgent: t.priority === 'Yüksek',
-      color: t.priority === 'Yüksek' ? 'text-red-600' : 'text-slate-600'
+      color: t.priority === 'Yüksek' ? 'text-red-600' : 'text-slate-600 dark:text-slate-300'
   }));
 
   const upcomingLegalDeadlines = cases.flatMap(c => (c.deadlines || [])
@@ -115,16 +114,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-slate-200 rounded-lg shadow-xl">
-          <p className="font-bold text-slate-700 mb-2">{label}</p>
+        <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl">
+          <p className="font-bold text-slate-700 dark:text-slate-200 mb-2">{label}</p>
           <p className="text-sm text-green-600 font-medium">
             Gelir: {payload[0].value.toLocaleString('tr-TR')} ₺
           </p>
           <p className="text-sm text-red-600 font-medium">
             Gider: {payload[1].value.toLocaleString('tr-TR')} ₺
           </p>
-          <div className="border-t border-slate-100 mt-2 pt-2">
-             <p className="text-xs text-slate-500">Net: {(payload[0].value - payload[1].value).toLocaleString('tr-TR')} ₺</p>
+          <div className="border-t border-slate-100 dark:border-slate-700 mt-2 pt-2">
+             <p className="text-xs text-slate-500 dark:text-slate-400">Net: {(payload[0].value - payload[1].value).toLocaleString('tr-TR')} ₺</p>
           </div>
         </div>
       );
@@ -133,64 +132,64 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 bg-gray-50 min-h-screen animate-in fade-in">
+    <div className="p-4 md:p-8 space-y-6 bg-gray-50 dark:bg-slate-950 min-h-screen animate-in fade-in">
       <header className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Yönetim Paneli</h1>
-        <p className="text-sm md:text-base text-slate-500 mt-1">Günlük iş akışı ve performans özetleri</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white">Yönetim Paneli</h1>
+        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1">Günlük iş akışı ve performans özetleri</p>
       </header>
 
       {/* TOP STATS ROW */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div 
             onClick={() => onChangeView('cases')}
-            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-brand-200 group active:scale-95"
+            className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-brand-200 group active:scale-95"
         >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-brand-600 transition-colors">Bugünkü Duruşma</p>
+             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide group-hover:text-brand-600 transition-colors">Bugünkü Duruşma</p>
              <h3 className="text-2xl font-bold text-brand-600 mt-1">{todaysHearings.length}</h3>
           </div>
-          <div className="p-3 bg-brand-50 text-brand-600 rounded-lg group-hover:bg-brand-100 transition-colors">
+          <div className="p-3 bg-brand-50 dark:bg-brand-900/30 text-brand-600 rounded-lg group-hover:bg-brand-100 dark:group-hover:bg-brand-900/50 transition-colors">
             <Calendar className="w-6 h-6" />
           </div>
         </div>
 
         <div 
             onClick={() => onChangeView('tasks')}
-            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-orange-200 group active:scale-95"
+            className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-orange-200 group active:scale-95"
         >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-orange-600 transition-colors">Açık Görevler</p>
+             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide group-hover:text-orange-600 transition-colors">Açık Görevler</p>
              <h3 className="text-2xl font-bold text-orange-600 mt-1">{myOpenTasks.length}</h3>
           </div>
-          <div className="p-3 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-100 transition-colors">
+          <div className="p-3 bg-orange-50 dark:bg-orange-900/30 text-orange-600 rounded-lg group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition-colors">
             <CheckCircle className="w-6 h-6" />
           </div>
         </div>
 
         <div 
             onClick={() => onChangeView('tasks')}
-            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-green-200 group active:scale-95"
+            className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-green-200 group active:scale-95"
         >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-green-600 transition-colors">İş Tamamlanma</p>
+             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide group-hover:text-green-600 transition-colors">İş Tamamlanma</p>
              <h3 className="text-2xl font-bold text-green-600 mt-1">%{completionRate}</h3>
           </div>
-          <div className="p-3 bg-green-50 text-green-600 rounded-lg group-hover:bg-green-100 transition-colors">
+          <div className="p-3 bg-green-50 dark:bg-green-900/30 text-green-600 rounded-lg group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
             <Activity className="w-6 h-6" />
           </div>
         </div>
 
          <div 
             onClick={() => onChangeView('finance')}
-            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-slate-300 group active:scale-95"
+            className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200 hover:border-slate-300 group active:scale-95"
         >
           <div>
-             <p className="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-slate-700 transition-colors">Toplam Net Kasa</p>
-             <h3 className="text-2xl font-bold text-slate-700 mt-1">
+             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">Toplam Net Kasa</p>
+             <h3 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mt-1">
                {netBalance.toLocaleString('tr-TR')} ₺
              </h3>
           </div>
-          <div className="p-3 bg-slate-100 text-slate-600 rounded-lg group-hover:bg-slate-200 transition-colors">
+          <div className="p-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg group-hover:bg-slate-200 dark:group-hover:bg-slate-600 transition-colors">
             <DollarSign className="w-6 h-6" />
           </div>
         </div>
@@ -201,92 +200,92 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
         <div className="xl:col-span-2 space-y-6">
             
             {/* 1. BUGÜNKÜ DURUŞMALAR */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 p-4 border-b border-slate-200 flex items-center">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-700/50 p-4 border-b border-slate-200 dark:border-slate-700 flex items-center">
                     <Calendar className="w-5 h-5 text-brand-600 mr-2" />
-                    <h3 className="font-bold text-slate-800">Bugünkü Duruşmalar ({today})</h3>
+                    <h3 className="font-bold text-slate-800 dark:text-white">Bugünkü Duruşmalar ({today})</h3>
                 </div>
                 <div className="p-4">
                     {todaysHearings.length > 0 ? (
                         <div className="space-y-3">
                             {todaysHearings.map((h, idx) => (
-                                <div key={idx} className="flex items-center p-3 bg-brand-50 border border-brand-100 rounded-lg">
-                                    <div className="font-bold text-brand-800 text-lg mr-4 w-16 text-center bg-white rounded py-1 border border-brand-100 shadow-sm">
+                                <div key={idx} className="flex items-center p-3 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 rounded-lg">
+                                    <div className="font-bold text-brand-800 dark:text-brand-300 text-lg mr-4 w-16 text-center bg-white dark:bg-slate-800 rounded py-1 border border-brand-100 dark:border-brand-700 shadow-sm">
                                         {h.time}
                                     </div>
                                     <div className="overflow-hidden">
-                                        <p className="font-bold text-slate-800 truncate">{h.caseNumber}</p>
-                                        <p className="text-sm text-slate-600 truncate">{h.title}</p>
+                                        <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{h.caseNumber}</p>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{h.title}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-slate-500 italic text-center py-4">Bugün planlanmış duruşma yok.</p>
+                        <p className="text-slate-500 dark:text-slate-400 italic text-center py-4">Bugün planlanmış duruşma yok.</p>
                     )}
                 </div>
             </div>
 
             {/* 2. GELECEK 7 GÜN KRİTİK SÜRELER */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 p-4 border-b border-slate-200 flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-700/50 p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                     <div className="flex items-center">
                         <AlertTriangle className="w-5 h-5 text-red-600 mr-2 animate-pulse" />
-                        <h3 className="font-bold text-slate-800 text-sm md:text-base">Kritik Süreler ve Ajanda (7 Gün)</h3>
+                        <h3 className="font-bold text-slate-800 dark:text-white text-sm md:text-base">Kritik Süreler ve Ajanda (7 Gün)</h3>
                     </div>
-                    <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-bold whitespace-nowrap">
+                    <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-2 py-1 rounded-full font-bold whitespace-nowrap">
                         {criticalDeadlines.length} Kayıt
                     </span>
                 </div>
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 dark:divide-slate-700">
                     {criticalDeadlines.map((item, idx) => (
-                        <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                        <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30">
                             <div className="flex items-center space-x-3 overflow-hidden">
                                 <div className={`w-2 h-2 rounded-full shrink-0 ${item.type === 'Yasal Süre' ? 'bg-red-600 animate-pulse' : item.urgent ? 'bg-orange-500' : 'bg-blue-400'}`}></div>
                                 <div className="overflow-hidden">
-                                    <p className={`text-sm font-bold truncate ${item.color || 'text-slate-800'}`}>{item.title}</p>
-                                    <p className="text-xs text-slate-500 flex items-center mt-0.5">
+                                    <p className={`text-sm font-bold truncate ${item.color || 'text-slate-800 dark:text-slate-200'}`}>{item.title}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mt-0.5">
                                         {item.type === 'Yasal Süre' && <Clock className="w-3 h-3 mr-1 text-red-500" />}
                                         {item.type} • {item.urgent ? 'ACİL' : 'Normal'}
                                     </p>
                                 </div>
                             </div>
                             <div className="text-right ml-2 shrink-0">
-                                <p className="text-sm font-bold text-slate-700">{item.date}</p>
+                                <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{item.date}</p>
                                 <p className="text-xs text-slate-400">Son Tarih</p>
                             </div>
                         </div>
                     ))}
                     {criticalDeadlines.length === 0 && (
-                         <p className="text-slate-500 italic text-center py-8">Yaklaşan kritik süre bulunmuyor.</p>
+                         <p className="text-slate-500 dark:text-slate-400 italic text-center py-8">Yaklaşan kritik süre bulunmuyor.</p>
                     )}
                 </div>
             </div>
             
             {/* 6. WORKFLOW TAMAMLANMA */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h3 className="font-bold text-slate-800 mb-4 flex items-center">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center">
                     <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
                     Workflow & Görev Tamamlanma
                 </h3>
                 <div className="flex items-center space-x-4">
-                    <div className="w-1/3 h-4 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="w-1/3 h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div className="h-full bg-green-500 transition-all duration-1000" style={{ width: `${completionRate}%` }}></div>
                     </div>
-                    <span className="font-bold text-slate-700 text-sm md:text-base">{completionRate}% Tamamlandı</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 text-sm md:text-base">{completionRate}% Tamamlandı</span>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2 md:gap-4">
-                     <div className="p-2 md:p-3 bg-slate-50 rounded border border-slate-100 text-center">
-                        <span className="block text-xl md:text-2xl font-bold text-slate-800">{totalTasks}</span>
-                        <span className="text-[10px] md:text-xs text-slate-500">Toplam Görev</span>
+                     <div className="p-2 md:p-3 bg-slate-50 dark:bg-slate-700/50 rounded border border-slate-100 dark:border-slate-600 text-center">
+                        <span className="block text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{totalTasks}</span>
+                        <span className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Toplam Görev</span>
                      </div>
-                     <div className="p-2 md:p-3 bg-green-50 rounded border border-green-100 text-center">
-                        <span className="block text-xl md:text-2xl font-bold text-green-600">{completedTasks}</span>
-                        <span className="text-[10px] md:text-xs text-green-600">Tamamlanan</span>
+                     <div className="p-2 md:p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-900 text-center">
+                        <span className="block text-xl md:text-2xl font-bold text-green-600 dark:text-green-400">{completedTasks}</span>
+                        <span className="text-[10px] md:text-xs text-green-600 dark:text-green-400">Tamamlanan</span>
                      </div>
-                     <div className="p-2 md:p-3 bg-orange-50 rounded border border-orange-100 text-center">
-                        <span className="block text-xl md:text-2xl font-bold text-orange-600">{totalTasks - completedTasks}</span>
-                        <span className="text-[10px] md:text-xs text-orange-600">Bekleyen</span>
+                     <div className="p-2 md:p-3 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-900 text-center">
+                        <span className="block text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">{totalTasks - completedTasks}</span>
+                        <span className="text-[10px] md:text-xs text-orange-600 dark:text-orange-400">Bekleyen</span>
                      </div>
                 </div>
             </div>
@@ -296,14 +295,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
         {/* RIGHT COLUMN: STATS */}
         <div className="space-y-6">
             {/* 5. FİNANSAL GRAFİK (YENİ - AREA CHART) */}
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 h-[350px] md:h-[400px] flex flex-col">
+            <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 h-[350px] md:h-[400px] flex flex-col">
                 <div className="mb-4 flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-slate-800 flex items-center text-sm md:text-base">
+                    <h3 className="font-bold text-slate-800 dark:text-white flex items-center text-sm md:text-base">
                         <TrendingUp className="w-5 h-5 mr-2 text-brand-600" />
                         Finansal Trend
                     </h3>
-                    <p className="text-xs text-slate-500 mt-1">Son 6 Ay</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Son 6 Ay</p>
                   </div>
                   <div className="text-right">
                      <p className="text-xs text-slate-400">Bu Ay</p>
@@ -339,23 +338,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
             </div>
 
              {/* 3. EN AKTİF MÜVEKKİLLER */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                 <div className="p-4 border-b border-slate-100 bg-slate-50">
-                     <h3 className="font-bold text-slate-800 flex items-center">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                 <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
+                     <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
                         <User className="w-5 h-5 mr-2 text-brand-600" />
                         En Aktif Müvekkiller
                      </h3>
                  </div>
-                 <div className="divide-y divide-slate-50">
+                 <div className="divide-y divide-slate-50 dark:divide-slate-700">
                     {topClients.map((client, idx) => (
                         <div key={idx} className="p-4 flex items-center justify-between">
                             <div className="flex items-center overflow-hidden">
-                                <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold mr-3 shrink-0">
+                                <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs font-bold mr-3 shrink-0">
                                     {idx + 1}
                                 </span>
-                                <span className="text-sm font-medium text-slate-700 truncate">{client.name}</span>
+                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{client.name}</span>
                             </div>
-                            <span className="text-xs font-bold bg-brand-50 text-brand-600 px-2 py-1 rounded-full shrink-0">
+                            <span className="text-xs font-bold bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 px-2 py-1 rounded-full shrink-0">
                                 {client.count} Dosya
                             </span>
                         </div>
@@ -364,26 +363,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
             </div>
             
             {/* 7. BİLGİ BANKASI ÖZET (YENİ) */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                 <div className="p-4 border-b border-slate-100 bg-slate-50">
-                     <h3 className="font-bold text-slate-800 flex items-center">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                 <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
+                     <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
                         <BookOpen className="w-5 h-5 mr-2 text-purple-600" />
                         Son Eklenen İçerikler
                      </h3>
                  </div>
-                 <div className="divide-y divide-slate-50">
+                 <div className="divide-y divide-slate-50 dark:divide-slate-700">
                     {latestKnowledge.length > 0 ? latestKnowledge.map((k) => (
-                        <div key={k.id} className="p-3 hover:bg-slate-50 transition cursor-pointer">
+                        <div key={k.id} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition cursor-pointer">
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase font-bold ${
-                                     k.category === 'İçtihat' ? 'bg-purple-50 text-purple-700 border-purple-100' : 
-                                     'bg-slate-50 text-slate-600 border-slate-200'
+                                     k.category === 'İçtihat' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-800' : 
+                                     'bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600'
                                 }`}>
                                     {k.category}
                                 </span>
                                 <span className="text-[10px] text-slate-400">{k.createdAt}</span>
                             </div>
-                            <p className="text-sm font-medium text-slate-700 line-clamp-1">{k.title}</p>
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-1">{k.title}</p>
                         </div>
                     )) : (
                         <p className="text-xs text-slate-400 italic text-center py-4">İçerik bulunmuyor.</p>
@@ -392,13 +391,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
             </div>
 
             {/* 6. AÇIK GÖREVLERİM ÖZET */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                 <h3 className="font-bold text-slate-800 mb-3 text-sm">Açık Görevlerim</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
+                 <h3 className="font-bold text-slate-800 dark:text-white mb-3 text-sm">Açık Görevlerim</h3>
                  <ul className="space-y-2">
                     {myOpenTasks.slice(0,4).map(t => (
                         <li key={t.id} className="flex items-start text-sm">
                              <div className={`w-2 h-2 rounded-full mt-1.5 mr-2 shrink-0 ${t.priority === 'Yüksek' ? 'bg-red-500' : 'bg-blue-400'}`}></div>
-                             <span className="text-slate-600 line-clamp-1">{t.title}</span>
+                             <span className="text-slate-600 dark:text-slate-300 line-clamp-1">{t.title}</span>
                         </li>
                     ))}
                     {myOpenTasks.length === 0 && <li className="text-xs text-slate-400">Bekleyen görev yok.</li>}

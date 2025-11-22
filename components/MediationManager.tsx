@@ -171,6 +171,7 @@ export const MediationManager: React.FC = () => {
           signedBy: []
       };
 
+      // Check if documents array exists, otherwise create new
       const currentDocs = activeMediationData.documents || [];
       updateMediation({ ...activeMediationData, documents: [newDoc, ...currentDocs] });
 
@@ -184,8 +185,11 @@ export const MediationManager: React.FC = () => {
       setSigningDocId(docId);
       // Simulate process
       setTimeout(() => {
+          // We must fetch fresh data or use the active one, assuming component didn't unmount
+          // In real app, you'd check if mounted.
           if (activeMediationData) {
-              const updatedDocs = (activeMediationData.documents || []).map(d => 
+              const currentDocs = activeMediationData.documents || [];
+              const updatedDocs = currentDocs.map(d => 
                   d.id === docId ? { ...d, status: 'İmzada' as any } : d
               );
               updateMediation({ ...activeMediationData, documents: updatedDocs });
@@ -194,7 +198,8 @@ export const MediationManager: React.FC = () => {
           // Simulate completion after more time
           setTimeout(() => {
              if (activeMediationData) {
-                // Re-fetch strictly from latest state in real app, here we trust the flow
+                // In a real app with async updates, we would trigger a refetch here.
+                // For this simulation, we just add the notification.
                  addNotification({
                      id: `sign-${Date.now()}`,
                      type: 'SUCCESS',
@@ -390,7 +395,13 @@ export const MediationManager: React.FC = () => {
                          <div>
                              <div className="flex items-center gap-2 mb-1">
                                  <span className="text-xs font-bold text-slate-400 uppercase">Dosya No</span>
-                                 <span className={`text-xs font-bold px-2 py-0.5 rounded border ${activeMediationData.type === 'Fiziksel' ? '' : ''}`}>{activeMediationData.status}</span>
+                                 <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
+                                     activeMediationData.status === 'Anlaşma' ? 'bg-green-100 text-green-700 border-green-200' : 
+                                     (activeMediationData.status === 'Anlaşmama' || activeMediationData.status === 'İptal') ? 'bg-red-100 text-red-700 border-red-200' : 
+                                     'bg-blue-100 text-blue-700 border-blue-200'
+                                 }`}>
+                                     {activeMediationData.status}
+                                 </span>
                              </div>
                              <h1 className="text-3xl font-bold text-slate-800">{activeMediationData.fileNumber}</h1>
                              <p className="text-slate-600 mt-1">{activeMediationData.subject}</p>
@@ -663,12 +674,7 @@ export const MediationManager: React.FC = () => {
             </div>
         ) : (
             // --- LIST VIEW (Existing Code) ---
-            // ... (Keeping the existing list view logic, simplified for brevity in diff)
-            // Note: I am not removing the List View logic, just focusing on the new features above.
-            // In a real refactor, I would ensure the List View is here as the "else" block.
-            // For this output, assume the List View exists as previously implemented.
             <div className="animate-in fade-in">
-                 {/* ... List View content ... */}
                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-slate-800">Arabuluculuk Dosyaları</h1>
@@ -682,9 +688,7 @@ export const MediationManager: React.FC = () => {
                     </button>
                  </div>
 
-                 {/* Search Bar & Table ... (Standard Implementation) */}
                   <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                     {/* ... Table Implementation ... */}
                      <table className="w-full text-left">
                         <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase font-bold">
                              <tr>

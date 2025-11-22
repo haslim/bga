@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings, DeadlineTemplate, Notification, NotificationSettings } from './types';
 import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE, THEME_COLORS, DEFAULT_DEADLINE_TEMPLATES } from './constants';
@@ -127,7 +126,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => loadFromStorage('BGA_SETTINGS', {
     title: 'BGAofis',
     subtitle: 'Hukuk Otomasyonu',
-    logoUrl: ''
+    logoUrl: '',
+    darkMode: false
   }));
   
   // Auth State (Try to restore session)
@@ -158,6 +158,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
   }, [currentUser]);
 
+  // -- DARK MODE EFFECT --
+  // This ensures the dark class is added/removed from <html> based on siteSettings
+  useEffect(() => {
+    if (siteSettings.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [siteSettings.darkMode]);
 
   // Apply Theme Effect
   useEffect(() => {
@@ -187,25 +196,29 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           mediations.forEach(m => {
               // Mock check: if status is APPLIED and no meetings scheduled yet (implies invite issue for demo)
               if (m.status === 'Başvuru' && m.meetings.length === 0 && !m.invitationSent) {
-                  // Avoid duplicates in real app, simple check here
-                  const exists = notifications.some(n => n.title === 'Davet Gönderilmedi' && n.message.includes(m.fileNumber));
+                  // Avoid duplicates by checking message content matches the file number
+                  // We only add if a notification with this exact message doesn't already exist
+                  const expectedMessage = `${m.fileNumber} nolu dosya için karşı tarafa henüz davet gönderilmemiş görünüyor.`;
+                  const exists = notifications.some(n => n.message === expectedMessage);
+                  
                   if (!exists) {
                       newWarnings.push({
                           id: `sys-inv-${Date.now()}-${m.id}`,
                           type: 'WARNING',
                           title: 'Davet Gönderilmedi',
-                          message: `${m.fileNumber} nolu dosya için karşı tarafa henüz davet gönderilmemiş görünüyor.`,
+                          message: expectedMessage,
                           timestamp: 'Şimdi',
                           read: false
                       });
                   }
               }
           });
+          
           if (newWarnings.length > 0) {
               setNotifications(prev => [...newWarnings, ...prev]);
           }
       }
-  }, [mediations, notificationSettings]);
+  }, [mediations, notificationSettings.rules.inviteWarning]);
 
 
   // -- Helpers --

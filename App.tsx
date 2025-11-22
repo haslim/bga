@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { DataProvider, useData } from './DataContext';
 import { Sidebar } from './components/Sidebar';
@@ -210,7 +209,7 @@ const MainContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row bg-gray-50 min-h-screen font-sans relative">
+    <div className="flex flex-col lg:flex-row bg-gray-50 dark:bg-slate-950 min-h-screen font-sans relative text-slate-900 dark:text-slate-100">
       
       {/* Notification Panel (Overlay) */}
       {isNotificationOpen && (
@@ -219,11 +218,11 @@ const MainContent: React.FC = () => {
             onClick={() => setIsNotificationOpen(false)}
           >
               <div 
-                  className="w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col"
+                  className="w-full max-w-md bg-white dark:bg-slate-800 h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col"
                   onClick={(e) => e.stopPropagation()}
               >
-                  <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                      <h3 className="font-bold text-slate-800 flex items-center">
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800">
+                      <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
                           <Bell className="w-5 h-5 mr-2 text-brand-600" />
                           Bildirim Merkezi
                       </h3>
@@ -234,8 +233,8 @@ const MainContent: React.FC = () => {
                           >
                               Tümünü Okundu İşaretle
                           </button>
-                          <button onClick={() => setIsNotificationOpen(false)} className="p-1 hover:bg-slate-200 rounded-full transition">
-                              <X className="w-5 h-5 text-slate-500" />
+                          <button onClick={() => setIsNotificationOpen(false)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition">
+                              <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                           </button>
                       </div>
                   </div>
@@ -246,7 +245,7 @@ const MainContent: React.FC = () => {
                               {notifications.map(notif => (
                                   <div 
                                     key={notif.id} 
-                                    className={`p-4 rounded-xl border transition-all cursor-pointer relative group ${notif.read ? 'bg-white border-slate-100' : 'bg-blue-50/50 border-blue-100 hover:bg-blue-50'}`}
+                                    className={`p-4 rounded-xl border transition-all cursor-pointer relative group ${notif.read ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700' : 'bg-blue-50/50 dark:bg-slate-700 border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700'}`}
                                     onClick={() => markNotificationAsRead(notif.id)}
                                   >
                                       <div className="flex justify-between items-start mb-1">
@@ -259,8 +258,8 @@ const MainContent: React.FC = () => {
                                           </span>
                                           <span className="text-xs text-slate-400">{notif.timestamp}</span>
                                       </div>
-                                      <h4 className={`font-bold text-sm mt-2 ${notif.read ? 'text-slate-700' : 'text-slate-900'}`}>{notif.title}</h4>
-                                      <p className="text-sm text-slate-600 mt-1 leading-relaxed">{notif.message}</p>
+                                      <h4 className={`font-bold text-sm mt-2 ${notif.read ? 'text-slate-700 dark:text-slate-200' : 'text-slate-900 dark:text-white'}`}>{notif.title}</h4>
+                                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{notif.message}</p>
                                       
                                       {!notif.read && (
                                           <div className="absolute top-4 right-4 w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
@@ -276,7 +275,7 @@ const MainContent: React.FC = () => {
                       )}
                   </div>
                   
-                  <div className="p-4 border-t border-slate-100 bg-slate-50 text-center">
+                  <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-center">
                       <button 
                         onClick={() => { setIsNotificationOpen(false); setCurrentView('settings'); }}
                         className="text-xs font-bold text-slate-500 hover:text-brand-600 transition"
@@ -331,7 +330,7 @@ const MainContent: React.FC = () => {
       <div className="fixed top-4 right-4 z-40 hidden lg:block">
           <button 
             onClick={() => setIsNotificationOpen(true)}
-            className="bg-white p-2.5 rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-brand-600 hover:scale-105 transition-all relative group"
+            className="bg-white dark:bg-slate-800 p-2.5 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-brand-600 hover:scale-105 transition-all relative group"
             title="Bildirimler"
           >
               <Bell className="w-5 h-5" />
