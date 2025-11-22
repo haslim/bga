@@ -174,6 +174,8 @@ export interface MediationParty {
   name: string;
   phone: string;
   role: 'Başvurucu' | 'Karşı Taraf';
+  representative?: string; // Vekil Adı
+  representativePhone?: string; // Vekil Telefonu
 }
 
 export interface Mediation {

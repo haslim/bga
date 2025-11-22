@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../DataContext';
-import { UserRole, DeadlineTemplate, NotificationSettings, Template } from '../types';
+import { UserRole, DeadlineTemplate, NotificationSettings, Template, MediatorProfile } from '../types';
 import { THEME_COLORS } from '../constants';
-import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight, LayoutTemplate, FileText, Edit3, X, Code, Eye } from 'lucide-react';
+import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight, LayoutTemplate, FileText, Edit3, X, Code, Eye, Briefcase } from 'lucide-react';
 import { UserManager } from './UserManager';
 
 export const SettingsManager: React.FC = () => {
-  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme, deadlineTemplates, addDeadlineTemplate, deleteDeadlineTemplate, notificationSettings, updateNotificationSettings, templates, updateTemplate } = useData();
+  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme, deadlineTemplates, addDeadlineTemplate, deleteDeadlineTemplate, notificationSettings, updateNotificationSettings, templates, updateTemplate, mediatorProfile, updateMediatorProfile } = useData();
   
-  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'deadlines' | 'notifications' | 'templates'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'profile' | 'users' | 'deadlines' | 'notifications' | 'templates'>('general');
 
   const [formData, setFormData] = useState({
     title: siteSettings.title,
@@ -17,6 +17,9 @@ export const SettingsManager: React.FC = () => {
     logoUrl: siteSettings.logoUrl || '',
     darkMode: siteSettings.darkMode || false
   });
+
+  // Mediator Profile Form State
+  const [profileData, setProfileData] = useState<MediatorProfile>({...mediatorProfile});
 
   // Notification Settings Form State
   const [notifData, setNotifData] = useState<NotificationSettings>({ ...notificationSettings });
@@ -43,6 +46,10 @@ export const SettingsManager: React.FC = () => {
     });
   }, [siteSettings]);
 
+  useEffect(() => {
+      setProfileData({...mediatorProfile});
+  }, [mediatorProfile]);
+
   // Sync notification settings
   useEffect(() => {
       setNotifData({...notificationSettings});
@@ -58,6 +65,12 @@ export const SettingsManager: React.FC = () => {
     
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
+  };
+
+  const handleSaveProfile = () => {
+      updateMediatorProfile(profileData);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
   };
 
   const handleSaveNotificationSettings = () => {
@@ -264,6 +277,15 @@ export const SettingsManager: React.FC = () => {
           </button>
           {isAdmin && (
               <button 
+                onClick={() => setActiveTab('profile')}
+                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'profile' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+              >
+                  <Briefcase className="w-4 h-4 mr-2" />
+                  Arabulucu Profili
+              </button>
+          )}
+          {isAdmin && (
+              <button 
                 onClick={() => setActiveTab('templates')}
                 className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'templates' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
               >
@@ -413,6 +435,95 @@ export const SettingsManager: React.FC = () => {
                         </div>
                     </div>
                 )}
+            </div>
+        )}
+
+        {/* PROFILE TAB */}
+        {activeTab === 'profile' && isAdmin && (
+            <div className="space-y-6 animate-in slide-in-from-right-2 fade-in duration-300">
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center bg-slate-50/50 dark:bg-slate-800">
+                        <Briefcase className="w-5 h-5 mr-2 text-slate-600 dark:text-slate-300" />
+                        <h3 className="font-bold text-slate-700 dark:text-slate-200">Arabulucu Profil Bilgileri</h3>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-xl flex items-start mb-6">
+                            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" />
+                            <div>
+                                <h4 className="font-bold text-blue-800 dark:text-blue-300 text-sm">Önemli Bilgi</h4>
+                                <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
+                                    Burada gireceğiniz bilgiler (Ad, Sicil No, İban, Adres vb.), oluşturulan tüm arabuluculuk belgelerinde (Tutanak, Davet, Ücret Sözleşmesi) otomatik olarak kullanılacaktır.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ad Soyad / Ünvan</label>
+                                <input 
+                                    type="text" 
+                                    className={inputClass}
+                                    value={profileData.name}
+                                    onChange={e => setProfileData({...profileData, name: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Arabulucu Sicil No</label>
+                                <input 
+                                    type="text" 
+                                    className={inputClass}
+                                    value={profileData.registrationNumber}
+                                    onChange={e => setProfileData({...profileData, registrationNumber: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Telefon</label>
+                                <input 
+                                    type="text" 
+                                    className={inputClass}
+                                    value={profileData.phone}
+                                    onChange={e => setProfileData({...profileData, phone: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">E-Posta</label>
+                                <input 
+                                    type="email" 
+                                    className={inputClass}
+                                    value={profileData.email}
+                                    onChange={e => setProfileData({...profileData, email: e.target.value})}
+                                />
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Adres</label>
+                                <textarea 
+                                    className={inputClass}
+                                    rows={3}
+                                    value={profileData.address}
+                                    onChange={e => setProfileData({...profileData, address: e.target.value})}
+                                ></textarea>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">IBAN (Ücret Sözleşmeleri İçin)</label>
+                                <input 
+                                    type="text" 
+                                    className={inputClass}
+                                    placeholder="TR..."
+                                    value={profileData.iban}
+                                    onChange={e => setProfileData({...profileData, iban: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+                        <button 
+                            onClick={handleSaveProfile} 
+                            className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-lg font-medium flex items-center shadow-sm transition transform active:scale-95"
+                        >
+                            <Save className="w-4 h-4 mr-2" /> Bilgileri Güncelle
+                        </button>
+                    </div>
+                </div>
             </div>
         )}
 
