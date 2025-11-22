@@ -259,9 +259,9 @@ export const MediationManager: React.FC = () => {
   };
 
   const handleAddApplication = () => {
-    // Validate that names and phones are filled
-    const isApplicantValid = applicantList.every(p => p.name.trim() !== '' && p.phone.trim() !== '');
-    const isCounterPartyValid = counterPartyList.every(p => p.name.trim() !== '' && p.phone.trim() !== '');
+    // Validate that names are filled (phone is now optional)
+    const isApplicantValid = applicantList.every(p => p.name.trim() !== '');
+    const isCounterPartyValid = counterPartyList.every(p => p.name.trim() !== '');
 
     if (!newApplication.fileNumber || !newApplication.subject) {
         alert("Lütfen büro dosya numarası ve uyuşmazlık konusunu giriniz.");
@@ -269,7 +269,7 @@ export const MediationManager: React.FC = () => {
     }
     
     if (!isApplicantValid || !isCounterPartyValid) {
-        alert("Lütfen tüm tarafların Ad Soyad ve İletişim bilgilerini eksiksiz giriniz.");
+        alert("Lütfen tüm tarafların Ad Soyad bilgilerini eksiksiz giriniz.");
         return;
     }
 
@@ -748,7 +748,7 @@ export const MediationManager: React.FC = () => {
                                                             className={inputClass}
                                                             value={app.phone}
                                                             onChange={e => handleEditPartyChange('applicant', idx, 'phone', e.target.value)} 
-                                                            placeholder="+90 5XX XXX XX XX"
+                                                            placeholder="Telefon"
                                                         />
                                                     </div>
                                                     <div>
@@ -768,7 +768,7 @@ export const MediationManager: React.FC = () => {
                                                             className={inputClass}
                                                             value={app.representativePhone}
                                                             onChange={e => handleEditPartyChange('applicant', idx, 'representativePhone', e.target.value)} 
-                                                            placeholder="+90 5XX XXX XX XX"
+                                                            placeholder="Telefon"
                                                         />
                                                     </div>
                                                 </div>
@@ -818,7 +818,7 @@ export const MediationManager: React.FC = () => {
                                                             className={inputClass}
                                                             value={cp.phone}
                                                             onChange={e => handleEditPartyChange('counter', idx, 'phone', e.target.value)} 
-                                                            placeholder="+90 5XX XXX XX XX"
+                                                            placeholder="Telefon"
                                                         />
                                                     </div>
                                                     <div>
@@ -838,7 +838,7 @@ export const MediationManager: React.FC = () => {
                                                             className={inputClass}
                                                             value={cp.representativePhone}
                                                             onChange={e => handleEditPartyChange('counter', idx, 'representativePhone', e.target.value)} 
-                                                            placeholder="+90 5XX XXX XX XX"
+                                                            placeholder="Telefon"
                                                         />
                                                     </div>
                                                 </div>
@@ -924,7 +924,7 @@ export const MediationManager: React.FC = () => {
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
-                                                        placeholder="Telefon *"
+                                                        placeholder="Telefon"
                                                         value={app.phone}
                                                         onChange={e => handleChangePartyRow('applicant', idx, 'phone', e.target.value)} 
                                                     />
@@ -987,7 +987,7 @@ export const MediationManager: React.FC = () => {
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
-                                                        placeholder="Telefon *"
+                                                        placeholder="Telefon"
                                                         value={cp.phone}
                                                         onChange={e => handleChangePartyRow('counter', idx, 'phone', e.target.value)} 
                                                     />
@@ -1058,8 +1058,8 @@ export const MediationManager: React.FC = () => {
         {/* ... (Templates Modal and others remain same) ... */}
         {isTemplateModalOpen && (
             <Portal>
-                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
+                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
                           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                               <h3 className="font-bold text-slate-800 dark:text-white">Evrak Önizleme</h3>
                               <button onClick={() => setIsTemplateModalOpen(false)}><X className="w-5 h-5 text-slate-500"/></button>
@@ -1070,460 +1070,6 @@ export const MediationManager: React.FC = () => {
                      </div>
                 </div>
             </Portal>
-        )}
-
-        {/* Main Content Switch */}
-        {activeMediationData ? (
-            // --- DETAIL VIEW ---
-            <div className="animate-in slide-in-from-right duration-300">
-                <button onClick={() => setSelectedMediation(null)} className="flex items-center text-slate-500 hover:text-brand-600 mb-4">
-                    <ArrowLeft className="w-4 h-4 mr-1" /> Listeye Dön
-                </button>
-
-                {/* Detail Header */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6 relative overflow-hidden">
-                     <div className={`absolute top-0 left-0 w-2 h-full ${getProcessStats(activeMediationData.status).color}`}></div>
-                     <div className="flex justify-between items-start">
-                         <div>
-                             <div className="flex items-center gap-2 mb-1">
-                                 <span className="text-xs font-bold text-slate-400 uppercase">Büro No</span>
-                                 <span className="text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">{activeMediationData.fileNumber}</span>
-                                 
-                                 {activeMediationData.mediationNumber && (
-                                     <>
-                                        <span className="text-xs font-bold text-slate-400 uppercase ml-2">Arb No</span>
-                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">{activeMediationData.mediationNumber}</span>
-                                     </>
-                                 )}
-
-                                 <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded border ${
-                                     activeMediationData.status === 'Anlaşma' ? 'bg-green-100 text-green-700 border-green-200' : 
-                                     (activeMediationData.status === 'Anlaşmama' || activeMediationData.status === 'İptal') ? 'bg-red-100 text-red-700 border-red-200' : 
-                                     'bg-blue-100 text-blue-700 border-blue-200'
-                                 }`}>
-                                     {activeMediationData.status}
-                                 </span>
-                             </div>
-                             <h1 className="text-3xl font-bold text-slate-800 dark:text-white mt-2">{activeMediationData.subject}</h1>
-                         </div>
-                         <div className="flex gap-2">
-                             <button 
-                                onClick={(e) => handleDeleteMediation(activeMediationData.id, e)} 
-                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg border border-transparent hover:border-red-200 transition"
-                             >
-                                 <Trash2 className="w-5 h-5" />
-                             </button>
-                             <button 
-                                onClick={() => setIsReportModalOpen(true)}
-                                className="bg-brand-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-brand-700 flex items-center"
-                             >
-                                 <Printer className="w-4 h-4 mr-2" /> Rapor Al
-                             </button>
-                         </div>
-                     </div>
-
-                     {/* Process Bar */}
-                     <div className="mt-8 relative pt-4">
-                         <div className="absolute top-0 left-0 w-full h-1 bg-slate-100 dark:bg-slate-700 rounded"></div>
-                         <div className={`absolute top-0 left-0 h-1 rounded transition-all duration-1000 ${getProcessStats(activeMediationData.status).color}`} style={{width: `${getProcessStats(activeMediationData.status).percent}%`}}></div>
-                         <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2">
-                             <span className={getProcessStats(activeMediationData.status).step >= 1 ? 'text-brand-600 dark:text-brand-400' : ''}>Başvuru</span>
-                             <span className={getProcessStats(activeMediationData.status).step >= 2 ? 'text-brand-600 dark:text-brand-400' : ''}>Müzakere</span>
-                             <span className={getProcessStats(activeMediationData.status).step >= 3 ? 'text-green-600 dark:text-green-400' : ''}>Sonuç</span>
-                         </div>
-                     </div>
-                </div>
-
-                {/* ... (Rest of detail view tabs remain same) ... */}
-                {/* TABS */}
-                <div className="flex flex-wrap gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-6 w-full md:w-fit border border-slate-200 dark:border-slate-700">
-                    {[
-                        { id: 'overview', label: 'Genel Bakış', icon: Activity },
-                        { id: 'sessions', label: 'Oturumlar', icon: Calendar },
-                        { id: 'documents', label: 'Belgeler & İmza', icon: FileSignature },
-                        { id: 'notes', label: 'Tutanak Editörü', icon: PenTool },
-                    ].map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center transition-all ${activeTab === tab.id ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                        >
-                            <tab.icon className="w-4 h-4 mr-2" /> {tab.label}
-                        </button>
-                    ))}
-                </div>
-
-                {/* TAB CONTENT */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    {/* Overview Tab */}
-                    {activeTab === 'overview' && (
-                        <>
-                            <div className="lg:col-span-2 space-y-6">
-                                {/* Parties */}
-                                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="font-bold text-slate-800 dark:text-white">Taraf Bilgileri</h3>
-                                        <button 
-                                            onClick={handleOpenEditParties}
-                                            className="text-brand-600 hover:text-brand-700 text-xs font-bold bg-brand-50 hover:bg-brand-100 dark:bg-brand-900/20 dark:hover:bg-brand-900/40 px-3 py-1.5 rounded-lg transition flex items-center"
-                                        >
-                                            <Edit3 className="w-3 h-3 mr-1" /> Düzenle
-                                        </button>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {/* ... (Party display logic remains same) ... */}
-                                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-900">
-                                            <span className="text-xs font-bold text-green-600 dark:text-green-400 uppercase">Başvurucu(lar)</span>
-                                            <div className="mt-2 space-y-3">
-                                                {activeMediationData.parties?.filter(p => p.role === 'Başvurucu').map((p, i) => (
-                                                    <div key={i} className="text-sm pb-2 border-b border-green-200/50 last:border-0 last:pb-0">
-                                                        <p className="font-bold text-slate-800 dark:text-white">{p.name}</p>
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mb-1"><Phone className="w-3 h-3 mr-1"/> {p.phone}</p>
-                                                        {p.representative && (
-                                                            <div className="pl-2 border-l-2 border-green-300 mt-1">
-                                                                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center">
-                                                                    <Briefcase className="w-3 h-3 mr-1 text-green-600"/> Vekil: {p.representative}
-                                                                </p>
-                                                                {p.representativePhone && <p className="text-[10px] text-slate-500 ml-4">{p.representativePhone}</p>}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )) || <p className="font-bold text-slate-800 dark:text-white whitespace-pre-line">{activeMediationData.clientName.replace(/, /g, '\n')}</p>}
-                                            </div>
-                                        </div>
-                                        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900">
-                                            <span className="text-xs font-bold text-red-600 dark:text-red-400 uppercase">Karşı Taraf(lar)</span>
-                                            <div className="mt-2 space-y-3">
-                                                {activeMediationData.parties?.filter(p => p.role === 'Karşı Taraf').map((p, i) => (
-                                                    <div key={i} className="text-sm pb-2 border-b border-red-200/50 last:border-0 last:pb-0">
-                                                        <p className="font-bold text-slate-800 dark:text-white">{p.name}</p>
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mb-1"><Phone className="w-3 h-3 mr-1"/> {p.phone}</p>
-                                                        {p.representative && (
-                                                            <div className="pl-2 border-l-2 border-red-300 mt-1">
-                                                                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center">
-                                                                    <Briefcase className="w-3 h-3 mr-1 text-red-600"/> Vekil: {p.representative}
-                                                                </p>
-                                                                {p.representativePhone && <p className="text-[10px] text-slate-500 ml-4">{p.representativePhone}</p>}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )) || <p className="font-bold text-slate-800 dark:text-white whitespace-pre-line">{activeMediationData.counterParty.replace(/, /g, '\n')}</p>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Recent Activity & Quick Actions */}
-                                {/* ... (Rest of detail content remains same) ... */}
-                                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                                    <h3 className="font-bold text-slate-800 dark:text-white mb-4">Son Hareketler</h3>
-                                    <ul className="space-y-4">
-                                        <li className="flex items-start">
-                                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3"></div>
-                                            <div>
-                                                <p className="text-sm font-medium text-slate-800 dark:text-white">Dosya Oluşturuldu</p>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">{activeMediationData.applicationDate}</p>
-                                            </div>
-                                        </li>
-                                        {activeMediationData.meetings.map(m => (
-                                            <li key={m.id} className="flex items-start">
-                                                <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3"></div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-slate-800 dark:text-white">{m.type} Oturum Planlandı</p>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400">{m.date}</p>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                {/* Quick Actions Sidebar */}
-                                {/* ... (Quick Actions code remains same) ... */}
-                                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition group">
-                                    {/* ... Davet Gönder ... */}
-                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleSendDocumentAction('Davet')}>
-                                        <Mail className={`w-5 h-5 ${activeMediationData.invitationSent ? 'text-green-600' : 'text-brand-600'}`} />
-                                        {activeMediationData.invitationSent ? (
-                                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                        ) : (
-                                            <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-brand-600" />
-                                        )}
-                                    </div>
-                                    <div className="mb-3">
-                                        <p className="font-bold text-slate-700 dark:text-slate-200">{activeMediationData.invitationSent ? 'Davet İletildi' : 'Davet Gönder'}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">İlk oturum davet mektubu oluştur.</p>
-                                    </div>
-                                    {!activeMediationData.invitationSent ? (
-                                        <button 
-                                            onClick={() => handleSendDocumentAction('Davet')}
-                                            className="w-full mt-2 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
-                                        >
-                                            <Eye className="w-3 h-3 mr-1" />
-                                            Önizle ve Gönder
-                                        </button>
-                                    ) : (
-                                        <div className="mt-2 flex items-center justify-center text-xs font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 py-2 rounded-lg border border-green-100 dark:border-green-900">
-                                            <Check className="w-3 h-3 mr-1" /> Başarıyla Gönderildi
-                                        </div>
-                                    )}
-                                </div>
-                                {/* ... Other actions ... */}
-                                <button onClick={() => setIsMeetingModalOpen(true)} className="w-full bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-brand-300 shadow-sm hover:shadow-md transition text-left group">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Calendar className="w-5 h-5 text-brand-600" />
-                                        <Plus className="w-4 h-4 text-slate-300 group-hover:text-brand-600" />
-                                    </div>
-                                    <p className="font-bold text-slate-700 dark:text-slate-200">Oturum Planla</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Yeni bir toplantı ekle.</p>
-                                </button>
-
-                                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition group">
-                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleSendDocumentAction('Ucret')}>
-                                        <CreditCard className={`w-5 h-5 ${activeMediationData.feeContractSent ? 'text-green-600' : 'text-brand-600'}`} />
-                                        {activeMediationData.feeContractSent ? (
-                                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                        ) : (
-                                            <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-brand-600" />
-                                        )}
-                                    </div>
-                                    <div className="mb-3">
-                                        <p className="font-bold text-slate-700 dark:text-slate-200">{activeMediationData.feeContractSent ? 'Sözleşme İletildi' : 'Ücret Sözleşmesi'}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">Asgari ücret tarifesi üzerinden.</p>
-                                    </div>
-                                    {!activeMediationData.feeContractSent ? (
-                                        <button 
-                                            onClick={() => handleSendDocumentAction('Ucret')}
-                                            className="w-full mt-2 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
-                                        >
-                                            <Eye className="w-3 h-3 mr-1" />
-                                            Önizle ve Gönder
-                                        </button>
-                                    ) : (
-                                        <div className="mt-2 flex items-center justify-center text-xs font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 py-2 rounded-lg border border-green-100 dark:border-green-900">
-                                            <Check className="w-3 h-3 mr-1" /> Başarıyla Gönderildi
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </>
-                    )}
-                    
-                    {/* ... Other tabs (Sessions, Documents, Notes) are conditionally rendered here ... */}
-                    {activeTab === 'sessions' && (
-                        <div className="lg:col-span-3">
-                            {/* ... Sessions content (same as previous) ... */}
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-bold text-slate-700 dark:text-slate-200">Oturum Listesi</h3>
-                                <button onClick={() => setIsMeetingModalOpen(true)} className="bg-brand-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center hover:bg-brand-700">
-                                    <Plus className="w-4 h-4 mr-1" /> Yeni Oturum
-                                </button>
-                            </div>
-                            
-                            {activeMediationData.meetings.length === 0 ? (
-                                <div className="p-8 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400">
-                                    Henüz planlanmış bir oturum yok.
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {activeMediationData.meetings.map(m => (
-                                        <div key={m.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between">
-                                            {/* ... Session Item ... */}
-                                            <div className="flex items-start gap-4 mb-4 md:mb-0">
-                                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0 ${m.outcome === 'İptal' ? 'bg-slate-400' : m.type === 'Online' ? 'bg-purple-500' : 'bg-blue-500'}`}>
-                                                    {new Date(m.date).getDate()}
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h4 className="font-bold text-slate-800 dark:text-white">
-                                                            {m.type === 'Online' ? 'Online Video Konferans' : 'Fiziksel Toplantı'}
-                                                        </h4>
-                                                        {m.outcome === 'İptal' && <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded">İPTAL</span>}
-                                                    </div>
-                                                    <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center mt-1">
-                                                        <Clock className="w-3 h-3 mr-1" /> {new Date(m.date).toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}
-                                                        <span className="mx-2">•</span>
-                                                        {m.type === 'Online' ? (
-                                                            <span className="flex items-center text-purple-600 dark:text-purple-400"><Video className="w-3 h-3 mr-1"/> WebRTC</span>
-                                                        ) : (
-                                                            <span className="flex items-center"><MapPin className="w-3 h-3 mr-1"/> {m.location}</span>
-                                                        )}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                {m.type === 'Online' && m.outcome !== 'İptal' && (
-                                                    <button 
-                                                        onClick={() => setActiveVideoMeeting(m.id)}
-                                                        className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-purple-700 flex items-center shadow-sm animate-pulse"
-                                                    >
-                                                        <Video className="w-4 h-4 mr-2" /> Katıl
-                                                    </button>
-                                                )}
-                                                {m.outcome !== 'İptal' && (
-                                                    <button onClick={() => openCancelModal(m)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg text-sm font-medium transition">
-                                                        İptal / Ertele
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'documents' && (
-                        <div className="lg:col-span-3">
-                            {/* ... Documents content (same as previous) ... */}
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-bold text-slate-700 dark:text-slate-200">Belgeler ve İmza Durumu</h3>
-                                <div className="flex gap-2">
-                                    <button onClick={() => handleGenerateDoc('Tutanak')} className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700">
-                                        + Tutanak Oluştur
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <table className="w-full text-left">
-                                    <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
-                                        <tr>
-                                            <th className="px-4 py-3">Belge Adı</th>
-                                            <th className="px-4 py-3">Tip</th>
-                                            <th className="px-4 py-3">Tarih</th>
-                                            <th className="px-4 py-3">Durum</th>
-                                            <th className="px-4 py-3 text-right">İşlem</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                        {(activeMediationData.documents || []).map(doc => (
-                                            <tr key={doc.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                                                {/* ... Doc row ... */}
-                                                <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200 flex items-center">
-                                                    <FileText className="w-4 h-4 mr-2 text-slate-400" /> {doc.name}
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{doc.type}</td>
-                                                <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{doc.createdDate}</td>
-                                                <td className="px-4 py-3">
-                                                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                                                        doc.status === 'İmzalandı' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 
-                                                        doc.status === 'İmzada' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 
-                                                        doc.status === 'Gönderildi' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 
-                                                        'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
-                                                    }`}>
-                                                        {doc.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-right">
-                                                    {doc.status === 'Taslak' && (
-                                                        <button 
-                                                            onClick={() => handleSignDocument(doc.id)}
-                                                            disabled={signingDocId === doc.id}
-                                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-bold flex items-center justify-end ml-auto"
-                                                        >
-                                                            {signingDocId === doc.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'İmzaya Gönder'}
-                                                        </button>
-                                                    )}
-                                                    {doc.status === 'İmzalandı' && (
-                                                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                                                            <Printer className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {(!activeMediationData.documents || activeMediationData.documents.length === 0) && (
-                                            <tr>
-                                                <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-slate-400">Belge bulunamadı.</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'notes' && (
-                        <div className="lg:col-span-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center">
-                            <PenTool className="w-12 h-12 text-brand-200 dark:text-brand-800 mx-auto mb-4" />
-                            <h3 className="font-bold text-lg text-slate-800 dark:text-white">Canlı Tutanak Düzenleyici</h3>
-                            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">Oturum sırasında tutanağı canlı olarak düzenleyebilir ve anında çıktı alabilirsiniz.</p>
-                            <button onClick={() => openTemplateEditor('Tutanak')} className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg">
-                                Editörü Başlat
-                            </button>
-                        </div>
-                    )}
-
-                </div>
-            </div>
-        ) : (
-            // --- LIST VIEW ---
-            <div className="animate-in fade-in">
-                 {/* ... (List View code remains same) ... */}
-                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Arabuluculuk Dosyaları</h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">Başvuru, süreç, online görüşme ve e-imza yönetimi</p>
-                    </div>
-                     <button 
-                        onClick={() => {
-                            setIsApplicationModalOpen(true);
-                            setNewApplication({ subject: '', mediatorName: '', fileNumber: '', mediationNumber: '' });
-                            setApplicantList([{name: '', phone: '', representative: '', representativePhone: ''}]);
-                            setCounterPartyList([{name: '', phone: '', representative: '', representativePhone: ''}]);
-                        }}
-                        className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg transition"
-                    >
-                        <Plus className="w-5 h-5 mr-2" /> Yeni Başvuru
-                    </button>
-                 </div>
-
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-                     <table className="w-full text-left">
-                        <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs uppercase font-bold">
-                             <tr>
-                                 <th className="px-6 py-4">Dosya No / Arb No</th>
-                                 <th className="px-6 py-4">Taraf</th>
-                                 <th className="px-6 py-4">Durum</th>
-                                 <th className="px-6 py-4 text-right">İşlem</th>
-                             </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                             {filteredMediations.map(m => (
-                                 <tr key={m.id} onClick={() => setSelectedMediation(m)} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition">
-                                     <td className="px-6 py-4">
-                                         <div className="font-bold text-slate-700 dark:text-slate-200">{m.fileNumber}</div>
-                                         {m.mediationNumber && <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{m.mediationNumber}</div>}
-                                     </td>
-                                     <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{m.clientName}</td>
-                                     <td className="px-6 py-4"><span className={`text-xs font-bold px-2 py-1 rounded ${m.status === 'Anlaşma' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>{m.status}</span></td>
-                                     <td className="px-6 py-4 text-right"><ArrowRight className="w-4 h-4 ml-auto text-slate-400" /></td>
-                                 </tr>
-                             ))}
-                        </tbody>
-                     </table>
-                  </div>
-            </div>
-        )}
-
-        {/* Modals (Templates, Profile etc.) */}
-        {/* ... (Templates Modal and others remain same) ... */}
-        {isTemplateModalOpen && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
-                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
-                      <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                          <h3 className="font-bold text-slate-800 dark:text-white">Evrak Önizleme</h3>
-                          <button onClick={() => setIsTemplateModalOpen(false)}><X className="w-5 h-5 text-slate-500"/></button>
-                      </div>
-                      <div className="flex-1 overflow-y-auto p-8 bg-gray-100 dark:bg-slate-900">
-                           <div className="bg-white shadow-lg p-10 min-h-full mx-auto text-black" dangerouslySetInnerHTML={{ __html: templatePreviewContent }} />
-                      </div>
-                 </div>
-            </div>
         )}
     </div>
   );
