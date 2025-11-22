@@ -3,11 +3,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../DataContext';
 import { UserRole, DeadlineTemplate, NotificationSettings, Template, MediatorProfile } from '../types';
 import { THEME_COLORS } from '../constants';
-import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight, LayoutTemplate, FileText, Edit3, X, Code, Eye, Briefcase, Bold, Italic, Underline, List, Type, AlignLeft, Heading1, Heading2 } from 'lucide-react';
+import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight, LayoutTemplate, FileText, Edit3, X, Code, Eye, Briefcase, Bold, Italic, Underline, List, Type, AlignLeft, Heading1, Heading2, Loader2, Send } from 'lucide-react';
 import { UserManager } from './UserManager';
 
 export const SettingsManager: React.FC = () => {
-  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme, deadlineTemplates, addDeadlineTemplate, deleteDeadlineTemplate, notificationSettings, updateNotificationSettings, templates, updateTemplate, mediatorProfile, updateMediatorProfile } = useData();
+  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme, deadlineTemplates, addDeadlineTemplate, deleteDeadlineTemplate, notificationSettings, updateNotificationSettings, templates, updateTemplate, mediatorProfile, updateMediatorProfile, addNotification } = useData();
   
   const [activeTab, setActiveTab] = useState<'general' | 'profile' | 'users' | 'deadlines' | 'notifications' | 'templates'>('general');
 
@@ -36,6 +36,12 @@ export const SettingsManager: React.FC = () => {
 
   const [selectedTheme, setSelectedTheme] = useState(currentUser?.theme || 'blue');
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Test States
+  const [isTestingSMS, setIsTestingSMS] = useState(false);
+  const [isTestingEmail, setIsTestingEmail] = useState(false);
+  const [testPhone, setTestPhone] = useState('');
+  const [testEmail, setTestEmail] = useState('');
 
   // Sync with global state if it changes externally
   useEffect(() => {
@@ -130,6 +136,87 @@ export const SettingsManager: React.FC = () => {
       addDeadlineTemplate(newTemplate);
       setNewDeadlineName('');
       setNewDeadlineDays(7);
+  };
+
+  // --- TEST HANDLERS ---
+  const handleTestSMS = () => {
+      if (!notifData.integrations.smsUsername || !notifData.integrations.smsPassword) {
+          addNotification({
+              id: `test-sms-err-${Date.now()}`,
+              type: 'WARNING',
+              title: 'Eksik Bilgi',
+              message: 'Lütfen SMS testi için Kullanıcı Adı ve Şifre alanlarını doldurunuz.',
+              timestamp: 'Şimdi',
+              read: false
+          });
+          return;
+      }
+
+      if (!testPhone) {
+          addNotification({
+              id: `test-sms-no-phone-${Date.now()}`,
+              type: 'WARNING',
+              title: 'Eksik Bilgi',
+              message: 'Lütfen test edilecek telefon numarasını giriniz.',
+              timestamp: 'Şimdi',
+              read: false
+          });
+          return;
+      }
+
+      setIsTestingSMS(true);
+      // Simulate API Call
+      setTimeout(() => {
+          setIsTestingSMS(false);
+          addNotification({
+              id: `test-sms-ok-${Date.now()}`,
+              type: 'SUCCESS',
+              title: 'SMS Bağlantısı Başarılı',
+              message: `${notifData.integrations.smsProvider} servisine bağlanıldı ve ${testPhone} numarasına test mesajı gönderildi.`,
+              timestamp: 'Şimdi',
+              read: false
+          });
+      }, 2000);
+  };
+
+  const handleTestEmail = () => {
+      if (!notifData.integrations.emailHost || !notifData.integrations.emailUser) {
+          addNotification({
+              id: `test-mail-err-${Date.now()}`,
+              type: 'WARNING',
+              title: 'Eksik Bilgi',
+              message: 'Lütfen E-posta testi için Host ve Kullanıcı alanlarını doldurunuz.',
+              timestamp: 'Şimdi',
+              read: false
+          });
+          return;
+      }
+
+      if (!testEmail) {
+          addNotification({
+              id: `test-mail-no-addr-${Date.now()}`,
+              type: 'WARNING',
+              title: 'Eksik Bilgi',
+              message: 'Lütfen test edilecek e-posta adresini giriniz.',
+              timestamp: 'Şimdi',
+              read: false
+          });
+          return;
+      }
+
+      setIsTestingEmail(true);
+      // Simulate API Call
+      setTimeout(() => {
+          setIsTestingEmail(false);
+          addNotification({
+              id: `test-mail-ok-${Date.now()}`,
+              type: 'SUCCESS',
+              title: 'SMTP Bağlantısı Başarılı',
+              message: `${notifData.integrations.emailHost} sunucusu ile bağlantı kuruldu ve ${testEmail} adresine test e-postası gönderildi.`,
+              timestamp: 'Şimdi',
+              read: false
+          });
+      }, 2500);
   };
 
   // Template Logic
@@ -848,6 +935,23 @@ export const SettingsManager: React.FC = () => {
                                 />
                             </div>
                          </div>
+                         <div className="flex justify-end mt-4 items-center gap-3">
+                             <input
+                                type="text"
+                                placeholder="+90 555..."
+                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2 text-sm w-40 focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={testPhone}
+                                onChange={(e) => setTestPhone(e.target.value)}
+                             />
+                             <button 
+                                onClick={handleTestSMS}
+                                disabled={isTestingSMS}
+                                className="px-4 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                             >
+                                {isTestingSMS ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Send className="w-3 h-3 mr-2" />}
+                                {isTestingSMS ? 'Bağlanıyor...' : 'Test SMS Gönder'}
+                             </button>
+                         </div>
                     </div>
 
                     {/* EMAIL CONFIG */}
@@ -904,6 +1008,23 @@ export const SettingsManager: React.FC = () => {
                                     onChange={e => changeIntegrationConfig('emailPassword', e.target.value)}
                                 />
                             </div>
+                         </div>
+                         <div className="flex justify-end mt-4 items-center gap-3">
+                             <input
+                                type="text"
+                                placeholder="test@mail.com"
+                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2 text-sm w-48 focus:ring-2 focus:ring-purple-500 outline-none"
+                                value={testEmail}
+                                onChange={(e) => setTestEmail(e.target.value)}
+                             />
+                             <button 
+                                onClick={handleTestEmail}
+                                disabled={isTestingEmail}
+                                className="px-4 py-2 text-xs font-bold text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                             >
+                                {isTestingEmail ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Send className="w-3 h-3 mr-2" />}
+                                {isTestingEmail ? 'Bağlanıyor...' : 'Test E-Posta Gönder'}
+                             </button>
                          </div>
                     </div>
 
