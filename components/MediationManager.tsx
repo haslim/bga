@@ -1,10 +1,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile, Document, MediationParty } from '../types';
 import { processTemplate } from '../utils';
 import { VideoRoom } from './VideoRoom';
 import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon, Bell, Video, PenTool, Send, Loader2, AlertTriangle, Check, FileCheck, Briefcase } from 'lucide-react';
+
+// Helper for Portal
+const Portal = ({ children }: { children: React.ReactNode }) => {
+  return createPortal(children, document.body);
+};
 
 export const MediationManager: React.FC = () => {
   const { mediations, addMediation, updateMediation, deleteMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile, notificationSettings, addNotification, siteSettings } = useData();
@@ -51,7 +57,7 @@ export const MediationManager: React.FC = () => {
   
   // New Application Form & Dynamic Parties
   const [newApplication, setNewApplication] = useState<Partial<Mediation>>({
-      subject: '', mediatorName: '', fileNumber: ''
+      subject: '', mediatorName: '', fileNumber: '', mediationNumber: '' // Added mediationNumber
   });
   // Updated state to include representative info
   const [applicantList, setApplicantList] = useState<PartyRow[]>([{name: '', phone: '', representative: '', representativePhone: ''}]);
@@ -71,6 +77,7 @@ export const MediationManager: React.FC = () => {
   
   const filteredMediations = mediations.filter(m => 
     m.fileNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (m.mediationNumber && m.mediationNumber.toLowerCase().includes(searchTerm.toLowerCase())) || // Filter by mediationNumber too
     m.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.counterParty.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -257,7 +264,7 @@ export const MediationManager: React.FC = () => {
     const isCounterPartyValid = counterPartyList.every(p => p.name.trim() !== '' && p.phone.trim() !== '');
 
     if (!newApplication.fileNumber || !newApplication.subject) {
-        alert("Lütfen dosya numarası ve uyuşmazlık konusunu giriniz.");
+        alert("Lütfen büro dosya numarası ve uyuşmazlık konusunu giriniz.");
         return;
     }
     
@@ -278,6 +285,7 @@ export const MediationManager: React.FC = () => {
     const mediationToAdd: Mediation = {
         id: `m-${Date.now()}`,
         fileNumber: newApplication.fileNumber || '',
+        mediationNumber: newApplication.mediationNumber || '', // Added
         applicationDate: new Date().toISOString().split('T')[0],
         clientName: finalClientNames,
         counterParty: finalCounterParties,
@@ -302,7 +310,7 @@ export const MediationManager: React.FC = () => {
     });
 
     setIsApplicationModalOpen(false);
-    setNewApplication({ subject: '', mediatorName: '', fileNumber: '' });
+    setNewApplication({ subject: '', mediatorName: '', fileNumber: '', mediationNumber: '' });
     setApplicantList([{name: '', phone: '', representative: '', representativePhone: ''}]);
     setCounterPartyList([{name: '', phone: '', representative: '', representativePhone: ''}]);
   };
@@ -599,336 +607,469 @@ export const MediationManager: React.FC = () => {
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen animate-in fade-in duration-300 relative dark:bg-slate-900 dark:text-white">
         
-        {/* Report Modal - Already defined in previous turn */}
-        {/* ... (Report Modal code remains same) ... */}
+        {/* Report Modal - Portal */}
+        {isReportModalOpen && activeMediationData && (
+            <Portal>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+                        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                            <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
+                                <FileText className="w-5 h-5 mr-2 text-brand-600" />
+                                Dosya Raporu Önizleme
+                            </h3>
+                            <button onClick={() => setIsReportModalOpen(false)}><X className="w-6 h-6 text-slate-400" /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-8 bg-slate-100 dark:bg-slate-900">
+                            <div id="printable-report" className="bg-white text-slate-900 p-10 shadow-lg max-w-[210mm] mx-auto min-h-[297mm]">
+                                {/* Report Content (Same as before) */}
+                                <div className="text-center border-b-2 border-slate-800 pb-6 mb-8">
+                                    <h1 className="text-2xl font-bold uppercase tracking-wider">Arabuluculuk Süreç Raporu</h1>
+                                    <p className="text-sm text-slate-500 mt-2">{mediatorProfile.name} - Sicil No: {mediatorProfile.registrationNumber}</p>
+                                    <p className="text-xs text-slate-400 mt-1">Rapor Tarihi: {new Date().toLocaleDateString('tr-TR')}</p>
+                                </div>
 
-        {/* Edit Parties Modal */}
-        {isEditPartiesModalOpen && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-4xl flex flex-col max-h-[95vh]">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-                         <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
-                            <Users className="w-5 h-5 mr-2 text-brand-600" />
-                            Taraf ve Vekil Bilgilerini Düzenle
-                         </h3>
-                         <button onClick={() => setIsEditPartiesModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
-                    </div>
-                    <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
-                        <div className="space-y-6">
-                             {/* Applicants List */}
-                             <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-100 dark:border-green-900">
-                                <div className="flex justify-between items-center mb-3">
-                                    <label className="block text-xs font-bold text-green-700 dark:text-green-400 uppercase">Başvurucu(lar)</label>
-                                    <button onClick={() => handleAddEditPartyRow('applicant')} className="text-xs text-green-600 hover:underline flex items-center font-bold">
-                                        <Plus className="w-3 h-3 mr-1"/> Ekle
-                                    </button>
-                                </div>
-                                <div className="space-y-4">
-                                    {editApplicantList.map((app, idx) => (
-                                        <div key={idx} className="grid grid-cols-12 gap-2 items-start p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                                            <div className="col-span-12 mb-1">
-                                                <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
-                                            </div>
-                                            <div className="col-span-3">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Ad Soyad</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    value={app.name}
-                                                    onChange={e => handleEditPartyChange('applicant', idx, 'name', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Telefon</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    value={app.phone}
-                                                    onChange={e => handleEditPartyChange('applicant', idx, 'phone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Vekil Adı</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    placeholder="Av. ..."
-                                                    value={app.representative}
-                                                    onChange={e => handleEditPartyChange('applicant', idx, 'representative', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Vekil Tel</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    value={app.representativePhone}
-                                                    onChange={e => handleEditPartyChange('applicant', idx, 'representativePhone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-1 flex items-center justify-center h-full pt-4">
-                                                {editApplicantList.length > 1 && (
-                                                    <button onClick={() => handleRemoveEditPartyRow('applicant', idx)} className="text-slate-400 hover:text-red-500">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
+                                <div className="grid grid-cols-2 gap-8 mb-8">
+                                    <div>
+                                        <h3 className="font-bold text-sm uppercase text-slate-500 mb-2 border-b pb-1">Dosya Bilgileri</h3>
+                                        <p><span className="font-bold">Büro Dosya No:</span> {activeMediationData.fileNumber}</p>
+                                        {activeMediationData.mediationNumber && <p><span className="font-bold">Arabuluculuk No:</span> {activeMediationData.mediationNumber}</p>}
+                                        <p><span className="font-bold">Başvuru Tarihi:</span> {activeMediationData.applicationDate}</p>
+                                        <p><span className="font-bold">Konu:</span> {activeMediationData.subject}</p>
+                                        <p><span className="font-bold">Durum:</span> {activeMediationData.status}</p>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-sm uppercase text-slate-500 mb-2 border-b pb-1">Taraf Bilgileri</h3>
+                                        <div className="mb-2">
+                                            <span className="font-bold block text-xs uppercase text-green-700">Başvurucu</span>
+                                            <p>{activeMediationData.clientName}</p>
                                         </div>
-                                    ))}
+                                        <div>
+                                            <span className="font-bold block text-xs uppercase text-red-700">Karşı Taraf</span>
+                                            <p>{activeMediationData.counterParty}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                             </div>
 
-                             {/* Counter Parties List */}
-                             <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900">
-                                <div className="flex justify-between items-center mb-3">
-                                    <label className="block text-xs font-bold text-red-700 dark:text-red-400 uppercase">Karşı Taraf(lar)</label>
-                                    <button onClick={() => handleAddEditPartyRow('counter')} className="text-xs text-red-600 hover:underline flex items-center font-bold">
-                                        <Plus className="w-3 h-3 mr-1"/> Ekle
-                                    </button>
+                                <div className="mb-8">
+                                    <h3 className="font-bold text-sm uppercase text-slate-500 mb-4 border-b pb-1">Süreç Kronolojisi</h3>
+                                    <table className="w-full text-sm text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 border-b border-slate-200">
+                                                <th className="p-2 border border-slate-200">Tarih</th>
+                                                <th className="p-2 border border-slate-200">İşlem / Oturum</th>
+                                                <th className="p-2 border border-slate-200">Sonuç</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr className="border-b border-slate-100">
+                                                <td className="p-2 border border-slate-200">{activeMediationData.applicationDate}</td>
+                                                <td className="p-2 border border-slate-200">Dosya Açılışı</td>
+                                                <td className="p-2 border border-slate-200">Başvuru Alındı</td>
+                                            </tr>
+                                            {activeMediationData.meetings.map((m, i) => (
+                                                <tr key={i} className="border-b border-slate-100">
+                                                    <td className="p-2 border border-slate-200">{m.date}</td>
+                                                    <td className="p-2 border border-slate-200">{m.type} Oturumu</td>
+                                                    <td className="p-2 border border-slate-200">{m.outcome}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div className="space-y-4">
-                                    {editCounterPartyList.map((cp, idx) => (
-                                        <div key={idx} className="grid grid-cols-12 gap-2 items-start p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                                            <div className="col-span-12 mb-1">
-                                                <span className="text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
-                                            </div>
-                                            <div className="col-span-3">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Ad Soyad</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    value={cp.name}
-                                                    onChange={e => handleEditPartyChange('counter', idx, 'name', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Telefon</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    value={cp.phone}
-                                                    onChange={e => handleEditPartyChange('counter', idx, 'phone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Vekil Adı</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    placeholder="Av. ..."
-                                                    value={cp.representative}
-                                                    onChange={e => handleEditPartyChange('counter', idx, 'representative', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <label className="block text-[10px] text-slate-400 mb-1">Vekil Tel</label>
-                                                <input 
-                                                    type="text" 
-                                                    className={`${inputClass} p-1.5 text-xs`}
-                                                    value={cp.representativePhone}
-                                                    onChange={e => handleEditPartyChange('counter', idx, 'representativePhone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-1 flex items-center justify-center h-full pt-4">
-                                                {editCounterPartyList.length > 1 && (
-                                                    <button onClick={() => handleRemoveEditPartyRow('counter', idx)} className="text-slate-400 hover:text-red-500">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+
+                                <div className="mt-12 pt-4 border-t border-slate-200 text-center text-xs text-slate-400">
+                                    <p>Bu rapor BGAofis Hukuk Otomasyon Sistemi üzerinden {new Date().toLocaleString('tr-TR')} tarihinde oluşturulmuştur.</p>
                                 </div>
-                             </div>
+                            </div>
+                        </div>
+                        <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+                            <button onClick={() => setIsReportModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">Kapat</button>
+                            <button onClick={handlePrintReport} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg">
+                                <Printer className="w-4 h-4 mr-2" /> Yazdır / PDF Kaydet
+                            </button>
                         </div>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 shrink-0">
-                        <button onClick={() => setIsEditPartiesModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
-                        <button onClick={handleSaveParties} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg shadow-brand-600/20">
-                            <Save className="w-4 h-4 mr-2" /> Kaydet
-                        </button>
-                    </div>
                 </div>
-            </div>
+            </Portal>
         )}
 
-        {/* Add Application Modal */}
-        {isApplicationModalOpen && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh]">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
-                         <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
-                            <Plus className="w-5 h-5 mr-2 text-brand-600" />
-                            Yeni Arabuluculuk Başvurusu
-                         </h3>
-                         <button onClick={() => setIsApplicationModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
-                    </div>
-                    <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Dosya Numarası</label>
-                            <input 
-                                type="text" 
-                                className={inputClass}
-                                placeholder="Örn: ARB-2025/101"
-                                value={newApplication.fileNumber} 
-                                onChange={e => setNewApplication({...newApplication, fileNumber: e.target.value})} 
-                            />
+        {/* Edit Parties Modal - Portal */}
+        {isEditPartiesModalOpen && (
+            <Portal>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-4xl flex flex-col max-h-[95vh] animate-in zoom-in-95">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                             <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+                                <Users className="w-5 h-5 mr-2 text-brand-600" />
+                                Taraf ve Vekil Bilgilerini Düzenle
+                             </h3>
+                             <button onClick={() => setIsEditPartiesModalOpen(false)}><X className="w-6 h-6 text-slate-400 hover:text-slate-600" /></button>
                         </div>
-                        
-                        <div className="space-y-6">
-                             {/* Applicants List */}
-                             <div className="p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-700">
-                                <div className="flex justify-between items-center mb-3">
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Başvurucu(lar)</label>
-                                    <button onClick={() => handleAddPartyRow('applicant')} className="text-xs text-brand-600 hover:underline flex items-center font-bold">
-                                        <Plus className="w-3 h-3 mr-1"/> Ekle
-                                    </button>
-                                </div>
-                                <div className="space-y-3">
-                                    {applicantList.map((app, idx) => (
-                                        <div key={idx} className="grid grid-cols-12 gap-2 items-start">
-                                            <div className="col-span-12 mb-1">
-                                                <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                        <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-800">
+                            <div className="space-y-6">
+                                 {/* Applicants List */}
+                                 <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-100 dark:border-green-900">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <label className="block text-sm font-bold text-green-700 dark:text-green-400 uppercase tracking-wide">Başvurucu(lar)</label>
+                                        <button onClick={() => handleAddEditPartyRow('applicant')} className="text-xs text-green-600 hover:underline flex items-center font-bold bg-white dark:bg-slate-800 px-2 py-1 rounded border border-green-200 dark:border-green-800">
+                                            <Plus className="w-3 h-3 mr-1"/> Yeni Taraf Ekle
+                                        </button>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {editApplicantList.map((app, idx) => (
+                                            <div key={idx} className="relative p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm group">
+                                                <div className="absolute top-3 right-3">
+                                                    {editApplicantList.length > 1 && (
+                                                        <button onClick={() => handleRemoveEditPartyRow('applicant', idx)} className="text-slate-400 hover:text-red-500 p-1 hover:bg-red-50 rounded">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="mb-3">
+                                                    <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded border border-green-100 dark:border-green-800">
+                                                        Başvurucu {idx + 1}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Ad Soyad / Ünvan</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={app.name}
+                                                            onChange={e => handleEditPartyChange('applicant', idx, 'name', e.target.value)} 
+                                                            placeholder="Örn: Ahmet Yılmaz"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Telefon</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={app.phone}
+                                                            onChange={e => handleEditPartyChange('applicant', idx, 'phone', e.target.value)} 
+                                                            placeholder="+90 5XX XXX XX XX"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Vekil Adı (Opsiyonel)</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={app.representative}
+                                                            onChange={e => handleEditPartyChange('applicant', idx, 'representative', e.target.value)} 
+                                                            placeholder="Av. Mehmet Demir"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Vekil Telefonu</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={app.representativePhone}
+                                                            onChange={e => handleEditPartyChange('applicant', idx, 'representativePhone', e.target.value)} 
+                                                            placeholder="+90 5XX XXX XX XX"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="col-span-3">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Ad Soyad / Ünvan *"
-                                                    value={app.name}
-                                                    onChange={e => handleChangePartyRow('applicant', idx, 'name', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Telefon *"
-                                                    value={app.phone}
-                                                    onChange={e => handleChangePartyRow('applicant', idx, 'phone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Vekil Adı (Opsiyonel)"
-                                                    value={app.representative}
-                                                    onChange={e => handleChangePartyRow('applicant', idx, 'representative', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Vekil Tel"
-                                                    value={app.representativePhone}
-                                                    onChange={e => handleChangePartyRow('applicant', idx, 'representativePhone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-1 flex justify-center pt-2">
-                                                {applicantList.length > 1 && (
-                                                    <button onClick={() => handleRemovePartyRow('applicant', idx)} className="text-slate-400 hover:text-red-500">
-                                                        <Trash2 className="w-5 h-5" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                             </div>
+                                        ))}
+                                    </div>
+                                 </div>
 
-                             {/* Counter Parties List */}
-                             <div className="p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-700">
-                                <div className="flex justify-between items-center mb-3">
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Karşı Taraf(lar)</label>
-                                    <button onClick={() => handleAddPartyRow('counter')} className="text-xs text-brand-600 hover:underline flex items-center font-bold">
-                                        <Plus className="w-3 h-3 mr-1"/> Ekle
-                                    </button>
-                                </div>
-                                <div className="space-y-3">
-                                    {counterPartyList.map((cp, idx) => (
-                                        <div key={idx} className="grid grid-cols-12 gap-2 items-start">
-                                            <div className="col-span-12 mb-1">
-                                                <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                                 {/* Counter Parties List */}
+                                 <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <label className="block text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">Karşı Taraf(lar)</label>
+                                        <button onClick={() => handleAddEditPartyRow('counter')} className="text-xs text-red-600 hover:underline flex items-center font-bold bg-white dark:bg-slate-800 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                            <Plus className="w-3 h-3 mr-1"/> Yeni Taraf Ekle
+                                        </button>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {editCounterPartyList.map((cp, idx) => (
+                                            <div key={idx} className="relative p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm group">
+                                                <div className="absolute top-3 right-3">
+                                                    {editCounterPartyList.length > 1 && (
+                                                        <button onClick={() => handleRemoveEditPartyRow('counter', idx)} className="text-slate-400 hover:text-red-500 p-1 hover:bg-red-50 rounded">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="mb-3">
+                                                    <span className="text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded border border-red-100 dark:border-red-800">
+                                                        Karşı Taraf {idx + 1}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Ad Soyad / Ünvan</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={cp.name}
+                                                            onChange={e => handleEditPartyChange('counter', idx, 'name', e.target.value)} 
+                                                            placeholder="Örn: XYZ Ltd. Şti."
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Telefon</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={cp.phone}
+                                                            onChange={e => handleEditPartyChange('counter', idx, 'phone', e.target.value)} 
+                                                            placeholder="+90 5XX XXX XX XX"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Vekil Adı (Opsiyonel)</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={cp.representative}
+                                                            onChange={e => handleEditPartyChange('counter', idx, 'representative', e.target.value)} 
+                                                            placeholder="Av. Ayşe Yılmaz"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Vekil Telefonu</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={cp.representativePhone}
+                                                            onChange={e => handleEditPartyChange('counter', idx, 'representativePhone', e.target.value)} 
+                                                            placeholder="+90 5XX XXX XX XX"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="col-span-3">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Ad Soyad / Ünvan *"
-                                                    value={cp.name}
-                                                    onChange={e => handleChangePartyRow('counter', idx, 'name', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Telefon *"
-                                                    value={cp.phone}
-                                                    onChange={e => handleChangePartyRow('counter', idx, 'phone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Vekil Adı (Opsiyonel)"
-                                                    value={cp.representative}
-                                                    onChange={e => handleChangePartyRow('counter', idx, 'representative', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-3">
-                                                <input 
-                                                    type="text" 
-                                                    className={inputClass}
-                                                    placeholder="Vekil Tel"
-                                                    value={cp.representativePhone}
-                                                    onChange={e => handleChangePartyRow('counter', idx, 'representativePhone', e.target.value)} 
-                                                />
-                                            </div>
-                                            <div className="col-span-1 flex justify-center pt-2">
-                                                {counterPartyList.length > 1 && (
-                                                    <button onClick={() => handleRemovePartyRow('counter', idx)} className="text-slate-400 hover:text-red-500">
-                                                        <Trash2 className="w-5 h-5" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                             </div>
+                                        ))}
+                                    </div>
+                                 </div>
+                            </div>
                         </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Uyuşmazlık Konusu</label>
-                            <textarea 
-                                className={inputClass}
-                                rows={3}
-                                value={newApplication.subject} 
-                                onChange={e => setNewApplication({...newApplication, subject: e.target.value})} 
-                            ></textarea>
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 shrink-0">
+                            <button onClick={() => setIsEditPartiesModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
+                            <button onClick={handleSaveParties} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg shadow-brand-600/20">
+                                <Save className="w-4 h-4 mr-2" /> Kaydet
+                            </button>
                         </div>
-                        
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Arabulucu</label>
-                             <input 
-                                type="text" 
-                                className={`${inputClass} bg-slate-50 dark:bg-slate-800`}
-                                value={newApplication.mediatorName || mediatorProfile.name} 
-                                onChange={e => setNewApplication({...newApplication, mediatorName: e.target.value})} 
-                            />
-                        </div>
-                    </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 shrink-0">
-                        <button onClick={() => setIsApplicationModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
-                        <button onClick={handleAddApplication} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg shadow-brand-600/20">
-                            <Save className="w-4 h-4 mr-2" /> Dosyayı Aç
-                        </button>
                     </div>
                 </div>
-            </div>
+            </Portal>
+        )}
+
+        {/* Add Application Modal - Portal */}
+        {isApplicationModalOpen && (
+            <Portal>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh] animate-in zoom-in-95">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                             <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+                                <Plus className="w-5 h-5 mr-2 text-brand-600" />
+                                Yeni Arabuluculuk Başvurusu
+                             </h3>
+                             <button onClick={() => setIsApplicationModalOpen(false)}><X className="w-6 h-6 text-slate-400 hover:text-slate-600" /></button>
+                        </div>
+                        <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-800">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Büro Dosya Numarası</label>
+                                    <input 
+                                        type="text" 
+                                        className={inputClass}
+                                        placeholder="Örn: 2025/101"
+                                        value={newApplication.fileNumber} 
+                                        onChange={e => setNewApplication({...newApplication, fileNumber: e.target.value})} 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Arabuluculuk No (ARB)</label>
+                                    <input 
+                                        type="text" 
+                                        className={inputClass}
+                                        placeholder="Örn: ARB-2025/5505"
+                                        value={newApplication.mediationNumber} 
+                                        onChange={e => setNewApplication({...newApplication, mediationNumber: e.target.value})} 
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-6">
+                                 {/* Applicants List */}
+                                 <div className="p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-700">
+                                    {/* ... (Applicant input rows remain same) ... */}
+                                    <div className="flex justify-between items-center mb-3">
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Başvurucu(lar)</label>
+                                        <button onClick={() => handleAddPartyRow('applicant')} className="text-xs text-brand-600 hover:underline flex items-center font-bold">
+                                            <Plus className="w-3 h-3 mr-1"/> Ekle
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {applicantList.map((app, idx) => (
+                                            <div key={idx} className="grid grid-cols-12 gap-2 items-start">
+                                                <div className="col-span-12 mb-1">
+                                                    <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Ad Soyad / Ünvan *"
+                                                        value={app.name}
+                                                        onChange={e => handleChangePartyRow('applicant', idx, 'name', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Telefon *"
+                                                        value={app.phone}
+                                                        onChange={e => handleChangePartyRow('applicant', idx, 'phone', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Vekil Adı (Opsiyonel)"
+                                                        value={app.representative}
+                                                        onChange={e => handleChangePartyRow('applicant', idx, 'representative', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Vekil Tel"
+                                                        value={app.representativePhone}
+                                                        onChange={e => handleChangePartyRow('applicant', idx, 'representativePhone', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-1 flex justify-center pt-2">
+                                                    {applicantList.length > 1 && (
+                                                        <button onClick={() => handleRemovePartyRow('applicant', idx)} className="text-slate-400 hover:text-red-500">
+                                                            <Trash2 className="w-5 h-5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                 </div>
+
+                                 {/* Counter Parties List */}
+                                 <div className="p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-700">
+                                    {/* ... (Counter party input rows remain same) ... */}
+                                    <div className="flex justify-between items-center mb-3">
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Karşı Taraf(lar)</label>
+                                        <button onClick={() => handleAddPartyRow('counter')} className="text-xs text-brand-600 hover:underline flex items-center font-bold">
+                                            <Plus className="w-3 h-3 mr-1"/> Ekle
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {counterPartyList.map((cp, idx) => (
+                                            <div key={idx} className="grid grid-cols-12 gap-2 items-start">
+                                                <div className="col-span-12 mb-1">
+                                                    <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Ad Soyad / Ünvan *"
+                                                        value={cp.name}
+                                                        onChange={e => handleChangePartyRow('counter', idx, 'name', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Telefon *"
+                                                        value={cp.phone}
+                                                        onChange={e => handleChangePartyRow('counter', idx, 'phone', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Vekil Adı (Opsiyonel)"
+                                                        value={cp.representative}
+                                                        onChange={e => handleChangePartyRow('counter', idx, 'representative', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Vekil Tel"
+                                                        value={cp.representativePhone}
+                                                        onChange={e => handleChangePartyRow('counter', idx, 'representativePhone', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-1 flex justify-center pt-2">
+                                                    {counterPartyList.length > 1 && (
+                                                        <button onClick={() => handleRemovePartyRow('counter', idx)} className="text-slate-400 hover:text-red-500">
+                                                            <Trash2 className="w-5 h-5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Uyuşmazlık Konusu</label>
+                                <textarea 
+                                    className={inputClass}
+                                    rows={3}
+                                    value={newApplication.subject} 
+                                    onChange={e => setNewApplication({...newApplication, subject: e.target.value})} 
+                                ></textarea>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Arabulucu</label>
+                                 <input 
+                                    type="text" 
+                                    className={`${inputClass} bg-slate-50 dark:bg-slate-800`}
+                                    value={newApplication.mediatorName || mediatorProfile.name} 
+                                    onChange={e => setNewApplication({...newApplication, mediatorName: e.target.value})} 
+                                />
+                            </div>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 shrink-0">
+                            <button onClick={() => setIsApplicationModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
+                            <button onClick={handleAddApplication} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg shadow-brand-600/20">
+                                <Save className="w-4 h-4 mr-2" /> Dosyayı Aç
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Portal>
+        )}
+
+        {/* Modals (Templates, Profile etc.) */}
+        {/* ... (Templates Modal and others remain same) ... */}
+        {isTemplateModalOpen && (
+            <Portal>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+                          <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                              <h3 className="font-bold text-slate-800 dark:text-white">Evrak Önizleme</h3>
+                              <button onClick={() => setIsTemplateModalOpen(false)}><X className="w-5 h-5 text-slate-500"/></button>
+                          </div>
+                          <div className="flex-1 overflow-y-auto p-8 bg-gray-100 dark:bg-slate-900">
+                               <div className="bg-white shadow-lg p-10 min-h-full mx-auto text-black" dangerouslySetInnerHTML={{ __html: templatePreviewContent }} />
+                          </div>
+                     </div>
+                </div>
+            </Portal>
         )}
 
         {/* Main Content Switch */}
@@ -939,17 +1080,23 @@ export const MediationManager: React.FC = () => {
                     <ArrowLeft className="w-4 h-4 mr-1" /> Listeye Dön
                 </button>
 
-                {/* Header Card */}
-                {/* ... (Header Card code remains same) ... */}
-                {/* Process Bar */}
-                {/* ... (Process Bar code remains same) ... */}
+                {/* Detail Header */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6 relative overflow-hidden">
                      <div className={`absolute top-0 left-0 w-2 h-full ${getProcessStats(activeMediationData.status).color}`}></div>
                      <div className="flex justify-between items-start">
                          <div>
                              <div className="flex items-center gap-2 mb-1">
-                                 <span className="text-xs font-bold text-slate-400 uppercase">Dosya No</span>
-                                 <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
+                                 <span className="text-xs font-bold text-slate-400 uppercase">Büro No</span>
+                                 <span className="text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">{activeMediationData.fileNumber}</span>
+                                 
+                                 {activeMediationData.mediationNumber && (
+                                     <>
+                                        <span className="text-xs font-bold text-slate-400 uppercase ml-2">Arb No</span>
+                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">{activeMediationData.mediationNumber}</span>
+                                     </>
+                                 )}
+
+                                 <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded border ${
                                      activeMediationData.status === 'Anlaşma' ? 'bg-green-100 text-green-700 border-green-200' : 
                                      (activeMediationData.status === 'Anlaşmama' || activeMediationData.status === 'İptal') ? 'bg-red-100 text-red-700 border-red-200' : 
                                      'bg-blue-100 text-blue-700 border-blue-200'
@@ -957,8 +1104,7 @@ export const MediationManager: React.FC = () => {
                                      {activeMediationData.status}
                                  </span>
                              </div>
-                             <h1 className="text-3xl font-bold text-slate-800 dark:text-white">{activeMediationData.fileNumber}</h1>
-                             <p className="text-slate-600 dark:text-slate-400 mt-1">{activeMediationData.subject}</p>
+                             <h1 className="text-3xl font-bold text-slate-800 dark:text-white mt-2">{activeMediationData.subject}</h1>
                          </div>
                          <div className="flex gap-2">
                              <button 
@@ -988,6 +1134,7 @@ export const MediationManager: React.FC = () => {
                      </div>
                 </div>
 
+                {/* ... (Rest of detail view tabs remain same) ... */}
                 {/* TABS */}
                 <div className="flex flex-wrap gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-6 w-full md:w-fit border border-slate-200 dark:border-slate-700">
                     {[
@@ -1025,6 +1172,7 @@ export const MediationManager: React.FC = () => {
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* ... (Party display logic remains same) ... */}
                                         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-900">
                                             <span className="text-xs font-bold text-green-600 dark:text-green-400 uppercase">Başvurucu(lar)</span>
                                             <div className="mt-2 space-y-3">
@@ -1066,8 +1214,8 @@ export const MediationManager: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Recent Activity */}
-                                {/* ... (Recent Activity code remains same) ... */}
+                                {/* Recent Activity & Quick Actions */}
+                                {/* ... (Rest of detail content remains same) ... */}
                                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                                     <h3 className="font-bold text-slate-800 dark:text-white mb-4">Son Hareketler</h3>
                                     <ul className="space-y-4">
@@ -1091,11 +1239,11 @@ export const MediationManager: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Quick Actions Sidebar */}
-                            {/* ... (Quick Actions code remains same) ... */}
                             <div className="space-y-4">
-                                {/* Davet Gönder Action */}
+                                {/* Quick Actions Sidebar */}
+                                {/* ... (Quick Actions code remains same) ... */}
                                 <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition group">
+                                    {/* ... Davet Gönder ... */}
                                     <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleSendDocumentAction('Davet')}>
                                         <Mail className={`w-5 h-5 ${activeMediationData.invitationSent ? 'text-green-600' : 'text-brand-600'}`} />
                                         {activeMediationData.invitationSent ? (
@@ -1122,8 +1270,7 @@ export const MediationManager: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Oturum Planla Action */}
+                                {/* ... Other actions ... */}
                                 <button onClick={() => setIsMeetingModalOpen(true)} className="w-full bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-brand-300 shadow-sm hover:shadow-md transition text-left group">
                                     <div className="flex items-center justify-between mb-2">
                                         <Calendar className="w-5 h-5 text-brand-600" />
@@ -1133,7 +1280,6 @@ export const MediationManager: React.FC = () => {
                                     <p className="text-xs text-slate-500 dark:text-slate-400">Yeni bir toplantı ekle.</p>
                                 </button>
 
-                                {/* Ücret Sözleşmesi Action */}
                                 <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition group">
                                     <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleSendDocumentAction('Ucret')}>
                                         <CreditCard className={`w-5 h-5 ${activeMediationData.feeContractSent ? 'text-green-600' : 'text-brand-600'}`} />
@@ -1164,12 +1310,11 @@ export const MediationManager: React.FC = () => {
                             </div>
                         </>
                     )}
-
-                    {/* Other Tabs */}
-                    {/* ... (Sessions, Documents, Notes tabs code remains same - they are rendered conditionally) ... */}
-                    {/* Sessions Tab */}
+                    
+                    {/* ... Other tabs (Sessions, Documents, Notes) are conditionally rendered here ... */}
                     {activeTab === 'sessions' && (
                         <div className="lg:col-span-3">
+                            {/* ... Sessions content (same as previous) ... */}
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-bold text-slate-700 dark:text-slate-200">Oturum Listesi</h3>
                                 <button onClick={() => setIsMeetingModalOpen(true)} className="bg-brand-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center hover:bg-brand-700">
@@ -1185,6 +1330,7 @@ export const MediationManager: React.FC = () => {
                                 <div className="space-y-4">
                                     {activeMediationData.meetings.map(m => (
                                         <div key={m.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col md:flex-row md:items-center justify-between">
+                                            {/* ... Session Item ... */}
                                             <div className="flex items-start gap-4 mb-4 md:mb-0">
                                                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0 ${m.outcome === 'İptal' ? 'bg-slate-400' : m.type === 'Online' ? 'bg-purple-500' : 'bg-blue-500'}`}>
                                                     {new Date(m.date).getDate()}
@@ -1230,9 +1376,9 @@ export const MediationManager: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Documents & Signatures Tab */}
                     {activeTab === 'documents' && (
                         <div className="lg:col-span-3">
+                            {/* ... Documents content (same as previous) ... */}
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-bold text-slate-700 dark:text-slate-200">Belgeler ve İmza Durumu</h3>
                                 <div className="flex gap-2">
@@ -1256,6 +1402,7 @@ export const MediationManager: React.FC = () => {
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                                         {(activeMediationData.documents || []).map(doc => (
                                             <tr key={doc.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                                {/* ... Doc row ... */}
                                                 <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200 flex items-center">
                                                     <FileText className="w-4 h-4 mr-2 text-slate-400" /> {doc.name}
                                                 </td>
@@ -1300,7 +1447,6 @@ export const MediationManager: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Tutanak Editor (Simplified access) */}
                     {activeTab === 'notes' && (
                         <div className="lg:col-span-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center">
                             <PenTool className="w-12 h-12 text-brand-200 dark:text-brand-800 mx-auto mb-4" />
@@ -1315,7 +1461,7 @@ export const MediationManager: React.FC = () => {
                 </div>
             </div>
         ) : (
-            // --- LIST VIEW (Existing Code) ---
+            // --- LIST VIEW ---
             <div className="animate-in fade-in">
                  {/* ... (List View code remains same) ... */}
                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
@@ -1326,7 +1472,7 @@ export const MediationManager: React.FC = () => {
                      <button 
                         onClick={() => {
                             setIsApplicationModalOpen(true);
-                            setNewApplication({ subject: '', mediatorName: '', fileNumber: '' });
+                            setNewApplication({ subject: '', mediatorName: '', fileNumber: '', mediationNumber: '' });
                             setApplicantList([{name: '', phone: '', representative: '', representativePhone: ''}]);
                             setCounterPartyList([{name: '', phone: '', representative: '', representativePhone: ''}]);
                         }}
@@ -1340,7 +1486,7 @@ export const MediationManager: React.FC = () => {
                      <table className="w-full text-left">
                         <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs uppercase font-bold">
                              <tr>
-                                 <th className="px-6 py-4">Dosya No</th>
+                                 <th className="px-6 py-4">Dosya No / Arb No</th>
                                  <th className="px-6 py-4">Taraf</th>
                                  <th className="px-6 py-4">Durum</th>
                                  <th className="px-6 py-4 text-right">İşlem</th>
@@ -1349,7 +1495,10 @@ export const MediationManager: React.FC = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                              {filteredMediations.map(m => (
                                  <tr key={m.id} onClick={() => setSelectedMediation(m)} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition">
-                                     <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200">{m.fileNumber}</td>
+                                     <td className="px-6 py-4">
+                                         <div className="font-bold text-slate-700 dark:text-slate-200">{m.fileNumber}</div>
+                                         {m.mediationNumber && <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{m.mediationNumber}</div>}
+                                     </td>
                                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{m.clientName}</td>
                                      <td className="px-6 py-4"><span className={`text-xs font-bold px-2 py-1 rounded ${m.status === 'Anlaşma' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>{m.status}</span></td>
                                      <td className="px-6 py-4 text-right"><ArrowRight className="w-4 h-4 ml-auto text-slate-400" /></td>
@@ -1362,6 +1511,7 @@ export const MediationManager: React.FC = () => {
         )}
 
         {/* Modals (Templates, Profile etc.) */}
+        {/* ... (Templates Modal and others remain same) ... */}
         {isTemplateModalOpen && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
                  <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
@@ -1375,8 +1525,6 @@ export const MediationManager: React.FC = () => {
                  </div>
             </div>
         )}
-
-        {/* ... (Other modals remain same) ... */}
     </div>
   );
 };

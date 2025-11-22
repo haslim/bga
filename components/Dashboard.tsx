@@ -10,7 +10,7 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
-  const { cases, tasks, finance, knowledgeBase } = useData();
+  const { cases, tasks, finance, knowledgeBase, setTaskFilter } = useData();
 
   const today = new Date().toISOString().split('T')[0];
   const sevenDaysLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -110,6 +110,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
 
   // 7. SON BİLGİ BANKASI KAYITLARI
   const latestKnowledge = knowledgeBase.slice(0, 3);
+
+  // Helper: Handle navigation with task filter
+  const handleTaskFilterClick = (filter: 'ALL' | 'COMPLETED' | 'PENDING') => {
+      setTaskFilter(filter);
+      onChangeView('tasks');
+  };
 
   // Custom Tooltip for Chart
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -285,15 +291,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                     <span className="font-bold text-slate-700 dark:text-slate-300 text-sm md:text-base">{completionRate}% Tamamlandı</span>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2 md:gap-4">
-                     <div className="p-2 md:p-3 bg-slate-50 dark:bg-slate-700/50 rounded border border-slate-100 dark:border-slate-600 text-center">
+                     <div 
+                        onClick={() => handleTaskFilterClick('ALL')}
+                        className="p-2 md:p-3 bg-slate-50 dark:bg-slate-700/50 rounded border border-slate-100 dark:border-slate-600 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                     >
                         <span className="block text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{totalTasks}</span>
                         <span className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Toplam Görev</span>
                      </div>
-                     <div className="p-2 md:p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-900 text-center">
+                     <div 
+                        onClick={() => handleTaskFilterClick('COMPLETED')}
+                        className="p-2 md:p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-900 text-center cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition"
+                     >
                         <span className="block text-xl md:text-2xl font-bold text-green-600 dark:text-green-400">{completedTasks}</span>
                         <span className="text-[10px] md:text-xs text-green-600 dark:text-green-400">Tamamlanan</span>
                      </div>
-                     <div className="p-2 md:p-3 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-900 text-center">
+                     <div 
+                        onClick={() => handleTaskFilterClick('PENDING')}
+                        className="p-2 md:p-3 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-900 text-center cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition"
+                     >
                         <span className="block text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">{totalTasks - completedTasks}</span>
                         <span className="text-[10px] md:text-xs text-orange-600 dark:text-orange-400">Bekleyen</span>
                      </div>

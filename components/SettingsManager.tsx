@@ -221,7 +221,7 @@ export const SettingsManager: React.FC = () => {
                                   { code: '{{MUVEKKIL}}', label: 'Müvekkil Adı' },
                                   { code: '{{KARSI_TARAF}}', label: 'Karşı Taraf' },
                                   { code: '{{DOSYA_NO}}', label: 'Büro Dosya No' },
-                                  { code: '{{ARB_NO}}', label: 'Arabuluculuk No' },
+                                  { code: '{{ARB_NO}}', label: 'Arabuluculuk No' }, // Added
                                   { code: '{{KONU}}', label: 'Uyuşmazlık Konusu' },
                                   { code: '{{TARIH}}', label: 'Bugünün Tarihi' },
                                   { code: '{{ARABULUCU}}', label: 'Arabulucu Adı' },
@@ -265,7 +265,9 @@ export const SettingsManager: React.FC = () => {
               </div>
           </div>
       )}
-
+      
+      {/* ... (Rest of the component remains the same) ... */}
+      
       <header className="mb-8 flex justify-between items-center flex-wrap gap-4">
         <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Ayarlar</h1>
@@ -303,7 +305,7 @@ export const SettingsManager: React.FC = () => {
         {/* GENERAL SETTINGS */}
         {activeTab === 'general' && (
             <div className="space-y-8 animate-in slide-in-from-left-2 fade-in duration-300">
-                
+                {/* ... Personal Settings & Admin Settings blocks (No changes) ... */}
                 {/* Personal Settings - Accessible to everyone */}
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 flex items-center">
@@ -640,6 +642,7 @@ export const SettingsManager: React.FC = () => {
         {/* NOTIFICATIONS TAB */}
         {activeTab === 'notifications' && isAdmin && (
             <div className="space-y-8 animate-in slide-in-from-right-2 fade-in duration-300">
+                 {/* ... (Rest of notifications UI - No changes) ... */}
                  {/* Channels */}
                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 flex items-center">

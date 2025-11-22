@@ -163,7 +163,8 @@ export const DEFAULT_TEMPLATES: Template[] = [
   
   <div style="margin-bottom: 20px;">
     <p><span style="font-weight: bold; display: inline-block; width: 150px;">BAŞVURU TARİHİ:</span> {{BASVURU_TARIHI}}</p>
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">DOSYA NO:</span> {{DOSYA_NO}}</p>
+    <p><span style="font-weight: bold; display: inline-block; width: 150px;">BÜRO NO:</span> {{DOSYA_NO}}</p>
+    <p><span style="font-weight: bold; display: inline-block; width: 150px;">ARB NO:</span> {{ARB_NO}}</p>
   </div>
   
   <div style="margin-bottom: 20px;">
@@ -399,6 +400,8 @@ export const DEFAULT_TEMPLATES: Template[] = [
 </div>`
   }
 ];
+
+// ... (Keeping MOCK_KNOWLEDGE_BASE, MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS)
 
 export const MOCK_KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
@@ -668,7 +671,8 @@ export const MOCK_TASKS: Task[] = [
 export const MOCK_MEDIATIONS: Mediation[] = [
   {
     id: 'm1',
-    fileNumber: 'ARB-2025/45',
+    fileNumber: '2025/10',
+    mediationNumber: 'ARB-2025/45',
     applicationDate: '2025-10-01',
     clientName: 'Ahmet Yılmaz',
     counterParty: 'XYZ Lojistik A.Ş.',
@@ -688,11 +692,16 @@ export const MOCK_MEDIATIONS: Mediation[] = [
         type: 'Fiziksel',
         location: 'Ofis Toplantı Odası'
       }
+    ],
+    parties: [
+        { name: 'Ahmet Yılmaz', role: 'Başvurucu', phone: '+90 555 111 22 33' },
+        { name: 'XYZ Lojistik A.Ş.', role: 'Karşı Taraf', phone: '+90 212 444 55 66' }
     ]
   },
   {
     id: 'm2',
-    fileNumber: 'ARB-2025/52',
+    fileNumber: '2025/12',
+    mediationNumber: 'ARB-2025/52',
     applicationDate: '2025-10-12',
     clientName: 'Selin Kaya',
     counterParty: 'Mehmet Öz',
@@ -710,6 +719,10 @@ export const MOCK_MEDIATIONS: Mediation[] = [
         type: 'Online',
         link: 'https://meet.bgaofis.com/arb-2025-52'
       }
+    ],
+    parties: [
+        { name: 'Selin Kaya', role: 'Başvurucu', phone: '+90 532 999 88 77' },
+        { name: 'Mehmet Öz', role: 'Karşı Taraf', phone: '+90 533 666 55 44' }
     ]
   }
 ];

@@ -25,6 +25,10 @@ interface DataContextType {
   notificationSettings: NotificationSettings;
   unreadNotificationCount: number;
   
+  // Task Filtering
+  taskFilter: 'ALL' | 'COMPLETED' | 'PENDING';
+  setTaskFilter: (filter: 'ALL' | 'COMPLETED' | 'PENDING') => void;
+
   // Actions
   addCase: (newCase: Case) => void;
   updateCase: (updatedCase: Case) => void;
@@ -141,6 +145,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logoUrl: '',
     darkMode: false
   }));
+  
+  const [taskFilter, setTaskFilter] = useState<'ALL' | 'COMPLETED' | 'PENDING'>('ALL');
   
   // Auth State (Try to restore session)
   const [currentUser, setCurrentUser] = useState<User | null>(() => loadFromStorage('BGA_SESSION', null));
@@ -437,6 +443,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       cases, clients, finance, tasks, mediations, invoices, users, auditLogs, templates, knowledgeBase,
       currentUser, mediatorProfile, siteSettings, deadlineTemplates,
       notifications, notificationSettings, unreadNotificationCount: notifications.filter(n => !n.read).length,
+      taskFilter, setTaskFilter,
       addCase, updateCase, deleteCase, addClient, updateClient, addFinanceRecord, addTask, toggleTaskComplete,
       addMediation, updateMediation, deleteMediation, addInvoice, updateTemplate, updateMediatorProfile, updateSiteSettings, updateUserTheme,
       addKnowledgeEntry, updateKnowledgeEntry, deleteKnowledgeEntry,

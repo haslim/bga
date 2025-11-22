@@ -43,6 +43,7 @@ export const processTemplate = (templateContent: string, data: Mediation, profil
   // Replace Placeholders
   return templateContent
     .replace(/{{DOSYA_NO}}/g, data.fileNumber || '.....')
+    .replace(/{{ARB_NO}}/g, data.mediationNumber || '.....') // Added Mediation Number
     .replace(/{{BASVURU_TARIHI}}/g, data.applicationDate || '.....')
     .replace(/{{MUVEKKIL}}/g, data.clientName || '.....')
     .replace(/{{KARSI_TARAF}}/g, data.counterParty || '.....')

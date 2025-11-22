@@ -1,4 +1,5 @@
 
+import { ReactNode } from 'react';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -180,7 +181,8 @@ export interface MediationParty {
 
 export interface Mediation {
   id: string;
-  fileNumber: string; // Arabuluculuk dosya no
+  fileNumber: string; // Büro Dosya No (Internal)
+  mediationNumber?: string; // Arabuluculuk Dosya No (Official ARB No)
   applicationDate: string;
   clientName: string;
   counterParty: string;

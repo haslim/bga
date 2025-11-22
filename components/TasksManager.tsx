@@ -5,7 +5,13 @@ import { CalendarView } from './CalendarView';
 import { CheckSquare, Clock, AlertCircle } from 'lucide-react';
 
 export const TasksManager: React.FC = () => {
-  const { tasks, cases, toggleTaskComplete } = useData();
+  const { tasks, cases, toggleTaskComplete, taskFilter, setTaskFilter } = useData();
+
+  const filteredTasks = tasks.filter(t => {
+      if (taskFilter === 'COMPLETED') return t.completed;
+      if (taskFilter === 'PENDING') return !t.completed;
+      return true;
+  });
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in">
@@ -19,15 +25,22 @@ export const TasksManager: React.FC = () => {
         {/* Task List Sidebar */}
         <div className="lg:col-span-1 space-y-6 order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px]">
-                <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-700 flex items-center">
-                        <CheckSquare className="w-5 h-5 mr-2 text-blue-600" />
-                        Görev Listesi
-                    </h3>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{tasks.filter(t => !t.completed).length} Bekleyen</span>
+                <div className="p-4 bg-slate-50 border-b border-slate-200">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-bold text-slate-700 flex items-center">
+                            <CheckSquare className="w-5 h-5 mr-2 text-blue-600" />
+                            {taskFilter === 'ALL' ? 'Tüm Görevler' : taskFilter === 'COMPLETED' ? 'Tamamlananlar' : 'Bekleyen Görevler'}
+                        </h3>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{filteredTasks.length} Kayıt</span>
+                    </div>
+                    <div className="flex space-x-1">
+                        <button onClick={() => setTaskFilter('ALL')} className={`flex-1 py-1.5 text-xs font-medium rounded transition ${taskFilter === 'ALL' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>Tümü</button>
+                        <button onClick={() => setTaskFilter('PENDING')} className={`flex-1 py-1.5 text-xs font-medium rounded transition ${taskFilter === 'PENDING' ? 'bg-orange-500 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>Bekleyen</button>
+                        <button onClick={() => setTaskFilter('COMPLETED')} className={`flex-1 py-1.5 text-xs font-medium rounded transition ${taskFilter === 'COMPLETED' ? 'bg-green-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>Biten</button>
+                    </div>
                 </div>
                 <div className="divide-y divide-slate-100 overflow-y-auto flex-1 custom-scrollbar">
-                    {tasks.length > 0 ? tasks.map((task) => (
+                    {filteredTasks.length > 0 ? filteredTasks.map((task) => (
                         <div key={task.id} className="p-4 hover:bg-slate-50 transition-colors flex items-start justify-between group">
                             <div className="flex items-start space-x-3">
                                 <div 
@@ -56,7 +69,7 @@ export const TasksManager: React.FC = () => {
                             </div>
                         </div>
                     )) : (
-                        <p className="text-center text-slate-400 py-8 text-sm">Görev bulunmuyor.</p>
+                        <p className="text-center text-slate-400 py-8 text-sm">Kriterlere uygun görev bulunmuyor.</p>
                     )}
                 </div>
             </div>
@@ -83,7 +96,7 @@ export const TasksManager: React.FC = () => {
 
         {/* Calendar View Main Area */}
         <div className="lg:col-span-2 order-1 lg:order-2 h-[750px]">
-            <CalendarView tasks={tasks} cases={cases} />
+            <CalendarView tasks={filteredTasks} cases={cases} />
         </div>
       </div>
     </div>
