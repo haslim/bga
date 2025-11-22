@@ -4,7 +4,7 @@ import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile, Document } from '../types';
 import { processTemplate } from '../utils';
 import { VideoRoom } from './VideoRoom';
-import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon, Bell, Video, PenTool, Send, Loader2, AlertTriangle } from 'lucide-react';
+import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon, Bell, Video, PenTool, Send, Loader2, AlertTriangle, Check } from 'lucide-react';
 
 export const MediationManager: React.FC = () => {
   const { mediations, addMediation, updateMediation, deleteMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile, notificationSettings, addNotification } = useData();
@@ -24,6 +24,9 @@ export const MediationManager: React.FC = () => {
   const [meetingToCancel, setMeetingToCancel] = useState<MediationMeeting | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   
+  // Sending States
+  const [sendingType, setSendingType] = useState<'Davet' | 'Ucret' | null>(null);
+
   // Online Meeting
   const [activeVideoMeeting, setActiveVideoMeeting] = useState<string | null>(null);
 
@@ -42,10 +45,12 @@ export const MediationManager: React.FC = () => {
       date: '', participants: '', notes: '', type: 'Fiziksel', location: 'Ofis Toplantı Odası', link: '' 
   });
   
-  // New Application Form
+  // New Application Form & Dynamic Parties
   const [newApplication, setNewApplication] = useState<Partial<Mediation>>({
-      clientName: '', counterParty: '', subject: '', mediatorName: '', fileNumber: ''
+      subject: '', mediatorName: '', fileNumber: ''
   });
+  const [applicantList, setApplicantList] = useState<string[]>(['']);
+  const [counterPartyList, setCounterPartyList] = useState<string[]>(['']);
 
   // E-Signature Simulation State
   const [signingDocId, setSigningDocId] = useState<string | null>(null);
@@ -83,6 +88,69 @@ export const MediationManager: React.FC = () => {
         deleteMediation(id);
         if (selectedMediation?.id === id) setSelectedMediation(null);
     }
+  };
+
+  // Dynamic Party Handlers
+  const handleAddPartyRow = (type: 'applicant' | 'counter') => {
+      if (type === 'applicant') setApplicantList([...applicantList, '']);
+      else setCounterPartyList([...counterPartyList, '']);
+  };
+
+  const handleRemovePartyRow = (type: 'applicant' | 'counter', index: number) => {
+      if (type === 'applicant') {
+          if (applicantList.length > 1) setApplicantList(applicantList.filter((_, i) => i !== index));
+      } else {
+          if (counterPartyList.length > 1) setCounterPartyList(counterPartyList.filter((_, i) => i !== index));
+      }
+  };
+
+  const handleChangePartyRow = (type: 'applicant' | 'counter', index: number, value: string) => {
+      if (type === 'applicant') {
+          const newList = [...applicantList];
+          newList[index] = value;
+          setApplicantList(newList);
+      } else {
+          const newList = [...counterPartyList];
+          newList[index] = value;
+          setCounterPartyList(newList);
+      }
+  };
+
+  const handleAddApplication = () => {
+    const finalClientNames = applicantList.filter(p => p.trim() !== '').join(', ');
+    const finalCounterParties = counterPartyList.filter(p => p.trim() !== '').join(', ');
+
+    if (!newApplication.fileNumber || !finalClientNames) return;
+
+    const mediationToAdd: Mediation = {
+        id: `m-${Date.now()}`,
+        fileNumber: newApplication.fileNumber || '',
+        applicationDate: new Date().toISOString().split('T')[0],
+        clientName: finalClientNames,
+        counterParty: finalCounterParties || 'Belirtilmedi',
+        subject: newApplication.subject || '',
+        mediatorName: newApplication.mediatorName || mediatorProfile.name,
+        status: MediationStatus.APPLIED,
+        meetings: [],
+        documents: []
+    };
+
+    addMediation(mediationToAdd);
+    
+    // Notification
+    addNotification({
+        id: `notif-app-${Date.now()}`,
+        type: 'SUCCESS',
+        title: 'Dosya Açıldı',
+        message: `${mediationToAdd.fileNumber} nolu dosya başarıyla oluşturuldu.`,
+        timestamp: 'Şimdi',
+        read: false
+    });
+
+    setIsApplicationModalOpen(false);
+    setNewApplication({ subject: '', mediatorName: '', fileNumber: '' });
+    setApplicantList(['']);
+    setCounterPartyList(['']);
   };
 
   // --- MEETING LOGIC ---
@@ -155,7 +223,52 @@ export const MediationManager: React.FC = () => {
       setMeetingToCancel(null);
   };
 
-  // --- DOCUMENT & SIGNATURE LOGIC ---
+  // --- SENDING LOGIC (Action Buttons) ---
+  const handleSendDocumentAction = (type: 'Davet' | 'Ucret') => {
+      if (!activeMediationData || sendingType) return;
+      
+      setSendingType(type);
+
+      // Simulate API call / Sending process
+      setTimeout(() => {
+          const template = templates.find(t => t.type === type);
+          const docName = template ? template.name : type === 'Davet' ? 'Davet Mektubu' : 'Ücret Sözleşmesi';
+          
+          // Create document entry if not exists
+          const newDoc: Document = {
+              id: `doc-sent-${Date.now()}`,
+              name: docName,
+              type: type as any,
+              createdDate: new Date().toISOString().split('T')[0],
+              status: 'Gönderildi',
+              signedBy: []
+          };
+
+          const currentDocs = activeMediationData.documents || [];
+          const updatedMediation = {
+              ...activeMediationData,
+              documents: [newDoc, ...currentDocs],
+              invitationSent: type === 'Davet' ? true : activeMediationData.invitationSent,
+              feeContractSent: type === 'Ucret' ? true : activeMediationData.feeContractSent
+          };
+
+          updateMediation(updatedMediation);
+          
+          addNotification({
+              id: `send-${Date.now()}`,
+              type: 'SUCCESS',
+              title: `${type === 'Davet' ? 'Davet' : 'Sözleşme'} İletildi`,
+              message: `${type === 'Davet' ? 'İlk oturum daveti' : 'Ücret sözleşmesi'} taraflara E-Posta ve SMS yoluyla başarıyla iletildi.`,
+              timestamp: 'Şimdi',
+              read: false
+          });
+
+          setSendingType(null);
+      }, 1500);
+  };
+
+
+  // --- DOCUMENT GENERATION ---
   const handleGenerateDoc = (docType: TemplateType) => {
       if (!activeMediationData) return;
       const template = templates.find(t => t.type === docType);
@@ -275,6 +388,117 @@ export const MediationManager: React.FC = () => {
             </div>
         )}
 
+        {/* Add Application Modal */}
+        {isApplicationModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center shrink-0">
+                         <h3 className="text-lg font-bold text-slate-800 flex items-center">
+                            <Plus className="w-5 h-5 mr-2 text-brand-600" />
+                            Yeni Arabuluculuk Başvurusu
+                         </h3>
+                         <button onClick={() => setIsApplicationModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
+                    </div>
+                    <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Dosya Numarası</label>
+                            <input 
+                                type="text" 
+                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                placeholder="Örn: ARB-2025/101"
+                                value={newApplication.fileNumber} 
+                                onChange={e => setNewApplication({...newApplication, fileNumber: e.target.value})} 
+                            />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             {/* Applicants List */}
+                             <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase">Başvurucu(lar)</label>
+                                    <button onClick={() => handleAddPartyRow('applicant')} className="text-xs text-brand-600 hover:underline flex items-center">
+                                        <Plus className="w-3 h-3 mr-1"/> Ekle
+                                    </button>
+                                </div>
+                                <div className="space-y-2">
+                                    {applicantList.map((app, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                                placeholder="Ad Soyad / Ünvan"
+                                                value={app}
+                                                onChange={e => handleChangePartyRow('applicant', idx, e.target.value)} 
+                                            />
+                                            {applicantList.length > 1 && (
+                                                <button onClick={() => handleRemovePartyRow('applicant', idx)} className="text-slate-400 hover:text-red-500">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                             </div>
+
+                             {/* Counter Parties List */}
+                             <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase">Karşı Taraf(lar)</label>
+                                    <button onClick={() => handleAddPartyRow('counter')} className="text-xs text-brand-600 hover:underline flex items-center">
+                                        <Plus className="w-3 h-3 mr-1"/> Ekle
+                                    </button>
+                                </div>
+                                <div className="space-y-2">
+                                    {counterPartyList.map((cp, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                                placeholder="Ad Soyad / Ünvan"
+                                                value={cp}
+                                                onChange={e => handleChangePartyRow('counter', idx, e.target.value)} 
+                                            />
+                                            {counterPartyList.length > 1 && (
+                                                <button onClick={() => handleRemovePartyRow('counter', idx)} className="text-slate-400 hover:text-red-500">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Uyuşmazlık Konusu</label>
+                            <textarea 
+                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                rows={3}
+                                value={newApplication.subject} 
+                                onChange={e => setNewApplication({...newApplication, subject: e.target.value})} 
+                            ></textarea>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Arabulucu</label>
+                             <input 
+                                type="text" 
+                                className="w-full border rounded p-2 text-sm bg-slate-50" 
+                                value={newApplication.mediatorName || mediatorProfile.name} 
+                                onChange={e => setNewApplication({...newApplication, mediatorName: e.target.value})} 
+                            />
+                        </div>
+                    </div>
+                    <div className="bg-slate-50 px-6 py-4 border-t flex justify-end gap-2 shrink-0">
+                        <button onClick={() => setIsApplicationModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm">İptal</button>
+                        <button onClick={handleAddApplication} className="px-4 py-2 bg-brand-600 text-white rounded text-sm hover:bg-brand-700 flex items-center">
+                            <Save className="w-4 h-4 mr-2" /> Dosyayı Aç
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         {/* Add Meeting Modal */}
         {isMeetingModalOpen && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -349,11 +573,10 @@ export const MediationManager: React.FC = () => {
             </div>
         )}
 
-        {/* Template Editor Modal (Reused logic) */}
+        {/* Template Editor Modal */}
         {isTemplateEditorOpen && selectedTemplateToEdit && (
              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-2">
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
-                     {/* ... Editor Toolbar & Content same as before, just ensuring it opens ... */}
                      <div className="p-4 border-b flex justify-between items-center bg-slate-50">
                         <h3 className="font-bold flex items-center"><Edit3 className="w-5 h-5 mr-2"/> Şablon Düzenle: {selectedTemplateToEdit.name}</h3>
                         <button onClick={() => setIsTemplateEditorOpen(false)}><X className="w-5 h-5"/></button>
@@ -461,12 +684,12 @@ export const MediationManager: React.FC = () => {
                                     <h3 className="font-bold text-slate-800 mb-4">Taraf Bilgileri</h3>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-4 bg-green-50 rounded-xl border border-green-100">
-                                            <span className="text-xs font-bold text-green-600 uppercase">Başvurucu</span>
-                                            <p className="font-bold text-slate-800 mt-1">{activeMediationData.clientName}</p>
+                                            <span className="text-xs font-bold text-green-600 uppercase">Başvurucu(lar)</span>
+                                            <p className="font-bold text-slate-800 mt-1 whitespace-pre-line">{activeMediationData.clientName.replace(/, /g, '\n')}</p>
                                         </div>
                                         <div className="p-4 bg-red-50 rounded-xl border border-red-100">
-                                            <span className="text-xs font-bold text-red-600 uppercase">Karşı Taraf</span>
-                                            <p className="font-bold text-slate-800 mt-1">{activeMediationData.counterParty}</p>
+                                            <span className="text-xs font-bold text-red-600 uppercase">Karşı Taraf(lar)</span>
+                                            <p className="font-bold text-slate-800 mt-1 whitespace-pre-line">{activeMediationData.counterParty.replace(/, /g, '\n')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -495,17 +718,39 @@ export const MediationManager: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Quick Actions Sidebar */}
+                            {/* Quick Actions Sidebar - UPDATED */}
                             <div className="space-y-4">
-                                <button onClick={() => handleGenerateDoc('Davet')} className="w-full bg-white p-4 rounded-xl border border-slate-200 hover:border-brand-300 shadow-sm hover:shadow-md transition text-left group">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Mail className="w-5 h-5 text-brand-600" />
-                                        <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-brand-600" />
+                                {/* Davet Gönder Action */}
+                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition group">
+                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleGenerateDoc('Davet')}>
+                                        <Mail className={`w-5 h-5 ${activeMediationData.invitationSent ? 'text-green-600' : 'text-brand-600'}`} />
+                                        {activeMediationData.invitationSent ? (
+                                            <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                        ) : (
+                                            <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-brand-600" />
+                                        )}
                                     </div>
-                                    <p className="font-bold text-slate-700">Davet Gönder</p>
-                                    <p className="text-xs text-slate-500">İlk oturum davet mektubu oluştur.</p>
-                                </button>
+                                    <div className="mb-3">
+                                        <p className="font-bold text-slate-700">{activeMediationData.invitationSent ? 'Davet İletildi' : 'Davet Gönder'}</p>
+                                        <p className="text-xs text-slate-500">İlk oturum davet mektubu oluştur.</p>
+                                    </div>
+                                    {!activeMediationData.invitationSent ? (
+                                        <button 
+                                            onClick={() => handleSendDocumentAction('Davet')}
+                                            disabled={sendingType === 'Davet'}
+                                            className="w-full mt-2 bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
+                                        >
+                                            {sendingType === 'Davet' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Send className="w-3 h-3 mr-1" />}
+                                            {sendingType === 'Davet' ? 'Gönderiliyor...' : 'Hazırla ve Gönder'}
+                                        </button>
+                                    ) : (
+                                        <div className="mt-2 flex items-center justify-center text-xs font-bold text-green-700 bg-green-50 py-2 rounded-lg border border-green-100">
+                                            <Check className="w-3 h-3 mr-1" /> Başarıyla Gönderildi
+                                        </div>
+                                    )}
+                                </div>
 
+                                {/* Oturum Planla Action */}
                                 <button onClick={() => setIsMeetingModalOpen(true)} className="w-full bg-white p-4 rounded-xl border border-slate-200 hover:border-brand-300 shadow-sm hover:shadow-md transition text-left group">
                                     <div className="flex items-center justify-between mb-2">
                                         <Calendar className="w-5 h-5 text-brand-600" />
@@ -515,14 +760,35 @@ export const MediationManager: React.FC = () => {
                                     <p className="text-xs text-slate-500">Yeni bir toplantı ekle.</p>
                                 </button>
 
-                                <button onClick={() => handleGenerateDoc('Ucret')} className="w-full bg-white p-4 rounded-xl border border-slate-200 hover:border-brand-300 shadow-sm hover:shadow-md transition text-left group">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <CreditCard className="w-5 h-5 text-brand-600" />
-                                        <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-brand-600" />
+                                {/* Ücret Sözleşmesi Action */}
+                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition group">
+                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleGenerateDoc('Ucret')}>
+                                        <CreditCard className={`w-5 h-5 ${activeMediationData.feeContractSent ? 'text-green-600' : 'text-brand-600'}`} />
+                                        {activeMediationData.feeContractSent ? (
+                                            <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                        ) : (
+                                            <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-brand-600" />
+                                        )}
                                     </div>
-                                    <p className="font-bold text-slate-700">Ücret Sözleşmesi</p>
-                                    <p className="text-xs text-slate-500">Asgari ücret tarifesi üzerinden.</p>
-                                </button>
+                                    <div className="mb-3">
+                                        <p className="font-bold text-slate-700">{activeMediationData.feeContractSent ? 'Sözleşme İletildi' : 'Ücret Sözleşmesi'}</p>
+                                        <p className="text-xs text-slate-500">Asgari ücret tarifesi üzerinden.</p>
+                                    </div>
+                                    {!activeMediationData.feeContractSent ? (
+                                        <button 
+                                            onClick={() => handleSendDocumentAction('Ucret')}
+                                            disabled={sendingType === 'Ucret'}
+                                            className="w-full mt-2 bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
+                                        >
+                                            {sendingType === 'Ucret' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Send className="w-3 h-3 mr-1" />}
+                                            {sendingType === 'Ucret' ? 'Gönderiliyor...' : 'Hazırla ve Gönder'}
+                                        </button>
+                                    ) : (
+                                        <div className="mt-2 flex items-center justify-center text-xs font-bold text-green-700 bg-green-50 py-2 rounded-lg border border-green-100">
+                                            <Check className="w-3 h-3 mr-1" /> Başarıyla Gönderildi
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </>
                     )}
@@ -624,7 +890,9 @@ export const MediationManager: React.FC = () => {
                                                 <td className="px-4 py-3">
                                                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
                                                         doc.status === 'İmzalandı' ? 'bg-green-100 text-green-700' : 
-                                                        doc.status === 'İmzada' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600'
+                                                        doc.status === 'İmzada' ? 'bg-orange-100 text-orange-700' : 
+                                                        doc.status === 'Gönderildi' ? 'bg-blue-100 text-blue-700' : 
+                                                        'bg-slate-100 text-slate-600'
                                                     }`}>
                                                         {doc.status}
                                                     </span>
@@ -681,7 +949,12 @@ export const MediationManager: React.FC = () => {
                         <p className="text-slate-500 mt-1">Başvuru, süreç, online görüşme ve e-imza yönetimi</p>
                     </div>
                      <button 
-                        onClick={() => setIsApplicationModalOpen(true)}
+                        onClick={() => {
+                            setIsApplicationModalOpen(true);
+                            setNewApplication({ subject: '', mediatorName: '', fileNumber: '' });
+                            setApplicantList(['']);
+                            setCounterPartyList(['']);
+                        }}
                         className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg transition"
                     >
                         <Plus className="w-5 h-5 mr-2" /> Yeni Başvuru

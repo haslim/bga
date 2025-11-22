@@ -154,7 +154,7 @@ export interface Document {
   name: string;
   type: 'Tutanak' | 'Davet' | 'Sözleşme' | 'Diğer';
   createdDate: string;
-  status: 'Taslak' | 'İmzada' | 'İmzalandı';
+  status: 'Taslak' | 'İmzada' | 'İmzalandı' | 'Gönderildi';
   signedBy?: string[]; // İzalayanların listesi
 }
 
@@ -170,6 +170,7 @@ export interface Mediation {
   meetings: MediationMeeting[];
   documents?: Document[]; // Generated documents
   invitationSent?: boolean; // For notification rule
+  feeContractSent?: boolean; // Ücret sözleşmesi gönderildi mi?
 }
 
 export interface MediatorProfile {
