@@ -170,6 +170,12 @@ export interface Document {
   signedBy?: string[]; // İzalayanların listesi
 }
 
+export interface MediationParty {
+  name: string;
+  phone: string;
+  role: 'Başvurucu' | 'Karşı Taraf';
+}
+
 export interface Mediation {
   id: string;
   fileNumber: string; // Arabuluculuk dosya no
@@ -183,6 +189,7 @@ export interface Mediation {
   documents?: Document[]; // Generated documents
   invitationSent?: boolean; // For notification rule
   feeContractSent?: boolean; // Ücret sözleşmesi gönderildi mi?
+  parties?: MediationParty[]; // Detailed party info with contacts
 }
 
 export interface MediatorProfile {
