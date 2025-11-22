@@ -52,6 +52,8 @@ export const processTemplate = (templateContent: string, data: Mediation, profil
     .replace(/{{ARABULUCU_SICIL}}/g, profile.registrationNumber || '.....')
     .replace(/{{ARABULUCU_ADRES}}/g, profile.address || '.....')
     .replace(/{{ARABULUCU_IBAN}}/g, profile.iban || '.....')
+    .replace(/{{ARABULUCU_TELEFON}}/g, profile.phone || '.....')
+    .replace(/{{ARABULUCU_EMAIL}}/g, profile.email || '.....')
     .replace(/{{BUGUN}}/g, today)
     .replace(/{{SONUC_METNI}}/g, outcomeText);
 };

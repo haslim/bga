@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile } from '../types';
 import { processTemplate } from '../utils';
-import { Handshake, Plus, Search, Filter, ArrowLeft, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, AlertCircle, ArrowRight, Activity, Users, Trash2 } from 'lucide-react';
+import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon } from 'lucide-react';
 
 export const MediationManager: React.FC = () => {
   const { mediations, addMediation, updateMediation, deleteMediation, templates, updateTemplate, mediatorProfile, updateMediatorProfile } = useData();
@@ -24,6 +24,8 @@ export const MediationManager: React.FC = () => {
   // Template Editing State
   const [selectedTemplateToEdit, setSelectedTemplateToEdit] = useState<Template | null>(null);
   const [editedTemplateContent, setEditedTemplateContent] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [editorViewMode, setEditorViewMode] = useState<'split' | 'code' | 'preview'>('split');
 
   // Profile Editing State
   const [editedProfile, setEditedProfile] = useState<MediatorProfile>({...mediatorProfile});
@@ -145,6 +147,77 @@ export const MediationManager: React.FC = () => {
           });
           setIsTemplateEditorOpen(false);
       }
+  };
+
+  // Insert text at cursor position in textarea
+  const insertAtCursor = (text: string) => {
+    if (!textareaRef.current) return;
+    
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const currentVal = editedTemplateContent;
+    
+    const newVal = currentVal.substring(0, start) + text + currentVal.substring(end);
+    setEditedTemplateContent(newVal);
+    
+    // Focus back and move cursor
+    setTimeout(() => {
+        if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + text.length;
+        }
+    }, 0);
+  };
+
+  const wrapSelection = (tagStart: string, tagEnd: string) => {
+    if (!textareaRef.current) return;
+
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const currentVal = editedTemplateContent;
+    const selectedText = currentVal.substring(start, end);
+
+    const replacement = `${tagStart}${selectedText}${tagEnd}`;
+    const newVal = currentVal.substring(0, start) + replacement + currentVal.substring(end);
+    setEditedTemplateContent(newVal);
+
+    setTimeout(() => {
+        if (textareaRef.current) {
+            textareaRef.current.focus();
+            // Highlight the text inside the tags if there was a selection, or place cursor inside
+            if (selectedText.length > 0) {
+                textareaRef.current.selectionStart = start;
+                textareaRef.current.selectionEnd = start + replacement.length;
+            } else {
+                textareaRef.current.selectionStart = start + tagStart.length;
+                textareaRef.current.selectionEnd = start + tagStart.length;
+            }
+        }
+    }, 0);
+  };
+
+  const handleAddLogo = () => {
+      const url = prompt("Eklemek istediğiniz Logo veya Resim URL'sini giriniz:", "https://");
+      if (url && url !== "https://") {
+          const imgTag = `<div style="text-align: center; margin-bottom: 20px;"><img src="${url}" alt="Logo" style="max-height: 80px;" /></div>`;
+          insertAtCursor(imgTag);
+      }
+  };
+
+  // Mock data for live preview
+  const getPreviewHtml = () => {
+    const mockData: Mediation = {
+        id: 'preview',
+        fileNumber: '2025/Örnek',
+        applicationDate: '01.01.2025',
+        clientName: 'Ahmet Yılmaz, Ayşe Demir (Müvekkiller)',
+        counterParty: 'XYZ İnşaat A.Ş., Mehmet Öz (Karşı Taraflar)',
+        subject: 'İşçilik Alacakları',
+        mediatorName: mediatorProfile.name,
+        status: MediationStatus.AGREEMENT,
+        meetings: []
+    };
+    return processTemplate(editedTemplateContent, mockData, mediatorProfile);
   };
   // -------------------------------
 
@@ -297,79 +370,159 @@ export const MediationManager: React.FC = () => {
                 </div>
             )}
 
-            {/* Template Editor Modal */}
+            {/* Template Editor Modal - REDESIGNED */}
             {isTemplateEditorOpen && selectedTemplateToEdit && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-                        <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                            <div>
-                                <h3 className="font-bold text-slate-800 flex items-center text-lg">
-                                    <Edit3 className="w-5 h-5 mr-2 text-indigo-600" />
-                                    Şablon Düzenle: {selectedTemplateToEdit.name}
-                                </h3>
-                                <p className="text-xs text-slate-500 mt-1">HTML formatında düzenleme yapabilirsiniz. Değişkenleri süslü parantez içinde kullanın.</p>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-2 md:p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[95%] h-[95vh] flex flex-col overflow-hidden">
+                        {/* Header */}
+                        <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 flex-shrink-0">
+                            <div className="flex items-center space-x-4">
+                                <div className="hidden md:block">
+                                    <h3 className="font-bold text-slate-800 flex items-center text-lg">
+                                        <Edit3 className="w-5 h-5 mr-2 text-indigo-600" />
+                                        Şablon Düzenleyici: <span className="ml-1 text-slate-600 font-normal">{selectedTemplateToEdit.name}</span>
+                                    </h3>
+                                </div>
+                                
+                                {/* View Toggle */}
+                                <div className="flex bg-slate-200 p-1 rounded-lg">
+                                    <button 
+                                        onClick={() => setEditorViewMode('code')}
+                                        className={`px-3 py-1.5 text-xs font-bold rounded-md transition flex items-center ${editorViewMode === 'code' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        <Code className="w-3 h-3 mr-1.5" /> Sadece Kod
+                                    </button>
+                                    <button 
+                                        onClick={() => setEditorViewMode('split')}
+                                        className={`px-3 py-1.5 text-xs font-bold rounded-md transition flex items-center ${editorViewMode === 'split' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        <Columns className="w-3 h-3 mr-1.5" /> Bölünmüş
+                                    </button>
+                                    <button 
+                                        onClick={() => setEditorViewMode('preview')}
+                                        className={`px-3 py-1.5 text-xs font-bold rounded-md transition flex items-center ${editorViewMode === 'preview' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        <Eye className="w-3 h-3 mr-1.5" /> Sadece Önizleme
+                                    </button>
+                                </div>
                             </div>
                             <button onClick={() => setIsTemplateEditorOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         
-                        <div className="flex flex-1 overflow-hidden">
-                            {/* Editor Area */}
-                            <div className="flex-1 p-0 border-r border-slate-200 flex flex-col">
-                                <div className="bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-500 border-b border-slate-200">HTML Editör</div>
-                                <textarea 
-                                    className="flex-1 w-full h-full p-4 font-mono text-sm outline-none resize-none bg-white text-slate-800"
-                                    value={editedTemplateContent}
-                                    onChange={(e) => setEditedTemplateContent(e.target.value)}
-                                />
+                        {/* Toolbar */}
+                        <div className="p-2 border-b border-slate-200 bg-white flex flex-wrap items-center gap-1 flex-shrink-0 shadow-sm z-10">
+                            <div className="flex items-center pr-2 border-r border-slate-100 mr-1">
+                                <button onClick={() => wrapSelection('<strong>', '</strong>')} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="Kalın">
+                                    <Bold className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => wrapSelection('<em>', '</em>')} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="İtalik">
+                                    <Italic className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => wrapSelection('<u>', '</u>')} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="Altı Çizili">
+                                    <Underline className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <div className="flex items-center pr-2 border-r border-slate-100 mr-1">
+                                <button onClick={() => wrapSelection('<h2 style="text-align:center; font-weight:bold; text-decoration:underline;">', '</h2>')} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="Başlık Ekle">
+                                    <Type className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => wrapSelection('<p style="text-align:justify;">', '</p>')} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="Paragraf">
+                                    <LayoutTemplate className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => wrapSelection('<div style="text-align:center;">', '</div>')} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="Ortala">
+                                    <AlignCenter className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => wrapSelection('<ul>\n  <li>', '</li>\n</ul>')} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="Liste">
+                                    <List className="w-4 h-4" />
+                                </button>
+                                <button onClick={handleAddLogo} className="p-2 hover:bg-slate-100 rounded text-slate-600" title="Logo / Resim Ekle">
+                                    <ImageIcon className="w-4 h-4" />
+                                </button>
                             </div>
                             
-                            {/* Sidebar: Variables */}
-                            <div className="w-64 bg-slate-50 p-4 overflow-y-auto">
-                                <h4 className="text-sm font-bold text-slate-700 mb-3">Kullanılabilir Değişkenler</h4>
-                                <div className="space-y-2">
-                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{DOSYA_NO}}')}>
-                                        <span className="font-bold text-brand-600">{'{{DOSYA_NO}}'}</span>
-                                        <p className="text-slate-500 mt-1">Dosya Numarası</p>
-                                    </div>
-                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{MUVEKKIL}}')}>
-                                        <span className="font-bold text-brand-600">{'{{MUVEKKIL}}'}</span>
-                                        <p className="text-slate-500 mt-1">Başvurucu Adı</p>
-                                    </div>
-                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{KARSI_TARAF}}')}>
-                                        <span className="font-bold text-brand-600">{'{{KARSI_TARAF}}'}</span>
-                                        <p className="text-slate-500 mt-1">Karşı Taraf Adı</p>
-                                    </div>
-                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{KONU}}')}>
-                                        <span className="font-bold text-brand-600">{'{{KONU}}'}</span>
-                                        <p className="text-slate-500 mt-1">Uyuşmazlık Konusu</p>
-                                    </div>
-                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{ARABULUCU}}')}>
-                                        <span className="font-bold text-brand-600">{'{{ARABULUCU}}'}</span>
-                                        <p className="text-slate-500 mt-1">Arabulucu Adı (Profil)</p>
-                                    </div>
-                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{ARABULUCU_SICIL}}')}>
-                                        <span className="font-bold text-brand-600">{'{{ARABULUCU_SICIL}}'}</span>
-                                        <p className="text-slate-500 mt-1">Sicil No (Profil)</p>
-                                    </div>
-                                     <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{BUGUN}}')}>
-                                        <span className="font-bold text-brand-600">{'{{BUGUN}}'}</span>
-                                        <p className="text-slate-500 mt-1">Bugünün Tarihi</p>
-                                    </div>
-                                    <div className="text-xs p-2 bg-white border border-slate-200 rounded cursor-pointer hover:bg-blue-50 hover:border-blue-200" onClick={() => setEditedTemplateContent(prev => prev + '{{SONUC_METNI}}')}>
-                                        <span className="font-bold text-brand-600">{'{{SONUC_METNI}}'}</span>
-                                        <p className="text-slate-500 mt-1">Otomatik Sonuç</p>
-                                    </div>
-                                </div>
+                            {/* Variable Quick Insert - FULL LIST */}
+                            <div className="flex items-center gap-2 ml-2 overflow-x-auto custom-scrollbar pb-1" style={{maxWidth: '60%'}}>
+                                <span className="text-xs font-bold text-slate-400 uppercase mr-1 shrink-0">Değişkenler:</span>
+                                {[
+                                    { label: 'Dosya No', val: '{{DOSYA_NO}}' },
+                                    { label: 'Başvuru Tar.', val: '{{BASVURU_TARIHI}}' },
+                                    { label: 'Konu', val: '{{KONU}}' },
+                                    { label: 'Başvurucu/Müvekkil', val: '{{MUVEKKIL}}' },
+                                    { label: 'Karşı Taraf', val: '{{KARSI_TARAF}}' },
+                                    { label: 'Arabulucu', val: '{{ARABULUCU}}' },
+                                    { label: 'Arb. Sicil', val: '{{ARABULUCU_SICIL}}' },
+                                    { label: 'Arb. Adres', val: '{{ARABULUCU_ADRES}}' },
+                                    { label: 'Arb. Tel', val: '{{ARABULUCU_TELEFON}}' },
+                                    { label: 'Arb. Email', val: '{{ARABULUCU_EMAIL}}' },
+                                    { label: 'Arb. IBAN', val: '{{ARABULUCU_IBAN}}' },
+                                    { label: 'Bugün', val: '{{BUGUN}}' },
+                                    { label: 'Sonuç Metni', val: '{{SONUC_METNI}}' },
+                                ].map(v => (
+                                    <button 
+                                        key={v.val}
+                                        onClick={() => insertAtCursor(v.val)}
+                                        className="px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded text-xs font-semibold hover:bg-indigo-100 transition whitespace-nowrap"
+                                    >
+                                        {v.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
-                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
-                            <button onClick={() => setIsTemplateEditorOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium transition">İptal</button>
-                            <button onClick={saveTemplate} className="px-5 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium shadow-md flex items-center">
-                                <Save className="w-4 h-4 mr-2" /> Şablonu Kaydet
-                            </button>
+                        {/* Main Content Area */}
+                        <div className="flex flex-1 overflow-hidden relative">
+                            
+                            {/* Code Editor */}
+                            <div className={`
+                                flex-1 flex flex-col border-r border-slate-200 transition-all duration-300
+                                ${editorViewMode === 'preview' ? 'hidden' : ''}
+                                ${editorViewMode === 'code' ? 'w-full' : 'w-1/2'}
+                            `}>
+                                <textarea 
+                                    ref={textareaRef}
+                                    className="flex-1 w-full h-full p-4 font-mono text-sm leading-relaxed outline-none resize-none bg-slate-50 text-slate-800 custom-scrollbar"
+                                    value={editedTemplateContent}
+                                    onChange={(e) => setEditedTemplateContent(e.target.value)}
+                                    placeholder="HTML kodunuzu buraya yazın..."
+                                    spellCheck={false}
+                                />
+                            </div>
+                            
+                            {/* Live Preview */}
+                            <div className={`
+                                flex-1 bg-gray-200 flex flex-col overflow-hidden transition-all duration-300
+                                ${editorViewMode === 'code' ? 'hidden' : ''}
+                                ${editorViewMode === 'preview' ? 'w-full' : 'w-1/2'}
+                            `}>
+                                <div className="p-2 bg-slate-100 border-b border-slate-200 text-xs text-slate-500 flex justify-between items-center">
+                                    <span className="font-bold uppercase">Canlı Önizleme (Örnek Veri İle)</span>
+                                    <span className="text-[10px] bg-white border px-2 rounded">A4 Görünümü</span>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar flex justify-center">
+                                    {/* Simulated A4 Paper */}
+                                    <div 
+                                        className="bg-white shadow-xl min-h-[297mm] w-[210mm] origin-top transform scale-[0.6] md:scale-[0.7] lg:scale-[0.85] transition-transform"
+                                        style={{ padding: 0 }} // Padding is usually handled inside the HTML template content
+                                    >
+                                        <div dangerouslySetInnerHTML={{ __html: getPreviewHtml() }} />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center flex-shrink-0">
+                            <div className="text-xs text-slate-400 hidden md:block">
+                                <strong>İpucu:</strong> Önizleme, örnek verilerle (Ahmet Yılmaz vb.) gösterilmektedir. Gerçek dosyada ilgili veriler gelecektir.
+                            </div>
+                            <div className="flex gap-3 ml-auto">
+                                <button onClick={() => setIsTemplateEditorOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium transition">İptal</button>
+                                <button onClick={saveTemplate} className="px-5 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium shadow-md flex items-center">
+                                    <Save className="w-4 h-4 mr-2" /> Şablonu Kaydet
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -609,7 +762,7 @@ export const MediationManager: React.FC = () => {
                                             className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
                                             title="Şablonu Düzenle"
                                         >
-                                            <Settings className="w-4 h-4" />
+                                            <Edit3 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 ))}
@@ -736,16 +889,30 @@ export const MediationManager: React.FC = () => {
                                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Başvurucu (Müvekkil)</label>
                                             <div className="relative group">
                                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-green-500 w-4 h-4 transition" />
-                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm transition" placeholder="Müvekkil Seç veya Yaz" value={newApplication.clientName} onChange={e => setNewApplication({...newApplication, clientName: e.target.value})} />
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm transition" 
+                                                    placeholder="Müvekkil Seç veya Yaz" 
+                                                    value={newApplication.clientName} 
+                                                    onChange={e => setNewApplication({...newApplication, clientName: e.target.value})} 
+                                                />
                                             </div>
+                                            <p className="text-[10px] text-slate-400 mt-1">Birden fazla ise virgülle ayırınız.</p>
                                         </div>
 
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1.5">Karşı Taraf</label>
                                             <div className="relative group">
                                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-500 w-4 h-4 transition" />
-                                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-sm transition" placeholder="Karşı Taraf Adı Soyadı" value={newApplication.counterParty} onChange={e => setNewApplication({...newApplication, counterParty: e.target.value})} />
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full border border-slate-300 bg-white text-slate-900 pl-10 pr-3 py-2.5 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-sm transition" 
+                                                    placeholder="Karşı Taraf Adı Soyadı" 
+                                                    value={newApplication.counterParty} 
+                                                    onChange={e => setNewApplication({...newApplication, counterParty: e.target.value})} 
+                                                />
                                             </div>
+                                            <p className="text-[10px] text-slate-400 mt-1">Birden fazla ise virgülle ayırınız.</p>
                                         </div>
                                         
                                         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
