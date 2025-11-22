@@ -40,23 +40,44 @@ export const processTemplate = (templateContent: string, data: Mediation, profil
     outcomeText = `Arabuluculuk süreci devam etmekte olup, tarafların iradeleri doğrultusunda süreç sonlandırılmıştır (Diğer).`;
   }
 
-  // Generate Detailed Parties HTML
-  let partiesDetailedHtml = '<ol style="margin-left: 20px;">';
+  // Generate Detailed Parties HTML (Standardized)
+  let partiesDetailedHtml = '';
   if (data.parties && data.parties.length > 0) {
-      data.parties.forEach(p => {
-          let row = `<li><strong>${p.role.toUpperCase()}:</strong> ${p.name}`;
-          if (p.representative) {
-              row += ` — <strong>Vekili:</strong> ${p.representative}`;
-          }
-          row += `</li>`;
-          partiesDetailedHtml += row;
+      const applicants = data.parties.filter(p => p.role === 'Başvurucu');
+      const counters = data.parties.filter(p => p.role === 'Karşı Taraf');
+
+      partiesDetailedHtml += '<div style="margin-bottom: 15px;">';
+      
+      // Applicants
+      applicants.forEach((p, index) => {
+          partiesDetailedHtml += `
+            <div style="margin-bottom: 10px;">
+                <strong>1.${index + 1} Taraf (Başvurucu): ${p.name.toUpperCase()}</strong><br/>
+                TC/VKN: ${p.tcVkn || '-'}<br/>
+                Adres: ${p.address || '-'}<br/>
+                ${p.representative ? `<em>Vekili: Av. ${p.representative}</em>` : ''}
+            </div>`;
       });
+
+      // Counter Parties
+      counters.forEach((p, index) => {
+          partiesDetailedHtml += `
+            <div style="margin-bottom: 10px;">
+                <strong>2.${index + 1} Taraf (Karşı Taraf): ${p.name.toUpperCase()}</strong><br/>
+                TC/VKN: ${p.tcVkn || '-'}<br/>
+                Adres: ${p.address || '-'}<br/>
+                ${p.representative ? `<em>Vekili: Av. ${p.representative}</em>` : ''}
+            </div>`;
+      });
+      
+      partiesDetailedHtml += '</div>';
   } else {
       // Fallback if party array not populated (Legacy)
-      partiesDetailedHtml += `<li><strong>BAŞVURUCU:</strong> ${data.clientName}</li>`;
-      partiesDetailedHtml += `<li><strong>KARŞI TARAF:</strong> ${data.counterParty}</li>`;
+      partiesDetailedHtml += `
+        <div style="margin-bottom: 10px;"><strong>1. TARAF (Başvurucu):</strong> ${data.clientName}</div>
+        <div style="margin-bottom: 10px;"><strong>2. TARAF (Karşı Taraf):</strong> ${data.counterParty}</div>
+      `;
   }
-  partiesDetailedHtml += '</ol>';
 
   // Replace Placeholders
   return templateContent

@@ -37,7 +37,7 @@ export const MediationManager: React.FC = () => {
   // Edit Parties Modal State
   const [isEditPartiesModalOpen, setIsEditPartiesModalOpen] = useState(false);
   // Helper type for local state
-  type PartyRow = { name: string; phone: string; representative: string; representativePhone: string };
+  type PartyRow = { name: string; phone: string; representative: string; representativePhone: string; tcVkn: string; address: string; email: string; };
   const [editApplicantList, setEditApplicantList] = useState<PartyRow[]>([]);
   const [editCounterPartyList, setEditCounterPartyList] = useState<PartyRow[]>([]);
 
@@ -64,8 +64,8 @@ export const MediationManager: React.FC = () => {
       subject: '', mediatorName: '', fileNumber: '', mediationNumber: '' // Added mediationNumber
   });
   // Updated state to include representative info
-  const [applicantList, setApplicantList] = useState<PartyRow[]>([{name: '', phone: '', representative: '', representativePhone: ''}]);
-  const [counterPartyList, setCounterPartyList] = useState<PartyRow[]>([{name: '', phone: '', representative: '', representativePhone: ''}]);
+  const [applicantList, setApplicantList] = useState<PartyRow[]>([{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
+  const [counterPartyList, setCounterPartyList] = useState<PartyRow[]>([{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
 
   // E-Signature Simulation State
   const [signingDocId, setSigningDocId] = useState<string | null>(null);
@@ -137,7 +137,7 @@ export const MediationManager: React.FC = () => {
 
   // Dynamic Party Handlers for Creation
   const handleAddPartyRow = (type: 'applicant' | 'counter') => {
-      const emptyRow: PartyRow = {name: '', phone: '', representative: '', representativePhone: ''};
+      const emptyRow: PartyRow = {name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''};
       if (type === 'applicant') setApplicantList([...applicantList, emptyRow]);
       else setCounterPartyList([...counterPartyList, emptyRow]);
   };
@@ -176,32 +176,38 @@ export const MediationManager: React.FC = () => {
           name: p.name, 
           phone: p.phone, 
           representative: p.representative || '', 
-          representativePhone: p.representativePhone || ''
+          representativePhone: p.representativePhone || '',
+          tcVkn: p.tcVkn || '',
+          address: p.address || '',
+          email: p.email || ''
       }));
       
       const counters = currentParties.filter(p => p.role === 'Karşı Taraf').map(p => ({
           name: p.name, 
           phone: p.phone,
           representative: p.representative || '',
-          representativePhone: p.representativePhone || ''
+          representativePhone: p.representativePhone || '',
+          tcVkn: p.tcVkn || '',
+          address: p.address || '',
+          email: p.email || ''
       }));
 
       // Fallback for legacy data
       if (applicants.length === 0 && activeMediationData.clientName) {
-          activeMediationData.clientName.split(',').forEach(n => applicants.push({name: n.trim(), phone: '', representative: '', representativePhone: ''}));
+          activeMediationData.clientName.split(',').forEach(n => applicants.push({name: n.trim(), phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}));
       }
       if (counters.length === 0 && activeMediationData.counterParty) {
-          activeMediationData.counterParty.split(',').forEach(n => counters.push({name: n.trim(), phone: '', representative: '', representativePhone: ''}));
+          activeMediationData.counterParty.split(',').forEach(n => counters.push({name: n.trim(), phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}));
       }
 
-      setEditApplicantList(applicants.length > 0 ? applicants : [{name: '', phone: '', representative: '', representativePhone: ''}]);
-      setEditCounterPartyList(counters.length > 0 ? counters : [{name: '', phone: '', representative: '', representativePhone: ''}]);
+      setEditApplicantList(applicants.length > 0 ? applicants : [{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
+      setEditCounterPartyList(counters.length > 0 ? counters : [{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
       
       setIsEditPartiesModalOpen(true);
   };
 
   const handleAddEditPartyRow = (type: 'applicant' | 'counter') => {
-      const emptyRow: PartyRow = {name: '', phone: '', representative: '', representativePhone: ''};
+      const emptyRow: PartyRow = {name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''};
       if (type === 'applicant') setEditApplicantList([...editApplicantList, emptyRow]);
       else setEditCounterPartyList([...editCounterPartyList, emptyRow]);
   };
@@ -315,8 +321,8 @@ export const MediationManager: React.FC = () => {
 
     setIsApplicationModalOpen(false);
     setNewApplication({ subject: '', mediatorName: '', fileNumber: '', mediationNumber: '' });
-    setApplicantList([{name: '', phone: '', representative: '', representativePhone: ''}]);
-    setCounterPartyList([{name: '', phone: '', representative: '', representativePhone: ''}]);
+    setApplicantList([{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
+    setCounterPartyList([{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
   };
 
   // --- MEETING LOGIC ---
@@ -740,11 +746,18 @@ export const MediationManager: React.FC = () => {
                                     <p className="text-xs text-slate-500">Anlaşma sağlanamadığında düzenlenir.</p>
                                 </div>
                             </button>
-                            <button onClick={() => handleGenerateDoc('Tutanak_Gelmeme')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center transition">
+                            <button onClick={() => handleGenerateDoc('Tutanak_Gelmeme')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center border-b border-slate-100 dark:border-slate-700 transition">
                                 <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mr-3"><User className="w-4 h-4"/></div>
                                 <div>
                                     <p className="font-bold text-slate-800 dark:text-slate-200">Taraf Gelmedi Tutanağı</p>
                                     <p className="text-xs text-slate-500">Taraflardan biri veya ikisi katılmadıysa.</p>
+                                </div>
+                            </button>
+                            <button onClick={() => handleGenerateDoc('Tutanak_Sonlandirma')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center transition">
+                                <div className="w-8 h-8 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center mr-3"><FileText className="w-4 h-4"/></div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-slate-200">Süreç Sonlandırma Tutanağı</p>
+                                    <p className="text-xs text-slate-500">Feragat, ölüm vb. sebeplerle kapanış.</p>
                                 </div>
                             </button>
                         </div>
@@ -790,7 +803,7 @@ export const MediationManager: React.FC = () => {
                                                         Başvurucu {idx + 1}
                                                     </span>
                                                 </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div>
                                                         <label className="block text-xs font-bold text-slate-500 mb-1">Ad Soyad / Ünvan</label>
                                                         <input 
@@ -802,6 +815,16 @@ export const MediationManager: React.FC = () => {
                                                         />
                                                     </div>
                                                     <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">TCKN / VKN</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={app.tcVkn}
+                                                            onChange={e => handleEditPartyChange('applicant', idx, 'tcVkn', e.target.value)} 
+                                                            placeholder="11 haneli TC / 10 haneli VKN"
+                                                        />
+                                                    </div>
+                                                    <div>
                                                         <label className="block text-xs font-bold text-slate-500 mb-1">Telefon</label>
                                                         <input 
                                                             type="text" 
@@ -809,6 +832,26 @@ export const MediationManager: React.FC = () => {
                                                             value={app.phone}
                                                             onChange={e => handleEditPartyChange('applicant', idx, 'phone', e.target.value)} 
                                                             placeholder="Telefon"
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2">
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Adres</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={app.address}
+                                                            onChange={e => handleEditPartyChange('applicant', idx, 'address', e.target.value)} 
+                                                            placeholder="Tam Adres"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">E-Posta</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={app.email}
+                                                            onChange={e => handleEditPartyChange('applicant', idx, 'email', e.target.value)} 
+                                                            placeholder="ornek@email.com"
                                                         />
                                                     </div>
                                                     <div>
@@ -860,7 +903,7 @@ export const MediationManager: React.FC = () => {
                                                         Karşı Taraf {idx + 1}
                                                     </span>
                                                 </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div>
                                                         <label className="block text-xs font-bold text-slate-500 mb-1">Ad Soyad / Ünvan</label>
                                                         <input 
@@ -872,6 +915,16 @@ export const MediationManager: React.FC = () => {
                                                         />
                                                     </div>
                                                     <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">TCKN / VKN</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={cp.tcVkn}
+                                                            onChange={e => handleEditPartyChange('counter', idx, 'tcVkn', e.target.value)} 
+                                                            placeholder="11 haneli TC / 10 haneli VKN"
+                                                        />
+                                                    </div>
+                                                    <div>
                                                         <label className="block text-xs font-bold text-slate-500 mb-1">Telefon</label>
                                                         <input 
                                                             type="text" 
@@ -879,6 +932,26 @@ export const MediationManager: React.FC = () => {
                                                             value={cp.phone}
                                                             onChange={e => handleEditPartyChange('counter', idx, 'phone', e.target.value)} 
                                                             placeholder="Telefon"
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2">
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">Adres</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={cp.address}
+                                                            onChange={e => handleEditPartyChange('counter', idx, 'address', e.target.value)} 
+                                                            placeholder="Tam Adres"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">E-Posta</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className={inputClass}
+                                                            value={cp.email}
+                                                            onChange={e => handleEditPartyChange('counter', idx, 'email', e.target.value)} 
+                                                            placeholder="ornek@email.com"
                                                         />
                                                     </div>
                                                     <div>
@@ -970,7 +1043,7 @@ export const MediationManager: React.FC = () => {
                                                 <div className="col-span-12 mb-1">
                                                     <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
                                                 </div>
-                                                <div className="col-span-3">
+                                                <div className="col-span-4">
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
@@ -979,7 +1052,16 @@ export const MediationManager: React.FC = () => {
                                                         onChange={e => handleChangePartyRow('applicant', idx, 'name', e.target.value)} 
                                                     />
                                                 </div>
-                                                <div className="col-span-2">
+                                                <div className="col-span-4">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="TCKN / VKN"
+                                                        value={app.tcVkn}
+                                                        onChange={e => handleChangePartyRow('applicant', idx, 'tcVkn', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-4">
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
@@ -988,25 +1070,16 @@ export const MediationManager: React.FC = () => {
                                                         onChange={e => handleChangePartyRow('applicant', idx, 'phone', e.target.value)} 
                                                     />
                                                 </div>
-                                                <div className="col-span-3">
+                                                <div className="col-span-12">
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
-                                                        placeholder="Vekil Adı (Opsiyonel)"
-                                                        value={app.representative}
-                                                        onChange={e => handleChangePartyRow('applicant', idx, 'representative', e.target.value)} 
+                                                        placeholder="Adres"
+                                                        value={app.address}
+                                                        onChange={e => handleChangePartyRow('applicant', idx, 'address', e.target.value)} 
                                                     />
                                                 </div>
-                                                <div className="col-span-3">
-                                                    <input 
-                                                        type="text" 
-                                                        className={inputClass}
-                                                        placeholder="Vekil Tel"
-                                                        value={app.representativePhone}
-                                                        onChange={e => handleChangePartyRow('applicant', idx, 'representativePhone', e.target.value)} 
-                                                    />
-                                                </div>
-                                                <div className="col-span-1 flex justify-center pt-2">
+                                                <div className="col-span-12 flex justify-center pt-1">
                                                     {applicantList.length > 1 && (
                                                         <button onClick={() => handleRemovePartyRow('applicant', idx)} className="text-slate-400 hover:text-red-500">
                                                             <Trash2 className="w-5 h-5" />
@@ -1032,7 +1105,7 @@ export const MediationManager: React.FC = () => {
                                                 <div className="col-span-12 mb-1">
                                                     <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
                                                 </div>
-                                                <div className="col-span-3">
+                                                <div className="col-span-4">
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
@@ -1041,7 +1114,16 @@ export const MediationManager: React.FC = () => {
                                                         onChange={e => handleChangePartyRow('counter', idx, 'name', e.target.value)} 
                                                     />
                                                 </div>
-                                                <div className="col-span-2">
+                                                <div className="col-span-4">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="TCKN / VKN"
+                                                        value={cp.tcVkn}
+                                                        onChange={e => handleChangePartyRow('counter', idx, 'tcVkn', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-4">
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
@@ -1050,25 +1132,16 @@ export const MediationManager: React.FC = () => {
                                                         onChange={e => handleChangePartyRow('counter', idx, 'phone', e.target.value)} 
                                                     />
                                                 </div>
-                                                <div className="col-span-3">
+                                                <div className="col-span-12">
                                                     <input 
                                                         type="text" 
                                                         className={inputClass}
-                                                        placeholder="Vekil Adı (Opsiyonel)"
-                                                        value={cp.representative}
-                                                        onChange={e => handleChangePartyRow('counter', idx, 'representative', e.target.value)} 
+                                                        placeholder="Adres"
+                                                        value={cp.address}
+                                                        onChange={e => handleChangePartyRow('counter', idx, 'address', e.target.value)} 
                                                     />
                                                 </div>
-                                                <div className="col-span-3">
-                                                    <input 
-                                                        type="text" 
-                                                        className={inputClass}
-                                                        placeholder="Vekil Tel"
-                                                        value={cp.representativePhone}
-                                                        onChange={e => handleChangePartyRow('counter', idx, 'representativePhone', e.target.value)} 
-                                                    />
-                                                </div>
-                                                <div className="col-span-1 flex justify-center pt-2">
+                                                <div className="col-span-12 flex justify-center pt-1">
                                                     {counterPartyList.length > 1 && (
                                                         <button onClick={() => handleRemovePartyRow('counter', idx)} className="text-slate-400 hover:text-red-500">
                                                             <Trash2 className="w-5 h-5" />
@@ -1310,6 +1383,7 @@ export const MediationManager: React.FC = () => {
                                                 {activeMediationData.parties?.filter(p => p.role === 'Başvurucu').map((p, i) => (
                                                     <div key={i} className="text-sm pb-2 border-b border-green-200/50 last:border-0 last:pb-0">
                                                         <p className="font-bold text-slate-800 dark:text-white">{p.name}</p>
+                                                        {p.tcVkn && <p className="text-xs text-slate-500 dark:text-slate-400">TC/VKN: {p.tcVkn}</p>}
                                                         <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mb-1"><Phone className="w-3 h-3 mr-1"/> {p.phone}</p>
                                                         {p.representative && (
                                                             <div className="pl-2 border-l-2 border-green-300 mt-1">
@@ -1329,6 +1403,7 @@ export const MediationManager: React.FC = () => {
                                                 {activeMediationData.parties?.filter(p => p.role === 'Karşı Taraf').map((p, i) => (
                                                     <div key={i} className="text-sm pb-2 border-b border-red-200/50 last:border-0 last:pb-0">
                                                         <p className="font-bold text-slate-800 dark:text-white">{p.name}</p>
+                                                        {p.tcVkn && <p className="text-xs text-slate-500 dark:text-slate-400">TC/VKN: {p.tcVkn}</p>}
                                                         <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mb-1"><Phone className="w-3 h-3 mr-1"/> {p.phone}</p>
                                                         {p.representative && (
                                                             <div className="pl-2 border-l-2 border-red-300 mt-1">
@@ -1599,8 +1674,8 @@ export const MediationManager: React.FC = () => {
                         onClick={() => {
                             setIsApplicationModalOpen(true);
                             setNewApplication({ subject: '', mediatorName: '', fileNumber: '', mediationNumber: '' });
-                            setApplicantList([{name: '', phone: '', representative: '', representativePhone: ''}]);
-                            setCounterPartyList([{name: '', phone: '', representative: '', representativePhone: ''}]);
+                            setApplicantList([{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
+                            setCounterPartyList([{name: '', phone: '', representative: '', representativePhone: '', tcVkn: '', address: '', email: ''}]);
                         }}
                         className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl font-medium flex items-center shadow-lg transition"
                     >

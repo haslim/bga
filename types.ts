@@ -175,6 +175,9 @@ export interface MediationParty {
   name: string;
   phone: string;
   role: 'Başvurucu' | 'Karşı Taraf';
+  tcVkn?: string; // T.C. veya Vergi No
+  address?: string; // Adres
+  email?: string; // E-posta
   representative?: string; // Vekil Adı
   representativePhone?: string; // Vekil Telefonu
 }
@@ -214,7 +217,8 @@ export type TemplateType =
   | 'Tutanak_Ara' 
   | 'Tutanak_Anlasma' 
   | 'Tutanak_Anlasamama' 
-  | 'Tutanak_Gelmeme';
+  | 'Tutanak_Gelmeme'
+  | 'Tutanak_Sonlandirma';
 
 export interface Template {
   id: string;
