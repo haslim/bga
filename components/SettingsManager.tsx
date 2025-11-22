@@ -325,7 +325,7 @@ export const SettingsManager: React.FC = () => {
                                 <input 
                                     type="text" 
                                     placeholder="Örn: Cevap Süresi"
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
                                     value={newDeadlineName}
                                     onChange={e => setNewDeadlineName(e.target.value)}
                                 />
@@ -334,7 +334,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Gün Sayısı</label>
                                 <input 
                                     type="number" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
                                     value={newDeadlineDays}
                                     onChange={e => setNewDeadlineDays(Number(e.target.value))}
                                 />
@@ -471,7 +471,7 @@ export const SettingsManager: React.FC = () => {
                              <select 
                                 value={notifData.integrations.smsProvider}
                                 onChange={(e) => changeIntegration('smsProvider', e.target.value)}
-                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48"
+                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48 transition-all"
                             >
                                  <option value="Netgsm">Netgsm</option>
                                  <option value="Twilio">Twilio</option>
@@ -484,7 +484,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Kullanıcı Adı / Account SID</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                     value={notifData.integrations.smsUsername || ''}
                                     onChange={e => changeIntegrationConfig('smsUsername', e.target.value)}
                                 />
@@ -493,7 +493,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Şifre / Auth Token</label>
                                 <input 
                                     type="password" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                     value={notifData.integrations.smsPassword || ''}
                                     onChange={e => changeIntegrationConfig('smsPassword', e.target.value)}
                                 />
@@ -502,7 +502,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Başlık (Header) / From</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                     value={notifData.integrations.smsHeader || ''}
                                     onChange={e => changeIntegrationConfig('smsHeader', e.target.value)}
                                 />
@@ -519,7 +519,7 @@ export const SettingsManager: React.FC = () => {
                              <select 
                                 value={notifData.integrations.emailProvider}
                                 onChange={(e) => changeIntegration('emailProvider', e.target.value)}
-                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48"
+                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48 transition-all"
                             >
                                  <option value="SMTP">Özel SMTP</option>
                                  <option value="SendGrid">SendGrid</option>
@@ -532,7 +532,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">SMTP Host</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                     value={notifData.integrations.emailHost || ''}
                                     onChange={e => changeIntegrationConfig('emailHost', e.target.value)}
                                 />
@@ -541,7 +541,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Port</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                     value={notifData.integrations.emailPort || ''}
                                     onChange={e => changeIntegrationConfig('emailPort', e.target.value)}
                                 />
@@ -550,7 +550,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">E-Posta (Kullanıcı)</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                     value={notifData.integrations.emailUser || ''}
                                     onChange={e => changeIntegrationConfig('emailUser', e.target.value)}
                                 />
@@ -559,7 +559,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Şifre</label>
                                 <input 
                                     type="password" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                     value={notifData.integrations.emailPassword || ''}
                                     onChange={e => changeIntegrationConfig('emailPassword', e.target.value)}
                                 />
@@ -576,7 +576,7 @@ export const SettingsManager: React.FC = () => {
                              <select 
                                 value={notifData.integrations.calendarProvider}
                                 onChange={(e) => changeIntegration('calendarProvider', e.target.value)}
-                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48"
+                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48 transition-all"
                             >
                                  <option value="Google">Google Calendar</option>
                                  <option value="Outlook">Microsoft Outlook</option>
@@ -588,7 +588,7 @@ export const SettingsManager: React.FC = () => {
                             <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">API Key / Entegrasyon Linki</label>
                             <input 
                                 type="text" 
-                                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 text-sm dark:bg-slate-800 dark:text-white"
+                                className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                                 value={notifData.integrations.calendarApiKey || ''}
                                 onChange={e => changeIntegrationConfig('calendarApiKey', e.target.value)}
                                 placeholder="https://..."
