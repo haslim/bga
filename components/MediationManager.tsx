@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile, Document, MediationParty } from '../types';
@@ -25,8 +24,14 @@ export const MediationManager: React.FC = () => {
   const [meetingToCancel, setMeetingToCancel] = useState<MediationMeeting | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   
+  // Edit Parties Modal State
+  const [isEditPartiesModalOpen, setIsEditPartiesModalOpen] = useState(false);
+  const [editApplicantList, setEditApplicantList] = useState<{name: string, phone: string}[]>([]);
+  const [editCounterPartyList, setEditCounterPartyList] = useState<{name: string, phone: string}[]>([]);
+
   // Sending States
   const [sendingType, setSendingType] = useState<'Davet' | 'Ucret' | null>(null);
+  const [isSendingWorkflow, setIsSendingWorkflow] = useState(false);
 
   // Online Meeting
   const [activeVideoMeeting, setActiveVideoMeeting] = useState<string | null>(null);
@@ -92,7 +97,7 @@ export const MediationManager: React.FC = () => {
     }
   };
 
-  // Dynamic Party Handlers
+  // Dynamic Party Handlers for Creation
   const handleAddPartyRow = (type: 'applicant' | 'counter') => {
       if (type === 'applicant') setApplicantList([...applicantList, {name: '', phone: ''}]);
       else setCounterPartyList([...counterPartyList, {name: '', phone: ''}]);
@@ -116,6 +121,84 @@ export const MediationManager: React.FC = () => {
           newList[index] = { ...newList[index], [field]: value };
           setCounterPartyList(newList);
       }
+  };
+
+  // --- EDIT PARTY HANDLERS ---
+  const handleOpenEditParties = () => {
+      if (!activeMediationData) return;
+      const currentParties = activeMediationData.parties || [];
+      
+      const applicants = currentParties.filter(p => p.role === 'Başvurucu').map(p => ({name: p.name, phone: p.phone}));
+      const counters = currentParties.filter(p => p.role === 'Karşı Taraf').map(p => ({name: p.name, phone: p.phone}));
+
+      // Fallback for legacy data
+      if (applicants.length === 0 && activeMediationData.clientName) {
+          activeMediationData.clientName.split(',').forEach(n => applicants.push({name: n.trim(), phone: ''}));
+      }
+      if (counters.length === 0 && activeMediationData.counterParty) {
+          activeMediationData.counterParty.split(',').forEach(n => counters.push({name: n.trim(), phone: ''}));
+      }
+
+      setEditApplicantList(applicants.length > 0 ? applicants : [{name: '', phone: ''}]);
+      setEditCounterPartyList(counters.length > 0 ? counters : [{name: '', phone: ''}]);
+      
+      setIsEditPartiesModalOpen(true);
+  };
+
+  const handleAddEditPartyRow = (type: 'applicant' | 'counter') => {
+      if (type === 'applicant') setEditApplicantList([...editApplicantList, {name: '', phone: ''}]);
+      else setEditCounterPartyList([...editCounterPartyList, {name: '', phone: ''}]);
+  };
+
+  const handleRemoveEditPartyRow = (type: 'applicant' | 'counter', index: number) => {
+      if (type === 'applicant') {
+          if (editApplicantList.length > 1) setEditApplicantList(editApplicantList.filter((_, i) => i !== index));
+      } else {
+          if (editCounterPartyList.length > 1) setEditCounterPartyList(editCounterPartyList.filter((_, i) => i !== index));
+      }
+  };
+
+  const handleEditPartyChange = (type: 'applicant' | 'counter', index: number, field: 'name' | 'phone', value: string) => {
+      if (type === 'applicant') {
+          const newList = [...editApplicantList];
+          newList[index] = { ...newList[index], [field]: value };
+          setEditApplicantList(newList);
+      } else {
+          const newList = [...editCounterPartyList];
+          newList[index] = { ...newList[index], [field]: value };
+          setEditCounterPartyList(newList);
+      }
+  };
+
+  const handleSaveParties = () => {
+      if (!activeMediationData) return;
+
+      const newParties: MediationParty[] = [
+          ...editApplicantList.filter(p => p.name).map(p => ({ ...p, role: 'Başvurucu' as const })),
+          ...editCounterPartyList.filter(p => p.name).map(p => ({ ...p, role: 'Karşı Taraf' as const }))
+      ];
+
+      // Update legacy fields for display compatibility
+      const updatedClientName = editApplicantList.map(p => p.name).filter(Boolean).join(', ');
+      const updatedCounterParty = editCounterPartyList.map(p => p.name).filter(Boolean).join(', ');
+
+      const updatedMediation = {
+          ...activeMediationData,
+          parties: newParties,
+          clientName: updatedClientName,
+          counterParty: updatedCounterParty
+      };
+
+      updateMediation(updatedMediation);
+      addNotification({
+          id: `edit-parties-${Date.now()}`,
+          type: 'SUCCESS',
+          title: 'Taraflar Güncellendi',
+          message: 'Taraf bilgileri başarıyla güncellendi.',
+          timestamp: 'Şimdi',
+          read: false
+      });
+      setIsEditPartiesModalOpen(false);
   };
 
   const handleAddApplication = () => {
@@ -246,46 +329,64 @@ export const MediationManager: React.FC = () => {
 
   // --- SENDING LOGIC (Action Buttons) ---
   const handleSendDocumentAction = (type: 'Davet' | 'Ucret') => {
-      if (!activeMediationData || sendingType) return;
+      if (!activeMediationData) return;
       
+      // Find the template
+      const template = templates.find(t => t.type === type);
+      if (!template) {
+          alert("Şablon bulunamadı. Lütfen Ayarlar > Belge Şablonları bölümünden şablon oluşturunuz.");
+          return;
+      }
+
+      // Process template with real data
+      const processedContent = processTemplate(template.content, activeMediationData, mediatorProfile);
+      
+      // Prepare Editor
+      setSelectedTemplateToEdit(template);
+      setEditedTemplateContent(processedContent);
       setSendingType(type);
+      setIsSendingWorkflow(true); // Set workflow flag
+      setIsTemplateEditorOpen(true);
+  };
 
-      // Simulate API call / Sending process
-      setTimeout(() => {
-          const template = templates.find(t => t.type === type);
-          const docName = template ? template.name : type === 'Davet' ? 'Davet Mektubu' : 'Ücret Sözleşmesi';
-          
-          // Create document entry if not exists
-          const newDoc: Document = {
-              id: `doc-sent-${Date.now()}`,
-              name: docName,
-              type: type as any,
-              createdDate: new Date().toISOString().split('T')[0],
-              status: 'Gönderildi',
-              signedBy: []
-          };
+  const handleConfirmSend = () => {
+      if (!activeMediationData || !sendingType || !selectedTemplateToEdit) return;
 
-          const currentDocs = activeMediationData.documents || [];
-          const updatedMediation = {
-              ...activeMediationData,
-              documents: [newDoc, ...currentDocs],
-              invitationSent: type === 'Davet' ? true : activeMediationData.invitationSent,
-              feeContractSent: type === 'Ucret' ? true : activeMediationData.feeContractSent
-          };
+      // Create document entry
+      const docName = selectedTemplateToEdit.name || (sendingType === 'Davet' ? 'Davet Mektubu' : 'Ücret Sözleşmesi');
+      const newDoc: Document = {
+          id: `doc-sent-${Date.now()}`,
+          name: docName,
+          type: sendingType as any,
+          createdDate: new Date().toISOString().split('T')[0],
+          status: 'Gönderildi',
+          signedBy: []
+      };
 
-          updateMediation(updatedMediation);
-          
-          addNotification({
-              id: `send-${Date.now()}`,
-              type: 'SUCCESS',
-              title: `${type === 'Davet' ? 'Davet' : 'Sözleşme'} İletildi`,
-              message: `${type === 'Davet' ? 'İlk oturum daveti' : 'Ücret sözleşmesi'} taraflara E-Posta ve SMS yoluyla başarıyla iletildi.`,
-              timestamp: 'Şimdi',
-              read: false
-          });
+      const currentDocs = activeMediationData.documents || [];
+      const updatedMediation = {
+          ...activeMediationData,
+          documents: [newDoc, ...currentDocs],
+          invitationSent: sendingType === 'Davet' ? true : activeMediationData.invitationSent,
+          feeContractSent: sendingType === 'Ucret' ? true : activeMediationData.feeContractSent
+      };
 
-          setSendingType(null);
-      }, 1500);
+      updateMediation(updatedMediation);
+      
+      addNotification({
+          id: `send-${Date.now()}`,
+          type: 'SUCCESS',
+          title: `${sendingType === 'Davet' ? 'Davet' : 'Sözleşme'} İletildi`,
+          message: `${sendingType === 'Davet' ? 'İlk oturum daveti' : 'Ücret sözleşmesi'} taraflara E-Posta ve SMS yoluyla başarıyla iletildi.`,
+          timestamp: 'Şimdi',
+          read: false
+      });
+
+      // Reset and close
+      setIsTemplateEditorOpen(false);
+      setIsSendingWorkflow(false);
+      setSendingType(null);
+      setSelectedTemplateToEdit(null);
   };
 
 
@@ -354,17 +455,50 @@ export const MediationManager: React.FC = () => {
   const openTemplateEditor = (type: TemplateType) => {
       const template = templates.find(t => t.type === type);
       if (template) {
+          // This is for "Tutanak" manual editing, not the workflow sending
+          setIsSendingWorkflow(false); 
           setSelectedTemplateToEdit(template);
-          setEditedTemplateContent(template.content);
+          // Pre-fill with processed content for convenience in Tutanak editor
+          if (activeMediationData) {
+             setEditedTemplateContent(processTemplate(template.content, activeMediationData, mediatorProfile));
+          } else {
+             setEditedTemplateContent(template.content);
+          }
           setIsTemplateEditorOpen(true);
       }
   };
+  
   const saveTemplate = () => {
-      if (selectedTemplateToEdit) {
-          updateTemplate({ ...selectedTemplateToEdit, content: editedTemplateContent });
+      if (isSendingWorkflow) {
+          handleConfirmSend();
+      } else {
+          // Manual Save Logic (e.g. for Tutanak)
+          // In this mock, we just close it, perhaps generating a document?
+          // For simplicity, let's treat it as "Generate Document"
+          if (activeMediationData && selectedTemplateToEdit) {
+              const newDoc: Document = {
+                  id: `doc-manual-${Date.now()}`,
+                  name: selectedTemplateToEdit.name,
+                  type: selectedTemplateToEdit.type as any,
+                  createdDate: new Date().toISOString().split('T')[0],
+                  status: 'Taslak',
+                  signedBy: []
+              };
+              const currentDocs = activeMediationData.documents || [];
+              updateMediation({ ...activeMediationData, documents: [newDoc, ...currentDocs] });
+              addNotification({
+                  id: `doc-created-${Date.now()}`,
+                  type: 'SUCCESS',
+                  title: 'Belge Oluşturuldu',
+                  message: 'Düzenlenen belge taslak olarak kaydedildi.',
+                  timestamp: 'Şimdi',
+                  read: false
+              });
+          }
           setIsTemplateEditorOpen(false);
       }
   };
+  
   const insertAtCursor = (text: string) => {
     if (!textareaRef.current) return;
     const start = textareaRef.current.selectionStart;
@@ -407,6 +541,112 @@ export const MediationManager: React.FC = () => {
                     <div className="flex justify-end gap-2">
                         <button onClick={() => setIsCancelModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">Vazgeç</button>
                         <button onClick={handleCancelMeeting} disabled={!cancelReason} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:bg-slate-300 dark:disabled:bg-slate-600">Bildir ve İptal Et</button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Edit Parties Modal */}
+        {isEditPartiesModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl flex flex-col max-h-[95vh]">
+                    <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0">
+                         <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+                            <Users className="w-5 h-5 mr-2 text-brand-600" />
+                            Taraf Bilgilerini Düzenle
+                         </h3>
+                         <button onClick={() => setIsEditPartiesModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
+                    </div>
+                    <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                        <div className="space-y-6">
+                             {/* Applicants List */}
+                             <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-100 dark:border-green-900">
+                                <div className="flex justify-between items-center mb-3">
+                                    <label className="block text-xs font-bold text-green-700 dark:text-green-400 uppercase">Başvurucu(lar)</label>
+                                    <button onClick={() => handleAddEditPartyRow('applicant')} className="text-xs text-green-600 hover:underline flex items-center font-bold">
+                                        <Plus className="w-3 h-3 mr-1"/> Ekle
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {editApplicantList.map((app, idx) => (
+                                        <div key={idx} className="flex gap-3 items-start">
+                                            <div className="grid grid-cols-5 gap-3 flex-1">
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Ad Soyad / Ünvan"
+                                                        value={app.name}
+                                                        onChange={e => handleEditPartyChange('applicant', idx, 'name', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Telefon"
+                                                        value={app.phone}
+                                                        onChange={e => handleEditPartyChange('applicant', idx, 'phone', e.target.value)} 
+                                                    />
+                                                </div>
+                                            </div>
+                                            {editApplicantList.length > 1 && (
+                                                <button onClick={() => handleRemoveEditPartyRow('applicant', idx)} className="text-slate-400 hover:text-red-500 mt-2">
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                             </div>
+
+                             {/* Counter Parties List */}
+                             <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900">
+                                <div className="flex justify-between items-center mb-3">
+                                    <label className="block text-xs font-bold text-red-700 dark:text-red-400 uppercase">Karşı Taraf(lar)</label>
+                                    <button onClick={() => handleAddEditPartyRow('counter')} className="text-xs text-red-600 hover:underline flex items-center font-bold">
+                                        <Plus className="w-3 h-3 mr-1"/> Ekle
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {editCounterPartyList.map((cp, idx) => (
+                                        <div key={idx} className="flex gap-3 items-start">
+                                            <div className="grid grid-cols-5 gap-3 flex-1">
+                                                <div className="col-span-3">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Ad Soyad / Ünvan"
+                                                        value={cp.name}
+                                                        onChange={e => handleEditPartyChange('counter', idx, 'name', e.target.value)} 
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <input 
+                                                        type="text" 
+                                                        className={inputClass}
+                                                        placeholder="Telefon"
+                                                        value={cp.phone}
+                                                        onChange={e => handleEditPartyChange('counter', idx, 'phone', e.target.value)} 
+                                                    />
+                                                </div>
+                                            </div>
+                                            {editCounterPartyList.length > 1 && (
+                                                <button onClick={() => handleRemoveEditPartyRow('counter', idx)} className="text-slate-400 hover:text-red-500 mt-2">
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 shrink-0">
+                        <button onClick={() => setIsEditPartiesModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
+                        <button onClick={handleSaveParties} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg shadow-brand-600/20">
+                            <Save className="w-4 h-4 mr-2" /> Kaydet
+                        </button>
                     </div>
                 </div>
             </div>
@@ -623,31 +863,53 @@ export const MediationManager: React.FC = () => {
             </div>
         )}
 
-        {/* Template Editor Modal */}
+        {/* Template Editor Modal (Generic) */}
         {isTemplateEditorOpen && selectedTemplateToEdit && (
              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-2">
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
                      <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                        <h3 className="font-bold flex items-center text-slate-800 dark:text-white"><Edit3 className="w-5 h-5 mr-2"/> Şablon Düzenle: {selectedTemplateToEdit.name}</h3>
-                        <button onClick={() => setIsTemplateEditorOpen(false)}><X className="w-5 h-5 text-slate-500"/></button>
+                        <div>
+                            <h3 className="font-bold flex items-center text-slate-800 dark:text-white text-lg">
+                                <Edit3 className="w-5 h-5 mr-2 text-brand-600"/> 
+                                {isSendingWorkflow ? 'Önizle ve Gönder' : 'Belge Düzenle'}
+                            </h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 ml-7">
+                                {selectedTemplateToEdit.name} üzerinde değişiklik yapabilirsiniz.
+                            </p>
+                        </div>
+                        <button onClick={() => { setIsTemplateEditorOpen(false); setIsSendingWorkflow(false); }}><X className="w-6 h-6 text-slate-400 hover:text-slate-600"/></button>
                      </div>
-                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 flex gap-2 bg-white dark:bg-slate-800">
-                         {/* Quick Insert Toolbar */}
-                         <button onClick={() => insertAtCursor('{{MUVEKKIL}}')} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-bold rounded hover:bg-slate-200 dark:hover:bg-slate-600">Müvekkil</button>
-                         <button onClick={() => insertAtCursor('{{KARSI_TARAF}}')} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-bold rounded hover:bg-slate-200 dark:hover:bg-slate-600">Karşı Taraf</button>
-                         <button onClick={() => insertAtCursor('{{DOSYA_NO}}')} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-bold rounded hover:bg-slate-200 dark:hover:bg-slate-600">Dosya No</button>
-                         <button onClick={() => insertAtCursor('{{TARIH}}')} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-bold rounded hover:bg-slate-200 dark:hover:bg-slate-600">Tarih</button>
-                     </div>
-                     <div className="flex-1 flex">
+                     
+                     <div className="flex-1 flex flex-col">
+                         <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex justify-between items-center">
+                             <div className="flex gap-2">
+                                 {/* Quick Insert Toolbar - Only relevant if we are editing raw template, but here we edit processed text mostly */}
+                                 {!isSendingWorkflow && (
+                                     <>
+                                        <button onClick={() => insertAtCursor('{{MUVEKKIL}}')} className="px-2 py-1 bg-white dark:bg-slate-700 border dark:border-slate-600 text-xs font-bold rounded hover:bg-slate-50 dark:hover:bg-slate-600">Müvekkil</button>
+                                        <button onClick={() => insertAtCursor('{{KARSI_TARAF}}')} className="px-2 py-1 bg-white dark:bg-slate-700 border dark:border-slate-600 text-xs font-bold rounded hover:bg-slate-50 dark:hover:bg-slate-600">Karşı Taraf</button>
+                                     </>
+                                 )}
+                             </div>
+                             <div className="text-xs text-slate-500 italic">
+                                 {isSendingWorkflow ? 'Bu değişiklikler sadece bu gönderim için geçerlidir.' : 'Taslak düzenleniyor.'}
+                             </div>
+                         </div>
+                         
                          <textarea 
                             ref={textareaRef}
-                            className="flex-1 p-4 font-mono text-sm resize-none outline-none bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200"
+                            className="flex-1 p-8 font-mono text-sm resize-none outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-200 leading-relaxed"
                             value={editedTemplateContent}
                             onChange={e => setEditedTemplateContent(e.target.value)}
                          />
                      </div>
-                     <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-2">
-                         <button onClick={saveTemplate} className="bg-brand-600 text-white px-4 py-2 rounded hover:bg-brand-700">Kaydet</button>
+
+                     <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+                         <button onClick={() => { setIsTemplateEditorOpen(false); setIsSendingWorkflow(false); }} className="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
+                         <button onClick={saveTemplate} className="bg-brand-600 text-white px-6 py-2.5 rounded-lg hover:bg-brand-700 font-bold shadow-lg flex items-center">
+                             {isSendingWorkflow ? <Send className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                             {isSendingWorkflow ? 'Onayla ve Gönder' : 'Taslağı Kaydet'}
+                         </button>
                      </div>
                 </div>
              </div>
@@ -731,7 +993,15 @@ export const MediationManager: React.FC = () => {
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Parties */}
                                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                                    <h3 className="font-bold text-slate-800 dark:text-white mb-4">Taraf Bilgileri</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-slate-800 dark:text-white">Taraf Bilgileri</h3>
+                                        <button 
+                                            onClick={handleOpenEditParties}
+                                            className="text-brand-600 hover:text-brand-700 text-xs font-bold bg-brand-50 hover:bg-brand-100 dark:bg-brand-900/20 dark:hover:bg-brand-900/40 px-3 py-1.5 rounded-lg transition flex items-center"
+                                        >
+                                            <Edit3 className="w-3 h-3 mr-1" /> Düzenle
+                                        </button>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-900">
                                             <span className="text-xs font-bold text-green-600 dark:text-green-400 uppercase">Başvurucu(lar)</span>
@@ -786,7 +1056,7 @@ export const MediationManager: React.FC = () => {
                             <div className="space-y-4">
                                 {/* Davet Gönder Action */}
                                 <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition group">
-                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleGenerateDoc('Davet')}>
+                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleSendDocumentAction('Davet')}>
                                         <Mail className={`w-5 h-5 ${activeMediationData.invitationSent ? 'text-green-600' : 'text-brand-600'}`} />
                                         {activeMediationData.invitationSent ? (
                                             <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -801,11 +1071,10 @@ export const MediationManager: React.FC = () => {
                                     {!activeMediationData.invitationSent ? (
                                         <button 
                                             onClick={() => handleSendDocumentAction('Davet')}
-                                            disabled={sendingType === 'Davet'}
                                             className="w-full mt-2 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
                                         >
-                                            {sendingType === 'Davet' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Send className="w-3 h-3 mr-1" />}
-                                            {sendingType === 'Davet' ? 'Gönderiliyor...' : 'Hazırla ve Gönder'}
+                                            <Eye className="w-3 h-3 mr-1" />
+                                            Önizle ve Gönder
                                         </button>
                                     ) : (
                                         <div className="mt-2 flex items-center justify-center text-xs font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 py-2 rounded-lg border border-green-100 dark:border-green-900">
@@ -826,7 +1095,7 @@ export const MediationManager: React.FC = () => {
 
                                 {/* Ücret Sözleşmesi Action */}
                                 <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition group">
-                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleGenerateDoc('Ucret')}>
+                                    <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => handleSendDocumentAction('Ucret')}>
                                         <CreditCard className={`w-5 h-5 ${activeMediationData.feeContractSent ? 'text-green-600' : 'text-brand-600'}`} />
                                         {activeMediationData.feeContractSent ? (
                                             <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -841,11 +1110,10 @@ export const MediationManager: React.FC = () => {
                                     {!activeMediationData.feeContractSent ? (
                                         <button 
                                             onClick={() => handleSendDocumentAction('Ucret')}
-                                            disabled={sendingType === 'Ucret'}
                                             className="w-full mt-2 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
                                         >
-                                            {sendingType === 'Ucret' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Send className="w-3 h-3 mr-1" />}
-                                            {sendingType === 'Ucret' ? 'Gönderiliyor...' : 'Hazırla ve Gönder'}
+                                            <Eye className="w-3 h-3 mr-1" />
+                                            Önizle ve Gönder
                                         </button>
                                     ) : (
                                         <div className="mt-2 flex items-center justify-center text-xs font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 py-2 rounded-lg border border-green-100 dark:border-green-900">

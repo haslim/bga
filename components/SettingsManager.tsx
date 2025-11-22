@@ -1,15 +1,15 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../DataContext';
-import { UserRole, DeadlineTemplate, NotificationSettings } from '../types';
+import { UserRole, DeadlineTemplate, NotificationSettings, Template } from '../types';
 import { THEME_COLORS } from '../constants';
-import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight, LayoutTemplate, FileText, Edit3, X, Code, Eye } from 'lucide-react';
 import { UserManager } from './UserManager';
 
 export const SettingsManager: React.FC = () => {
-  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme, deadlineTemplates, addDeadlineTemplate, deleteDeadlineTemplate, notificationSettings, updateNotificationSettings } = useData();
+  const { siteSettings, updateSiteSettings, currentUser, updateUserTheme, deadlineTemplates, addDeadlineTemplate, deleteDeadlineTemplate, notificationSettings, updateNotificationSettings, templates, updateTemplate } = useData();
   
-  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'deadlines' | 'notifications'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'deadlines' | 'notifications' | 'templates'>('general');
 
   const [formData, setFormData] = useState({
     title: siteSettings.title,
@@ -24,6 +24,11 @@ export const SettingsManager: React.FC = () => {
   // Deadline form state
   const [newDeadlineName, setNewDeadlineName] = useState('');
   const [newDeadlineDays, setNewDeadlineDays] = useState(7);
+
+  // Template Editor State
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
+  const [templateContent, setTemplateContent] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [selectedTheme, setSelectedTheme] = useState(currentUser?.theme || 'blue');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -113,6 +118,38 @@ export const SettingsManager: React.FC = () => {
       setNewDeadlineDays(7);
   };
 
+  // Template Logic
+  const handleEditTemplate = (template: Template) => {
+      setEditingTemplate(template);
+      setTemplateContent(template.content);
+  };
+
+  const handleSaveTemplate = () => {
+      if (editingTemplate) {
+          updateTemplate({ ...editingTemplate, content: templateContent });
+          setEditingTemplate(null);
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 3000);
+      }
+  };
+
+  const insertVariable = (variable: string) => {
+      if (textareaRef.current) {
+          const start = textareaRef.current.selectionStart;
+          const end = textareaRef.current.selectionEnd;
+          const text = templateContent;
+          const newText = text.substring(0, start) + variable + text.substring(end);
+          setTemplateContent(newText);
+          // Set cursor position after insertion (timeout needed for React state update)
+          setTimeout(() => {
+              if (textareaRef.current) {
+                  textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + variable.length;
+                  textareaRef.current.focus();
+              }
+          }, 0);
+      }
+  };
+
   if (!currentUser) return null;
 
   const isAdmin = currentUser.role === UserRole.ADMIN;
@@ -133,8 +170,76 @@ export const SettingsManager: React.FC = () => {
     </div>
   );
 
+  // Input Class for Dark Mode
+  const inputClass = "w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all";
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in dark:bg-slate-900 dark:text-white">
+      {/* Template Edit Modal */}
+      {editingTemplate && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                      <h3 className="font-bold text-lg text-slate-800 dark:text-white flex items-center">
+                          <Edit3 className="w-5 h-5 mr-2 text-brand-600" />
+                          Şablon Düzenle: {editingTemplate.name}
+                      </h3>
+                      <button onClick={() => setEditingTemplate(null)}><X className="w-6 h-6 text-slate-400 hover:text-slate-600" /></button>
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                      {/* Sidebar: Variables */}
+                      <div className="w-full md:w-64 bg-slate-50 dark:bg-slate-900/30 border-r border-slate-200 dark:border-slate-700 p-4 overflow-y-auto">
+                          <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-3">Değişkenler</h4>
+                          <div className="space-y-2">
+                              {[
+                                  { code: '{{MUVEKKIL}}', label: 'Müvekkil Adı' },
+                                  { code: '{{KARSI_TARAF}}', label: 'Karşı Taraf' },
+                                  { code: '{{DOSYA_NO}}', label: 'Dosya Numarası' },
+                                  { code: '{{KONU}}', label: 'Uyuşmazlık Konusu' },
+                                  { code: '{{TARIH}}', label: 'Bugünün Tarihi' },
+                                  { code: '{{ARABULUCU}}', label: 'Arabulucu Adı' },
+                                  { code: '{{ARABULUCU_SICIL}}', label: 'Sicil No' },
+                                  { code: '{{ARABULUCU_IBAN}}', label: 'IBAN No' },
+                              ].map((v) => (
+                                  <button 
+                                    key={v.code}
+                                    onClick={() => insertVariable(v.code)}
+                                    className="w-full text-left px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-xs hover:border-brand-400 hover:text-brand-600 transition group"
+                                  >
+                                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300 block">{v.code}</span>
+                                      <span className="text-slate-400 group-hover:text-brand-500">{v.label}</span>
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+
+                      {/* Editor Area */}
+                      <div className="flex-1 flex flex-col">
+                          <div className="p-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 flex items-center">
+                              <Code className="w-4 h-4 mr-2" />
+                              HTML Editör Modu
+                          </div>
+                          <textarea 
+                              ref={textareaRef}
+                              className="flex-1 w-full p-6 font-mono text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 resize-none outline-none focus:bg-slate-50 dark:focus:bg-slate-900 transition-colors"
+                              value={templateContent}
+                              onChange={e => setTemplateContent(e.target.value)}
+                              spellCheck={false}
+                          ></textarea>
+                      </div>
+                  </div>
+
+                  <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+                      <button onClick={() => setEditingTemplate(null)} className="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
+                      <button onClick={handleSaveTemplate} className="px-6 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-bold shadow-lg flex items-center">
+                          <Save className="w-4 h-4 mr-2" /> Değişiklikleri Kaydet
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
       <header className="mb-8 flex justify-between items-center">
         <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Ayarlar</h1>
@@ -149,7 +254,7 @@ export const SettingsManager: React.FC = () => {
       </header>
 
       {/* Settings Tabs */}
-      <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+      <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto custom-scrollbar pb-1">
           <button 
             onClick={() => setActiveTab('general')}
             className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'general' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
@@ -157,6 +262,15 @@ export const SettingsManager: React.FC = () => {
               <Settings className="w-4 h-4 mr-2" />
               Genel Ayarlar
           </button>
+          {isAdmin && (
+              <button 
+                onClick={() => setActiveTab('templates')}
+                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'templates' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+              >
+                  <LayoutTemplate className="w-4 h-4 mr-2" />
+                  Belge Şablonları
+              </button>
+          )}
           {isAdmin && (
               <button 
                 onClick={() => setActiveTab('users')}
@@ -186,7 +300,7 @@ export const SettingsManager: React.FC = () => {
           )}
       </div>
 
-      <div className="max-w-4xl">
+      <div className="max-w-5xl">
         
         {/* GENERAL SETTINGS */}
         {activeTab === 'general' && (
@@ -254,7 +368,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Site Başlığı</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-brand-500"
+                                    className={inputClass}
                                     value={formData.title}
                                     onChange={e => setFormData({...formData, title: e.target.value})}
                                 />
@@ -263,7 +377,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Alt Başlık / Slogan</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-brand-500"
+                                    className={inputClass}
                                     value={formData.subtitle}
                                     onChange={e => setFormData({...formData, subtitle: e.target.value})}
                                 />
@@ -275,7 +389,7 @@ export const SettingsManager: React.FC = () => {
                                         <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                                         <input 
                                             type="text" 
-                                            className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg pl-9 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-brand-500"
+                                            className={`${inputClass} pl-9`}
                                             placeholder="https://..."
                                             value={formData.logoUrl}
                                             onChange={e => setFormData({...formData, logoUrl: e.target.value})}
@@ -302,6 +416,53 @@ export const SettingsManager: React.FC = () => {
             </div>
         )}
 
+        {/* TEMPLATES TAB */}
+        {activeTab === 'templates' && isAdmin && (
+            <div className="animate-in slide-in-from-right-2 fade-in duration-300 space-y-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 p-4 rounded-xl flex items-start">
+                    <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" />
+                    <div>
+                        <h4 className="font-bold text-blue-800 dark:text-blue-300 text-sm">Şablon Yönetimi Hakkında</h4>
+                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
+                            Burada düzenleyeceğiniz şablonlar sistem genelinde (Varsayılan) olarak kullanılır. 
+                            Değişkenleri (örn: <span className="font-mono bg-white dark:bg-slate-800 px-1 rounded">{'{{MUVEKKIL}}'}</span>) silmemeye özen gösteriniz.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {templates.map(template => (
+                        <div key={template.id} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 hover:border-brand-300 dark:hover:border-brand-700 transition group">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center">
+                                    <div className={`p-3 rounded-lg mr-4 ${
+                                        template.type === 'Davet' ? 'bg-orange-100 text-orange-600' :
+                                        template.type === 'Ucret' ? 'bg-green-100 text-green-600' :
+                                        'bg-blue-100 text-blue-600'
+                                    }`}>
+                                        <FileText className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-800 dark:text-white">{template.name}</h3>
+                                        <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded uppercase tracking-wide">{template.type}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 line-clamp-2 font-mono bg-slate-50 dark:bg-slate-900 p-2 rounded border border-slate-100 dark:border-slate-800">
+                                {template.content.replace(/<[^>]*>?/gm, '')}
+                            </p>
+                            <button 
+                                onClick={() => handleEditTemplate(template)}
+                                className="w-full py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 rounded-lg text-sm font-bold hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-200 dark:hover:border-brand-800 transition flex items-center justify-center"
+                            >
+                                <Edit3 className="w-4 h-4 mr-2" /> Düzenle
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
         {/* USERS TAB */}
         {activeTab === 'users' && isAdmin && (
             <div className="animate-in slide-in-from-right-2 fade-in duration-300">
@@ -325,7 +486,7 @@ export const SettingsManager: React.FC = () => {
                                 <input 
                                     type="text" 
                                     placeholder="Örn: Cevap Süresi"
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                                    className={inputClass}
                                     value={newDeadlineName}
                                     onChange={e => setNewDeadlineName(e.target.value)}
                                 />
@@ -334,7 +495,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Gün Sayısı</label>
                                 <input 
                                     type="number" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+                                    className={inputClass}
                                     value={newDeadlineDays}
                                     onChange={e => setNewDeadlineDays(Number(e.target.value))}
                                 />
@@ -392,7 +553,7 @@ export const SettingsManager: React.FC = () => {
         {/* NOTIFICATIONS TAB */}
         {activeTab === 'notifications' && isAdmin && (
             <div className="space-y-8 animate-in slide-in-from-right-2 fade-in duration-300">
-                 
+                 {/* ... (Existing Notification Code) ... */}
                  {/* Channels */}
                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 flex items-center">
@@ -471,7 +632,7 @@ export const SettingsManager: React.FC = () => {
                              <select 
                                 value={notifData.integrations.smsProvider}
                                 onChange={(e) => changeIntegration('smsProvider', e.target.value)}
-                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48 transition-all"
+                                className={inputClass.replace('w-full', 'w-48')}
                             >
                                  <option value="Netgsm">Netgsm</option>
                                  <option value="Twilio">Twilio</option>
@@ -484,7 +645,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Kullanıcı Adı / Account SID</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                    className={inputClass}
                                     value={notifData.integrations.smsUsername || ''}
                                     onChange={e => changeIntegrationConfig('smsUsername', e.target.value)}
                                 />
@@ -493,7 +654,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Şifre / Auth Token</label>
                                 <input 
                                     type="password" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                    className={inputClass}
                                     value={notifData.integrations.smsPassword || ''}
                                     onChange={e => changeIntegrationConfig('smsPassword', e.target.value)}
                                 />
@@ -502,7 +663,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Başlık (Header) / From</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                    className={inputClass}
                                     value={notifData.integrations.smsHeader || ''}
                                     onChange={e => changeIntegrationConfig('smsHeader', e.target.value)}
                                 />
@@ -519,7 +680,7 @@ export const SettingsManager: React.FC = () => {
                              <select 
                                 value={notifData.integrations.emailProvider}
                                 onChange={(e) => changeIntegration('emailProvider', e.target.value)}
-                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48 transition-all"
+                                className={inputClass.replace('w-full', 'w-48')}
                             >
                                  <option value="SMTP">Özel SMTP</option>
                                  <option value="SendGrid">SendGrid</option>
@@ -532,7 +693,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">SMTP Host</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                    className={inputClass}
                                     value={notifData.integrations.emailHost || ''}
                                     onChange={e => changeIntegrationConfig('emailHost', e.target.value)}
                                 />
@@ -541,7 +702,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Port</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                    className={inputClass}
                                     value={notifData.integrations.emailPort || ''}
                                     onChange={e => changeIntegrationConfig('emailPort', e.target.value)}
                                 />
@@ -550,7 +711,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">E-Posta (Kullanıcı)</label>
                                 <input 
                                     type="text" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                    className={inputClass}
                                     value={notifData.integrations.emailUser || ''}
                                     onChange={e => changeIntegrationConfig('emailUser', e.target.value)}
                                 />
@@ -559,7 +720,7 @@ export const SettingsManager: React.FC = () => {
                                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Şifre</label>
                                 <input 
                                     type="password" 
-                                    className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                    className={inputClass}
                                     value={notifData.integrations.emailPassword || ''}
                                     onChange={e => changeIntegrationConfig('emailPassword', e.target.value)}
                                 />
@@ -576,7 +737,7 @@ export const SettingsManager: React.FC = () => {
                              <select 
                                 value={notifData.integrations.calendarProvider}
                                 onChange={(e) => changeIntegration('calendarProvider', e.target.value)}
-                                className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 w-48 transition-all"
+                                className={inputClass.replace('w-full', 'w-48')}
                             >
                                  <option value="Google">Google Calendar</option>
                                  <option value="Outlook">Microsoft Outlook</option>
@@ -588,7 +749,7 @@ export const SettingsManager: React.FC = () => {
                             <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">API Key / Entegrasyon Linki</label>
                             <input 
                                 type="text" 
-                                className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                                className={inputClass}
                                 value={notifData.integrations.calendarApiKey || ''}
                                 onChange={e => changeIntegrationConfig('calendarApiKey', e.target.value)}
                                 placeholder="https://..."
