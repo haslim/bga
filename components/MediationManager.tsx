@@ -75,6 +75,35 @@ export const MediationManager: React.FC = () => {
     m.counterParty.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Helper: Phone Formatter
+  const formatPhoneNumber = (value: string) => {
+    if (!value) return '';
+    // Remove all non-digit characters
+    let raw = value.replace(/\D/g, '');
+
+    // If user is backspacing and clears everything
+    if (raw.length === 0) return '';
+
+    // Normalize: If starts with '90', remove it temporarily. If starts with '0', remove it.
+    if (raw.startsWith('90')) {
+        raw = raw.substring(2);
+    } else if (raw.startsWith('0')) {
+        raw = raw.substring(1);
+    }
+
+    // Limit to 10 digits (Turkish mobile/landline without country code)
+    raw = raw.substring(0, 10);
+
+    // Reconstruct with +90 and spacing
+    let formatted = '+90';
+    if (raw.length > 0) formatted += ' ' + raw.substring(0, 3);
+    if (raw.length > 3) formatted += ' ' + raw.substring(3, 6);
+    if (raw.length > 6) formatted += ' ' + raw.substring(6, 8);
+    if (raw.length > 8) formatted += ' ' + raw.substring(8, 10);
+
+    return formatted;
+  };
+
   // Helper: Process Flow
   const getProcessStats = (status: MediationStatus) => {
       switch(status) {
@@ -111,13 +140,18 @@ export const MediationManager: React.FC = () => {
   };
 
   const handleChangePartyRow = (type: 'applicant' | 'counter', index: number, field: keyof PartyRow, value: string) => {
+      let finalValue = value;
+      if (field === 'phone' || field === 'representativePhone') {
+          finalValue = formatPhoneNumber(value);
+      }
+
       if (type === 'applicant') {
           const newList = [...applicantList];
-          newList[index] = { ...newList[index], [field]: value };
+          newList[index] = { ...newList[index], [field]: finalValue };
           setApplicantList(newList);
       } else {
           const newList = [...counterPartyList];
-          newList[index] = { ...newList[index], [field]: value };
+          newList[index] = { ...newList[index], [field]: finalValue };
           setCounterPartyList(newList);
       }
   };
@@ -170,13 +204,18 @@ export const MediationManager: React.FC = () => {
   };
 
   const handleEditPartyChange = (type: 'applicant' | 'counter', index: number, field: keyof PartyRow, value: string) => {
+      let finalValue = value;
+      if (field === 'phone' || field === 'representativePhone') {
+          finalValue = formatPhoneNumber(value);
+      }
+
       if (type === 'applicant') {
           const newList = [...editApplicantList];
-          newList[index] = { ...newList[index], [field]: value };
+          newList[index] = { ...newList[index], [field]: finalValue };
           setEditApplicantList(newList);
       } else {
           const newList = [...editCounterPartyList];
-          newList[index] = { ...newList[index], [field]: value };
+          newList[index] = { ...newList[index], [field]: finalValue };
           setEditCounterPartyList(newList);
       }
   };
@@ -587,6 +626,9 @@ export const MediationManager: React.FC = () => {
                                 <div className="space-y-4">
                                     {editApplicantList.map((app, idx) => (
                                         <div key={idx} className="grid grid-cols-12 gap-2 items-start p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                                            <div className="col-span-12 mb-1">
+                                                <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                                            </div>
                                             <div className="col-span-3">
                                                 <label className="block text-[10px] text-slate-400 mb-1">Ad Soyad</label>
                                                 <input 
@@ -647,6 +689,9 @@ export const MediationManager: React.FC = () => {
                                 <div className="space-y-4">
                                     {editCounterPartyList.map((cp, idx) => (
                                         <div key={idx} className="grid grid-cols-12 gap-2 items-start p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                                            <div className="col-span-12 mb-1">
+                                                <span className="text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                                            </div>
                                             <div className="col-span-3">
                                                 <label className="block text-[10px] text-slate-400 mb-1">Ad Soyad</label>
                                                 <input 
@@ -742,6 +787,9 @@ export const MediationManager: React.FC = () => {
                                 <div className="space-y-3">
                                     {applicantList.map((app, idx) => (
                                         <div key={idx} className="grid grid-cols-12 gap-2 items-start">
+                                            <div className="col-span-12 mb-1">
+                                                <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                                            </div>
                                             <div className="col-span-3">
                                                 <input 
                                                     type="text" 
@@ -801,6 +849,9 @@ export const MediationManager: React.FC = () => {
                                 <div className="space-y-3">
                                     {counterPartyList.map((cp, idx) => (
                                         <div key={idx} className="grid grid-cols-12 gap-2 items-start">
+                                            <div className="col-span-12 mb-1">
+                                                <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">Taraf {idx + 1}</span>
+                                            </div>
                                             <div className="col-span-3">
                                                 <input 
                                                     type="text" 
