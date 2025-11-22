@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Case, Client, FinancialRecord, Task, Mediation, Invoice, User, UserRole, AuditLog, Permission, Template, KnowledgeEntry, MediatorProfile, SiteSettings, DeadlineTemplate, Notification, NotificationSettings } from './types';
 import { MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS, MOCK_MEDIATIONS, CURRENT_USER, MOCK_USERS, MOCK_LOGS, DEFAULT_TEMPLATES, ROLE_PERMISSIONS, MOCK_KNOWLEDGE_BASE, DEFAULT_MEDIATOR_PROFILE, THEME_COLORS, DEFAULT_DEADLINE_TEMPLATES } from './constants';
@@ -94,8 +95,19 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
     },
     integrations: {
         smsProvider: 'Netgsm',
+        smsApiKey: '',
+        smsUsername: '',
+        smsPassword: '',
+        smsHeader: '',
+        
         emailProvider: 'SMTP',
-        calendarProvider: 'Google'
+        emailHost: 'smtp.example.com',
+        emailPort: '587',
+        emailUser: '',
+        emailPassword: '',
+
+        calendarProvider: 'Google',
+        calendarApiKey: ''
     }
 };
 

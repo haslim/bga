@@ -1,4 +1,5 @@
 
+
 export enum UserRole {
   ADMIN = 'ADMIN',
   LAWYER = 'AVUKAT',
@@ -35,8 +36,19 @@ export interface NotificationSettings {
   };
   integrations: {
     smsProvider: string; // 'Twilio' | 'Netgsm'
+    smsApiKey?: string;
+    smsUsername?: string;
+    smsPassword?: string;
+    smsHeader?: string;
+
     emailProvider: string; // 'SMTP' | 'SendGrid'
+    emailHost?: string;
+    emailPort?: string;
+    emailUser?: string;
+    emailPassword?: string;
+
     calendarProvider: string; // 'Google' | 'Outlook'
+    calendarApiKey?: string;
   }
 }
 
