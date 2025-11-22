@@ -165,7 +165,7 @@ export interface MediationMeeting {
 export interface Document {
   id: string;
   name: string;
-  type: 'Tutanak' | 'Davet' | 'Sözleşme' | 'Diğer';
+  type: string; // Changed from union to string to support dynamic types
   createdDate: string;
   status: 'Taslak' | 'İmzada' | 'İmzalandı' | 'Gönderildi';
   signedBy?: string[]; // İzalayanların listesi
@@ -199,13 +199,22 @@ export interface Mediation {
 export interface MediatorProfile {
   name: string;
   registrationNumber: string; // Sicil No
+  officeName?: string; // Arabuluculuk Bürosu Adı
   address: string;
   phone: string;
   email: string;
   iban?: string;
 }
 
-export type TemplateType = 'Basvuru' | 'Tutanak' | 'Anlasma' | 'Davet' | 'Ucret';
+export type TemplateType = 
+  | 'Basvuru' 
+  | 'Davet' 
+  | 'Ucret'
+  | 'Tutanak_Acilis' 
+  | 'Tutanak_Ara' 
+  | 'Tutanak_Anlasma' 
+  | 'Tutanak_Anlasamama' 
+  | 'Tutanak_Gelmeme';
 
 export interface Template {
   id: string;

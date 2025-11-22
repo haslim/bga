@@ -5,11 +5,11 @@ import { useData } from '../DataContext';
 import { Mediation, MediationStatus, MediationMeeting, Template, TemplateType, MediatorProfile, Document, MediationParty } from '../types';
 import { processTemplate } from '../utils';
 import { VideoRoom } from './VideoRoom';
-import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon, Bell, Video, PenTool, Send, Loader2, AlertTriangle, Check, FileCheck, Briefcase } from 'lucide-react';
+import { Handshake, Plus, Search, Filter, ArrowLeft, ArrowRight, User, Printer, Clock, Save, FileText, X, Calendar, FileSignature, Scale, MessageSquare, Settings, Edit3, CreditCard, MapPin, Mail, Phone, CheckCircle2, XCircle, Activity, Users, Trash2, Bold, Italic, Underline, AlignCenter, List, Type, Code, Eye, Columns, LayoutTemplate, Image as ImageIcon, Bell, Video, PenTool, Send, Loader2, AlertTriangle, Check, FileCheck, Briefcase, ChevronDown } from 'lucide-react';
 
 // Helper for Portal
-const Portal = ({ children }: { children: React.ReactNode }) => {
-  return createPortal(children, document.body);
+const Portal = ({ children }: { children?: React.ReactNode }) => {
+  return children ? createPortal(children, document.body) : null;
 };
 
 export const MediationManager: React.FC = () => {
@@ -27,6 +27,10 @@ export const MediationManager: React.FC = () => {
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // Oturum iptal/erteleme
   const [isReportModalOpen, setIsReportModalOpen] = useState(false); // Report Modal
+  
+  // Minute Selection State
+  const [isMinuteSelectionOpen, setIsMinuteSelectionOpen] = useState(false);
+
   const [meetingToCancel, setMeetingToCancel] = useState<MediationMeeting | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   
@@ -415,7 +419,7 @@ export const MediationManager: React.FC = () => {
       const newDoc: Document = {
           id: `doc-sent-${Date.now()}`,
           name: docName,
-          type: sendingType as any,
+          type: sendingType,
           createdDate: new Date().toISOString().split('T')[0],
           status: 'Gönderildi',
           signedBy: []
@@ -448,17 +452,20 @@ export const MediationManager: React.FC = () => {
   };
 
 
-  // --- DOCUMENT GENERATION ---
+  // --- DOCUMENT GENERATION (TUTANAKLAR) ---
   const handleGenerateDoc = (docType: TemplateType) => {
       if (!activeMediationData) return;
       const template = templates.find(t => t.type === docType);
       if (!template) return alert('Şablon bulunamadı!');
 
+      // Process template with real data to generate content
+      const html = processTemplate(template.content, activeMediationData, mediatorProfile);
+      
       // Simulate document creation
       const newDoc: Document = {
           id: `doc-${Date.now()}`,
           name: template.name,
-          type: docType as any,
+          type: docType, // Specific type (e.g., Tutanak_Anlasma)
           createdDate: new Date().toISOString().split('T')[0],
           status: 'Taslak',
           signedBy: []
@@ -469,9 +476,11 @@ export const MediationManager: React.FC = () => {
       updateMediation({ ...activeMediationData, documents: [newDoc, ...currentDocs] });
 
       // Also show preview
-      const html = processTemplate(template.content, activeMediationData, mediatorProfile);
       setTemplatePreviewContent(html);
       setIsTemplateModalOpen(true);
+      
+      // Close selection modal if open
+      setIsMinuteSelectionOpen(false);
   };
 
   const handleSignDocument = (docId: string) => {
@@ -686,6 +695,57 @@ export const MediationManager: React.FC = () => {
                             <button onClick={() => setIsReportModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">Kapat</button>
                             <button onClick={handlePrintReport} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium shadow-lg">
                                 <Printer className="w-4 h-4 mr-2" /> Yazdır / PDF Kaydet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Portal>
+        )}
+
+        {/* Minute Type Selection Modal */}
+        {isMinuteSelectionOpen && (
+            <Portal>
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+                        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                            <h3 className="font-bold text-slate-800 dark:text-white">Tutanak Türü Seçiniz</h3>
+                            <button onClick={() => setIsMinuteSelectionOpen(false)}><X className="w-5 h-5 text-slate-400"/></button>
+                        </div>
+                        <div className="p-2">
+                            <button onClick={() => handleGenerateDoc('Tutanak_Acilis')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center border-b border-slate-100 dark:border-slate-700 transition">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3"><FileText className="w-4 h-4"/></div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-slate-200">Oturum Açılış Tutanağı</p>
+                                    <p className="text-xs text-slate-500">İlk oturum için standart tutanak.</p>
+                                </div>
+                            </button>
+                            <button onClick={() => handleGenerateDoc('Tutanak_Ara')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center border-b border-slate-100 dark:border-slate-700 transition">
+                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3"><Activity className="w-4 h-4"/></div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-slate-200">Ara Oturum Tutanağı</p>
+                                    <p className="text-xs text-slate-500">Sürecin devam ettiği durumlar için.</p>
+                                </div>
+                            </button>
+                            <button onClick={() => handleGenerateDoc('Tutanak_Anlasma')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center border-b border-slate-100 dark:border-slate-700 transition">
+                                <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3"><Handshake className="w-4 h-4"/></div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-slate-200">Anlaşma Tutanağı (Son)</p>
+                                    <p className="text-xs text-slate-500">Taraflar anlaştığında düzenlenir.</p>
+                                </div>
+                            </button>
+                            <button onClick={() => handleGenerateDoc('Tutanak_Anlasamama')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center border-b border-slate-100 dark:border-slate-700 transition">
+                                <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center mr-3"><XCircle className="w-4 h-4"/></div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-slate-200">Anlaşamama Tutanağı (Son)</p>
+                                    <p className="text-xs text-slate-500">Anlaşma sağlanamadığında düzenlenir.</p>
+                                </div>
+                            </button>
+                            <button onClick={() => handleGenerateDoc('Tutanak_Gelmeme')} className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center transition">
+                                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mr-3"><User className="w-4 h-4"/></div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-slate-200">Taraf Gelmedi Tutanağı</p>
+                                    <p className="text-xs text-slate-500">Taraflardan biri veya ikisi katılmadıysa.</p>
+                                </div>
                             </button>
                         </div>
                     </div>
@@ -1447,8 +1507,11 @@ export const MediationManager: React.FC = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-bold text-slate-700 dark:text-slate-200">Belgeler ve İmza Durumu</h3>
                                 <div className="flex gap-2">
-                                    <button onClick={() => handleGenerateDoc('Tutanak')} className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700">
-                                        + Tutanak Oluştur
+                                    <button 
+                                        onClick={() => setIsMinuteSelectionOpen(true)}
+                                        className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center"
+                                    >
+                                        <Plus className="w-4 h-4 mr-1" /> Tutanak Oluştur
                                     </button>
                                 </div>
                             </div>
@@ -1516,7 +1579,7 @@ export const MediationManager: React.FC = () => {
                             <PenTool className="w-12 h-12 text-brand-200 dark:text-brand-800 mx-auto mb-4" />
                             <h3 className="font-bold text-lg text-slate-800 dark:text-white">Canlı Tutanak Düzenleyici</h3>
                             <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">Oturum sırasında tutanağı canlı olarak düzenleyebilir ve anında çıktı alabilirsiniz.</p>
-                            <button onClick={() => openTemplateEditor('Tutanak')} className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg">
+                            <button onClick={() => openTemplateEditor('Tutanak_Acilis')} className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg">
                                 Editörü Başlat
                             </button>
                         </div>

@@ -122,6 +122,7 @@ export const CURRENT_USER: User = {
 export const DEFAULT_MEDIATOR_PROFILE: MediatorProfile = {
   name: 'Av. Arb. Burak G.',
   registrationNumber: '12345',
+  officeName: 'BGA Arabuluculuk Merkezi',
   address: 'Adalet Mah. Hukuk Cad. No:1 İstanbul',
   phone: '0555 123 45 67',
   email: 'arabulucu@bgaofis.com',
@@ -156,7 +157,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
   {
     id: 't1',
     type: 'Basvuru',
-    name: 'Standart Başvuru Formu',
+    name: 'Başvuru Formu',
     content: `
 <div style="font-family: 'Times New Roman', serif; line-height: 1.6; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
   <h2 style="text-align: center; font-weight: bold; margin-bottom: 30px; text-decoration: underline;">ARABULUCULUK BAŞVURU FORMU</h2>
@@ -174,11 +175,8 @@ export const DEFAULT_TEMPLATES: Template[] = [
   </div>
 
   <div style="margin-bottom: 20px;">
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">BAŞVURUCU:</span> {{MUVEKKIL}}</p>
-  </div>
-
-  <div style="margin-bottom: 20px;">
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">KARŞI TARAF:</span> {{KARSI_TARAF}}</p>
+    <p><strong>TARAFLAR:</strong></p>
+    {{TARAFLAR_DETAYLI}}
   </div>
 
   <div style="margin-bottom: 20px;">
@@ -188,144 +186,253 @@ export const DEFAULT_TEMPLATES: Template[] = [
 
   <div style="margin-bottom: 20px;">
     <p><strong>TALEP VE SONUÇ:</strong></p>
-    <p style="text-align: justify;">Yukarıda bilgileri verilen uyuşmazlık konusunun, 6325 sayılı Hukuk Uyuşmazlıklarında Arabuluculuk Kanunu gereğince, dava açılmadan önce veya dava sırasında arabuluculuk yoluyla çözümlenmesini; sürecin başlatılarak karşı tarafa davet mektubu gönderilmesini saygılarımla arz ve talep ederim.</p>
+    <p style="text-align: justify;">Yukarıda bilgileri verilen uyuşmazlık konusunun, 6325 sayılı Hukuk Uyuşmazlıklarında Arabuluculuk Kanunu gereğince, dava açılmadan önce veya dava sırasında arabuluculuk yoluyla çözümlenmesini arz ve talep ederim.</p>
   </div>
 
-  <div style="display: flex; justify-content: space-between; margin-top: 80px;">
-    <div style="text-align: center;"></div>
-    <div style="text-align: center;">
-      <p><strong>Başvurucu</strong></p>
-      <p>{{MUVEKKIL}}</p>
+  <div style="margin-top: 60px; text-align: center;">
+      <p><strong>Başvurucu / Vekili</strong></p>
       <p>(İmza)</p>
-    </div>
   </div>
 </div>`
   },
   {
-    id: 't2',
-    type: 'Tutanak',
-    name: 'Standart Son Tutanak',
+    id: 't_open',
+    type: 'Tutanak_Acilis',
+    name: 'Oturum Açılış Tutanağı',
     content: `
-<div style="font-family: 'Times New Roman', serif; line-height: 1.6; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
-  <h2 style="text-align: center; font-weight: bold; margin-bottom: 30px; text-decoration: underline;">ARABULUCULUK SON TUTANAĞI</h2>
+<div style="font-family: 'Times New Roman', serif; line-height: 1.5; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
+  <h3 style="text-align: center; font-weight: bold; text-decoration: underline;">ARABULUCULUK İLK OTURUM AÇILIŞ TUTANAĞI</h3>
+  
+  <table style="width: 100%; margin-bottom: 20px; border: none;">
+    <tr><td style="font-weight: bold; width: 180px;">BÜRO DOSYA NO</td><td>: {{DOSYA_NO}}</td></tr>
+    <tr><td style="font-weight: bold;">ARABULUCULUK NO</td><td>: {{ARB_NO}}</td></tr>
+    <tr><td style="font-weight: bold;">ARABULUCU</td><td>: {{ARABULUCU}} (Sicil No: {{ARABULUCU_SICIL}})</td></tr>
+    <tr><td style="font-weight: bold;">TARİH / SAAT</td><td>: {{BUGUN}} / 14:00</td></tr>
+    <tr><td style="font-weight: bold;">YER</td><td>: {{ARABULUCU_ADRES}}</td></tr>
+  </table>
 
   <div style="margin-bottom: 20px;">
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">BÜRO DOSYA NO:</span> {{DOSYA_NO}}</p>
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">ARABULUCU:</span> {{ARABULUCU}} (Sicil No: {{ARABULUCU_SICIL}})</p>
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">TUTANAK TARİHİ:</span> {{BUGUN}}</p>
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">TUTANAK YERİ:</span> {{ARABULUCU_ADRES}}</p>
+    <p style="font-weight: bold; text-decoration: underline;">TARAFLAR:</p>
+    {{TARAFLAR_DETAYLI}}
   </div>
 
   <div style="margin-bottom: 20px;">
-    <p><strong>1. TARAFLAR</strong></p>
-    <p><strong>Başvurucu:</strong> {{MUVEKKIL}}</p>
-    <p><strong>Karşı Taraf:</strong> {{KARSI_TARAF}}</p>
-  </div>
-
-  <div style="margin-bottom: 20px;">
-    <p><strong>2. UYUŞMAZLIK KONUSU</strong></p>
+    <p style="font-weight: bold; text-decoration: underline;">UYUŞMAZLIK KONUSU:</p>
     <p>{{KONU}}</p>
   </div>
 
   <div style="margin-bottom: 20px;">
-    <p><strong>3. SÜREÇ VE SONUÇ</strong></p>
+    <p style="font-weight: bold; text-decoration: underline;">SÜREÇ VE BİLGİLENDİRME:</p>
     <p style="text-align: justify; text-indent: 30px;">
-      Taraflar, arabulucunun daveti üzerine arabuluculuk görüşmelerine katılmış, süreç hakkında bilgilendirilmiş, gizlilik ilkesine riayet edeceklerini beyan etmişlerdir.
+      Taraflar, belirlenen gün ve saatte toplantıya katıldılar. Arabulucu tarafından taraflara;
     </p>
-    <p style="text-align: justify; text-indent: 30px; margin-top: 10px; background-color: #f0f9ff; padding: 10px; border-left: 4px solid #0284c7;">
-      {{SONUC_METNI}}
+    <ul style="list-style-type: disc; margin-left: 20px;">
+      <li>Arabuluculuğun temel ilkeleri (gönüllülük, eşitlik, gizlilik),</li>
+      <li>Arabuluculuk sürecinin hukuki niteliği ve sonuçları,</li>
+      <li>Arabulucunun rolü ve tarafsızlığı,</li>
+      <li>Sürecin sonunda düzenlenecek belgelerin hukuki niteliği</li>
+    </ul>
+    <p style="text-align: justify;">
+      konularında detaylı bilgilendirme yapıldı. Taraflar süreci anladıklarını, arabuluculuk yoluyla uyuşmazlığı müzakere etmeyi kabul ettiklerini beyan ettiler. Kimlik tespiti yapıldı.
     </p>
   </div>
 
-  <div style="margin-bottom: 20px;">
-    <p>İşbu son tutanak, 6325 sayılı Hukuk Uyuşmazlıklarında Arabuluculuk Kanunu'nun 17. maddesi uyarınca, tarafların ve arabulucunun serbest iradeleriyle okunup, doğruluğu kabul edilerek imza altına alınmıştır.</p>
+  <div style="margin-top: 50px;">
+    <p>İşbu tutanak, birlikte okundu, doğruluğu kabul edildi ve imza altına alındı.</p>
   </div>
 
   <table style="width: 100%; margin-top: 60px; text-align: center;">
     <tr>
-      <td style="padding: 20px;">
-        <strong>BAŞVURUCU</strong><br/>
-        {{MUVEKKIL}}<br/>
-        (İmza)
-      </td>
-      <td style="padding: 20px;">
-        <strong>KARŞI TARAF</strong><br/>
-        {{KARSI_TARAF}}<br/>
-        (İmza)
-      </td>
+      <td><strong>BAŞVURUCU</strong><br/><br/>(İmza)</td>
+      <td><strong>KARŞI TARAF</strong><br/><br/>(İmza)</td>
     </tr>
     <tr>
-      <td colspan="2" style="padding: 40px;">
-        <strong>ARABULUCU</strong><br/>
-        {{ARABULUCU}}<br/>
-        Sicil No: {{ARABULUCU_SICIL}}<br/>
-        (İmza)
-      </td>
+      <td colspan="2" style="padding-top: 40px;"><strong>ARABULUCU</strong><br/>{{ARABULUCU}}<br/>(İmza)</td>
     </tr>
   </table>
-</div>`
+</div>
+    `
   },
   {
-    id: 't3',
-    type: 'Anlasma',
-    name: 'Standart Anlaşma Belgesi',
+    id: 't_ara',
+    type: 'Tutanak_Ara',
+    name: 'Ara Oturum Tutanağı',
     content: `
-<div style="font-family: 'Times New Roman', serif; line-height: 1.6; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
-  <h2 style="text-align: center; font-weight: bold; margin-bottom: 30px; text-decoration: underline;">ARABULUCULUK ANLAŞMA BELGESİ</h2>
+<div style="font-family: 'Times New Roman', serif; line-height: 1.5; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
+  <h3 style="text-align: center; font-weight: bold; text-decoration: underline;">ARABULUCULUK ARA OTURUM TUTANAĞI</h3>
+  
   <div style="margin-bottom: 20px;">
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">DOSYA NO:</span> {{DOSYA_NO}}</p>
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">TARİH:</span> {{BUGUN}}</p>
-    <p><span style="font-weight: bold; display: inline-block; width: 150px;">ARABULUCU:</span> {{ARABULUCU}} ({{ARABULUCU_SICIL}})</p>
+    <p><strong>BÜRO DOSYA NO:</strong> {{DOSYA_NO}}</p>
+    <p><strong>OTURUM TARİHİ:</strong> {{BUGUN}}</p>
   </div>
 
   <div style="margin-bottom: 20px;">
-    <p><strong>A. TARAFLAR</strong></p>
-    <p><strong>1. {{MUVEKKIL}}</strong></p>
-    <p><strong>2. {{KARSI_TARAF}}</strong></p>
+    <p><strong>HAZIR BULUNANLAR:</strong></p>
+    {{TARAFLAR_DETAYLI}}
   </div>
 
   <div style="margin-bottom: 20px;">
-    <p><strong>B. UYUŞMAZLIK KONUSU</strong></p>
+    <p><strong>GÖRÜŞME İÇERİĞİ VE ERTELEME:</strong></p>
+    <p style="text-align: justify; text-indent: 30px;">
+      Taraflar müzakerelere devam etmiş, karşılıklı talep ve önerilerini sunmuşlardır. Değerlendirme yapmak ve yetkili kurullarına danışmak üzere süre talep etmişlerdir. Bu nedenle bir sonraki toplantının .................. tarihinde, saat .........'da yapılmasına karar verilmiştir.
+    </p>
+  </div>
+
+  <div style="margin-top: 50px;">
+    <p>İşbu tutanak taraflarca okundu ve imza altına alındı.</p>
+  </div>
+
+  <table style="width: 100%; margin-top: 40px; text-align: center;">
+    <tr>
+      <td><strong>Taraf 1</strong><br/>(İmza)</td>
+      <td><strong>Taraf 2</strong><br/>(İmza)</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding-top: 40px;"><strong>ARABULUCU</strong><br/>{{ARABULUCU}}<br/>(İmza)</td>
+    </tr>
+  </table>
+</div>
+    `
+  },
+  {
+    id: 't_anlasma',
+    type: 'Tutanak_Anlasma',
+    name: 'Anlaşma Tutanağı (Son)',
+    content: `
+<div style="font-family: 'Times New Roman', serif; line-height: 1.5; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
+  <h3 style="text-align: center; font-weight: bold; text-decoration: underline;">ARABULUCULUK ANLAŞMA BELGESİ (SON TUTANAK)</h3>
+  
+  <table style="width: 100%; margin-bottom: 20px; border: none;">
+    <tr><td style="font-weight: bold; width: 180px;">DOSYA NO</td><td>: {{DOSYA_NO}}</td></tr>
+    <tr><td style="font-weight: bold;">ARB NO</td><td>: {{ARB_NO}}</td></tr>
+    <tr><td style="font-weight: bold;">TARİH</td><td>: {{BUGUN}}</td></tr>
+  </table>
+
+  <div style="margin-bottom: 20px;">
+    <p style="font-weight: bold; text-decoration: underline;">A. TARAFLAR</p>
+    {{TARAFLAR_DETAYLI}}
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <p style="font-weight: bold; text-decoration: underline;">B. UYUŞMAZLIK KONUSU</p>
     <p>{{KONU}}</p>
   </div>
 
   <div style="margin-bottom: 20px;">
-    <p><strong>C. ANLAŞMA ŞARTLARI</strong></p>
-    <p>Taraflar, arabuluculuk müzakereleri sonucunda aşağıdaki maddeler üzerinde tam mutabakata varmışlardır:</p>
+    <p style="font-weight: bold; text-decoration: underline;">C. ANLAŞMA ŞARTLARI</p>
+    <p>Taraflar, arabuluculuk müzakereleri sonucunda aşağıdaki hususlarda tam mutabakata varmış ve <strong>ANLAŞMIŞLARDIR</strong>:</p>
     <ol style="margin-left: 20px; margin-top: 10px;">
-      <li style="margin-bottom: 10px;">Karşı Taraf, Başvurucu'ya uyuşmazlığa istinaden brüt <strong>100.000,00 TL</strong> (Yüz Bin Türk Lirası) ödemeyi kabul ve taahhüt eder.</li>
-      <li style="margin-bottom: 10px;">Ödeme, işbu belgenin imzalandığı tarihten itibaren 7 (yedi) gün içinde Başvurucu'nun hesabına yapılacaktır.</li>
-      <li style="margin-bottom: 10px;">Taraflar, işbu anlaşma belgesinde belirtilen hususlar dışında, birbirlerinden başkaca herhangi bir hak ve alacak talebinde bulunmayacaklarını beyan ederler.</li>
+      <li style="margin-bottom: 10px;">Karşı Taraf, Başvurucu'ya .................................... TL ödemeyi kabul eder.</li>
+      <li style="margin-bottom: 10px;">Ödeme ..................... tarihine kadar ............................ IBAN numaralı hesaba yapılacaktır.</li>
+      <li style="margin-bottom: 10px;">Taraflar, işbu anlaşma belgesinde belirtilen hususlar dışında, birbirlerinden başkaca herhangi bir hak ve alacak talebinde bulunmayacaklarını, birbirlerini gayrikabili rücu ibra ettiklerini beyan ederler.</li>
     </ol>
   </div>
 
   <div style="margin-bottom: 20px;">
-    <p><strong>D. HUKUKİ NİTELİK</strong></p>
-    <p>İşbu anlaşma belgesi, 6325 sayılı Kanun'un 18. maddesi uyarınca taraflar ve avukatları ile arabulucu tarafından imzalanmış olup, ilam niteliğinde belgedir.</p>
+    <p style="font-weight: bold; text-decoration: underline;">D. İCRA EDİLEBİLİRLİK VE SONUÇ</p>
+    <p style="text-align: justify;">
+      İşbu belge, 6325 sayılı Hukuk Uyuşmazlıklarında Arabuluculuk Kanunu'nun 18. maddesi uyarınca düzenlenmiş olup, taraflar ve avukatları ile arabulucu tarafından imzalanması halinde ilam niteliğinde belge sayılır. Taraflara icra edilebilirlik şerhi alma hakları hatırlatıldı.
+    </p>
   </div>
 
   <table style="width: 100%; margin-top: 60px; text-align: center;">
     <tr>
-      <td style="padding: 20px;">
-        <strong>BAŞVURUCU</strong><br/>
-        {{MUVEKKIL}}<br/>
-        (İmza)
-      </td>
-      <td style="padding: 20px;">
-        <strong>KARŞI TARAF</strong><br/>
-        {{KARSI_TARAF}}<br/>
-        (İmza)
-      </td>
+      <td style="vertical-align: top;"><strong>BAŞVURUCU</strong><br/>Ad Soyad<br/>(İmza)</td>
+      <td style="vertical-align: top;"><strong>KARŞI TARAF</strong><br/>Ad Soyad<br/>(İmza)</td>
     </tr>
-      <tr>
-      <td colspan="2" style="padding: 40px;">
-        <strong>ARABULUCU</strong><br/>
-        {{ARABULUCU}}<br/>
-        (İmza)
-      </td>
+    <tr>
+      <td colspan="2" style="padding-top: 50px;"><strong>ARABULUCU</strong><br/>{{ARABULUCU}}<br/>Sicil No: {{ARABULUCU_SICIL}}<br/>(İmza)</td>
     </tr>
   </table>
-</div>`
+</div>
+    `
+  },
+  {
+    id: 't_anlasamama',
+    type: 'Tutanak_Anlasamama',
+    name: 'Anlaşamama Tutanağı (Son)',
+    content: `
+<div style="font-family: 'Times New Roman', serif; line-height: 1.5; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
+  <h3 style="text-align: center; font-weight: bold; text-decoration: underline;">ARABULUCULUK ANLAŞAMAMA SON TUTANAĞI</h3>
+  
+  <div style="margin-bottom: 20px;">
+    <p><strong>DOSYA NO:</strong> {{DOSYA_NO}}</p>
+    <p><strong>ARB NO:</strong> {{ARB_NO}}</p>
+    <p><strong>DÜZENLEME YERİ:</strong> {{ARABULUCU_ADRES}}</p>
+    <p><strong>TARİH:</strong> {{BUGUN}}</p>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <p style="font-weight: bold; text-decoration: underline;">TARAFLAR:</p>
+    {{TARAFLAR_DETAYLI}}
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <p style="font-weight: bold; text-decoration: underline;">SONUÇ:</p>
+    <p style="text-align: justify; text-indent: 30px;">
+      Yukarıda bilgileri yer alan taraflar arasında yürütülen arabuluculuk süreci sonunda; taraflar uyuşmazlık konusu üzerinde müzakere etmişler, ancak ileri sürdükleri talep ve teklifler arasında mutabakat sağlanamamış, ortak bir çözüm noktasında buluşulamamış ve <strong>ANLAŞMA SAĞLANAMAMIŞTIR</strong>.
+    </p>
+    <p style="text-align: justify; text-indent: 30px;">
+      6325 sayılı Kanun uyarınca süreç sonlandırılmış olup, işbu son tutanak taraflar ve arabulucu tarafından okunup imza altına alınmıştır. (Dava şartı zorunlu arabuluculuk kapsamında, bu tutanak dava dilekçesine eklenmelidir.)
+    </p>
+  </div>
+
+  <table style="width: 100%; margin-top: 60px; text-align: center;">
+    <tr>
+      <td><strong>BAŞVURUCU</strong><br/><br/>(İmza)</td>
+      <td><strong>KARŞI TARAF</strong><br/><br/>(İmza)</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding-top: 40px;"><strong>ARABULUCU</strong><br/>{{ARABULUCU}}<br/>(İmza)</td>
+    </tr>
+  </table>
+</div>
+    `
+  },
+  {
+    id: 't_gelmeme',
+    type: 'Tutanak_Gelmeme',
+    name: 'Taraf Gelmedi Tutanağı',
+    content: `
+<div style="font-family: 'Times New Roman', serif; line-height: 1.5; color: #000; padding: 40px; max-width: 210mm; margin: 0 auto; background: white;">
+  <h3 style="text-align: center; font-weight: bold; text-decoration: underline;">ARABULUCULUK FAALİYETİNİN SONA ERME TUTANAĞI<br/>(TARAF YOKLUĞU NEDENİYLE)</h3>
+  
+  <div style="margin-bottom: 20px;">
+    <p><strong>DOSYA NO:</strong> {{DOSYA_NO}}</p>
+    <p><strong>ARB NO:</strong> {{ARB_NO}}</p>
+    <p><strong>TOPLANTI TARİHİ:</strong> {{BUGUN}}</p>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <p><strong>TARAFLAR:</strong></p>
+    {{TARAFLAR_DETAYLI}}
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <p><strong>SÜREÇ VE TESPİT:</strong></p>
+    <p style="text-align: justify;">
+      6325 sayılı Kanun kapsamında, taraflara usulüne uygun olarak (telefon/SMS/e-posta/kep yoluyla) toplantı daveti yapılmıştır. Belirlenen toplantı gün ve saatinde;
+    </p>
+    <p style="text-align: justify; margin-top: 10px; margin-bottom: 10px;">
+      <strong>BAŞVURUCU Taraf Hazır Bulunmuş,</strong><br/>
+      <strong>KARŞI TARAF Toplantıya Katılmamıştır.</strong>
+    </p>
+    <p style="text-align: justify;">
+      Toplantı saatinden itibaren makul bir süre (15 dakika) beklenilmesine rağmen karşı tarafın mazeretsiz olarak katılmadığı tespit edilmiştir. Bu nedenle arabuluculuk faaliyeti yürütülememiş ve süreç, görüşme yapılamadan <strong>SONA ERMİŞTİR</strong>.
+    </p>
+  </div>
+
+  <table style="width: 100%; margin-top: 60px; text-align: center;">
+    <tr>
+      <td><strong>HAZIR BULUNAN TARAF</strong><br/>Başvurucu<br/>(İmza)</td>
+      <td><strong>KATILMAYAN TARAF</strong><br/>Karşı Taraf<br/>(İmza Yok)</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding-top: 40px;"><strong>ARABULUCU</strong><br/>{{ARABULUCU}}<br/>(İmza)</td>
+    </tr>
+  </table>
+</div>
+    `
   },
   {
     id: 't4',
@@ -356,6 +463,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
     <p><strong>Arabulucu {{ARABULUCU}}</strong></p>
     <p>Sicil No: {{ARABULUCU_SICIL}}</p>
     <p>Tel: {{ARABULUCU_TELEFON}}</p>
+    <p>{{ARABULUCU_BURO}}</p>
   </div>
 </div>`
   },
@@ -400,8 +508,6 @@ export const DEFAULT_TEMPLATES: Template[] = [
 </div>`
   }
 ];
-
-// ... (Keeping MOCK_KNOWLEDGE_BASE, MOCK_CASES, MOCK_CLIENTS, MOCK_FINANCE, MOCK_TASKS)
 
 export const MOCK_KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {

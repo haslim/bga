@@ -40,6 +40,24 @@ export const processTemplate = (templateContent: string, data: Mediation, profil
     outcomeText = `Arabuluculuk süreci devam etmekte olup, tarafların iradeleri doğrultusunda süreç sonlandırılmıştır (Diğer).`;
   }
 
+  // Generate Detailed Parties HTML
+  let partiesDetailedHtml = '<ol style="margin-left: 20px;">';
+  if (data.parties && data.parties.length > 0) {
+      data.parties.forEach(p => {
+          let row = `<li><strong>${p.role.toUpperCase()}:</strong> ${p.name}`;
+          if (p.representative) {
+              row += ` — <strong>Vekili:</strong> ${p.representative}`;
+          }
+          row += `</li>`;
+          partiesDetailedHtml += row;
+      });
+  } else {
+      // Fallback if party array not populated (Legacy)
+      partiesDetailedHtml += `<li><strong>BAŞVURUCU:</strong> ${data.clientName}</li>`;
+      partiesDetailedHtml += `<li><strong>KARŞI TARAF:</strong> ${data.counterParty}</li>`;
+  }
+  partiesDetailedHtml += '</ol>';
+
   // Replace Placeholders
   return templateContent
     .replace(/{{DOSYA_NO}}/g, data.fileNumber || '.....')
@@ -48,14 +66,17 @@ export const processTemplate = (templateContent: string, data: Mediation, profil
     .replace(/{{MUVEKKIL}}/g, data.clientName || '.....')
     .replace(/{{KARSI_TARAF}}/g, data.counterParty || '.....')
     .replace(/{{KONU}}/g, data.subject || '.....')
+    .replace(/{{TARAFLAR_DETAYLI}}/g, partiesDetailedHtml)
     // Use data from Mediator Profile
     .replace(/{{ARABULUCU}}/g, profile.name || '.....')
     .replace(/{{ARABULUCU_SICIL}}/g, profile.registrationNumber || '.....')
+    .replace(/{{ARABULUCU_BURO}}/g, profile.officeName || '.....')
     .replace(/{{ARABULUCU_ADRES}}/g, profile.address || '.....')
     .replace(/{{ARABULUCU_IBAN}}/g, profile.iban || '.....')
     .replace(/{{ARABULUCU_TELEFON}}/g, profile.phone || '.....')
     .replace(/{{ARABULUCU_EMAIL}}/g, profile.email || '.....')
     .replace(/{{BUGUN}}/g, today)
+    .replace(/{{TARIH}}/g, today)
     .replace(/{{SONUC_METNI}}/g, outcomeText);
 };
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../DataContext';
 import { UserRole, DeadlineTemplate, NotificationSettings, Template, MediatorProfile } from '../types';
 import { THEME_COLORS } from '../constants';
-import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight, LayoutTemplate, FileText, Edit3, X, Code, Eye, Briefcase } from 'lucide-react';
+import { Settings, Save, Image as ImageIcon, AlertCircle, Shield, Palette, CheckCircle, Users, Clock, Trash2, Plus, Bell, Mail, MessageSquare, Calendar, Radio, Moon, Sun, Smartphone, Zap, Globe, ToggleLeft, ToggleRight, LayoutTemplate, FileText, Edit3, X, Code, Eye, Briefcase, Bold, Italic, Underline, List, Type, AlignLeft, Heading1, Heading2 } from 'lucide-react';
 import { UserManager } from './UserManager';
 
 export const SettingsManager: React.FC = () => {
@@ -31,6 +31,7 @@ export const SettingsManager: React.FC = () => {
   // Template Editor State
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [templateContent, setTemplateContent] = useState('');
+  const [editorMode, setEditorMode] = useState<'code' | 'preview'>('code');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [selectedTheme, setSelectedTheme] = useState(currentUser?.theme || 'blue');
@@ -135,6 +136,7 @@ export const SettingsManager: React.FC = () => {
   const handleEditTemplate = (template: Template) => {
       setEditingTemplate(template);
       setTemplateContent(template.content);
+      setEditorMode('code');
   };
 
   const handleSaveTemplate = () => {
@@ -147,17 +149,45 @@ export const SettingsManager: React.FC = () => {
   };
 
   const insertVariable = (variable: string) => {
+      if (editorMode !== 'code') {
+          alert("Değişken eklemek için lütfen 'Kod' moduna geçiniz.");
+          return;
+      }
       if (textareaRef.current) {
           const start = textareaRef.current.selectionStart;
           const end = textareaRef.current.selectionEnd;
           const text = templateContent;
           const newText = text.substring(0, start) + variable + text.substring(end);
           setTemplateContent(newText);
-          // Set cursor position after insertion (timeout needed for React state update)
+          // Set cursor position after insertion
           setTimeout(() => {
               if (textareaRef.current) {
                   textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + variable.length;
                   textareaRef.current.focus();
+              }
+          }, 0);
+      }
+  };
+
+  const insertTag = (startTag: string, endTag: string = '') => {
+      if (editorMode !== 'code') {
+          setEditorMode('code');
+          setTimeout(() => insertTag(startTag, endTag), 100);
+          return;
+      }
+      if (textareaRef.current) {
+          const start = textareaRef.current.selectionStart;
+          const end = textareaRef.current.selectionEnd;
+          const text = templateContent;
+          const selection = text.substring(start, end);
+          const newText = text.substring(0, start) + startTag + selection + endTag + text.substring(end);
+          setTemplateContent(newText);
+          setTimeout(() => {
+              if (textareaRef.current) {
+                  // If text was selected, wrap it. If not, put cursor in middle.
+                  const newCursorPos = selection ? end + startTag.length + endTag.length : start + startTag.length;
+                  textareaRef.current.focus();
+                  textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
               }
           }, 0);
       }
@@ -203,56 +233,110 @@ export const SettingsManager: React.FC = () => {
       {/* Template Edit Modal */}
       {editingTemplate && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95">
                   <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                       <h3 className="font-bold text-lg text-slate-800 dark:text-white flex items-center">
                           <Edit3 className="w-5 h-5 mr-2 text-brand-600" />
                           Şablon Düzenle: {editingTemplate.name}
                       </h3>
-                      <button onClick={() => setEditingTemplate(null)}><X className="w-6 h-6 text-slate-400 hover:text-slate-600" /></button>
+                      <div className="flex items-center space-x-2">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 mr-2 hidden sm:inline">Değişkenler sağ menüde →</span>
+                          <button onClick={() => setEditingTemplate(null)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><X className="w-6 h-6 text-slate-400" /></button>
+                      </div>
                   </div>
                   
                   <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                      {/* Editor Area */}
+                      <div className="flex-1 flex flex-col order-2 md:order-1 border-r border-slate-200 dark:border-slate-700">
+                          {/* Toolbar */}
+                          <div className="p-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-wrap gap-2">
+                              <div className="flex items-center space-x-1">
+                                  <button onClick={() => insertTag('<b>', '</b>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" title="Kalın"><Bold className="w-4 h-4" /></button>
+                                  <button onClick={() => insertTag('<i>', '</i>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" title="İtalik"><Italic className="w-4 h-4" /></button>
+                                  <button onClick={() => insertTag('<u>', '</u>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" title="Altı Çizili"><Underline className="w-4 h-4" /></button>
+                                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                                  <button onClick={() => insertTag('<h3>', '</h3>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold" title="Başlık 1">H1</button>
+                                  <button onClick={() => insertTag('<h4>', '</h4>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold" title="Başlık 2">H2</button>
+                                  <button onClick={() => insertTag('<p>', '</p>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" title="Paragraf"><Type className="w-4 h-4" /></button>
+                                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                                  <button onClick={() => insertTag('<ul>\n  <li>', '</li>\n</ul>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" title="Liste"><List className="w-4 h-4" /></button>
+                                  <button onClick={() => insertTag('<br/>')} className="p-1.5 rounded hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold" title="Satır Sonu">BR</button>
+                              </div>
+                              
+                              <div className="flex bg-slate-200 dark:bg-slate-700 rounded-lg p-1">
+                                  <button 
+                                    onClick={() => setEditorMode('code')}
+                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center ${editorMode === 'code' ? 'bg-white dark:bg-slate-600 text-brand-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
+                                  >
+                                      <Code className="w-3 h-3 mr-1" /> Kod
+                                  </button>
+                                  <button 
+                                    onClick={() => setEditorMode('preview')}
+                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center ${editorMode === 'preview' ? 'bg-white dark:bg-slate-600 text-brand-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
+                                  >
+                                      <Eye className="w-3 h-3 mr-1" /> Önizle
+                                  </button>
+                              </div>
+                          </div>
+
+                          {/* Edit / Preview Viewport */}
+                          <div className="flex-1 overflow-hidden relative bg-slate-50 dark:bg-slate-900">
+                              {editorMode === 'code' ? (
+                                  <textarea 
+                                      ref={textareaRef}
+                                      className="w-full h-full p-6 font-mono text-sm bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 resize-none outline-none border-none"
+                                      value={templateContent}
+                                      onChange={e => setTemplateContent(e.target.value)}
+                                      spellCheck={false}
+                                      placeholder="HTML şablon kodunuzu buraya giriniz..."
+                                  ></textarea>
+                              ) : (
+                                  <div className="w-full h-full p-8 overflow-y-auto bg-white text-black shadow-inner">
+                                      {/* Use a container to simulate paper-like preview */}
+                                      <div 
+                                        className="max-w-[210mm] mx-auto min-h-[297mm] bg-white shadow-lg p-10 prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: templateContent }} 
+                                      />
+                                  </div>
+                              )}
+                          </div>
+                      </div>
+
                       {/* Sidebar: Variables */}
-                      <div className="w-full md:w-64 bg-slate-50 dark:bg-slate-900/30 border-r border-slate-200 dark:border-slate-700 p-4 overflow-y-auto">
-                          <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-3">Değişkenler</h4>
-                          <div className="space-y-2">
+                      <div className="w-full md:w-72 bg-slate-50 dark:bg-slate-900/30 order-1 md:order-2 flex flex-col h-48 md:h-auto border-b md:border-b-0 border-slate-200 dark:border-slate-700">
+                          <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Dinamik Değişkenler</h4>
+                              <p className="text-[10px] text-slate-400 mt-1">Tıklayarak şablona ekleyebilirsiniz.</p>
+                          </div>
+                          <div className="flex-1 overflow-y-auto p-2 space-y-1">
                               {[
                                   { code: '{{MUVEKKIL}}', label: 'Müvekkil Adı' },
                                   { code: '{{KARSI_TARAF}}', label: 'Karşı Taraf' },
                                   { code: '{{DOSYA_NO}}', label: 'Büro Dosya No' },
-                                  { code: '{{ARB_NO}}', label: 'Arabuluculuk No' }, // Added
+                                  { code: '{{ARB_NO}}', label: 'Arabuluculuk No' },
                                   { code: '{{KONU}}', label: 'Uyuşmazlık Konusu' },
                                   { code: '{{TARIH}}', label: 'Bugünün Tarihi' },
+                                  { code: '{{BUGUN}}', label: 'Tarih (Gün/Ay/Yıl)' },
                                   { code: '{{ARABULUCU}}', label: 'Arabulucu Adı' },
                                   { code: '{{ARABULUCU_SICIL}}', label: 'Sicil No' },
+                                  { code: '{{ARABULUCU_BURO}}', label: 'Arabuluculuk Bürosu' },
                                   { code: '{{ARABULUCU_IBAN}}', label: 'IBAN No' },
+                                  { code: '{{ARABULUCU_ADRES}}', label: 'Adres' },
+                                  { code: '{{ARABULUCU_TELEFON}}', label: 'Telefon' },
+                                  { code: '{{ARABULUCU_EMAIL}}', label: 'E-Posta' },
+                                  { code: '{{SONUC_METNI}}', label: 'Anlaşma/Anlaşmama Metni (Oto)' },
                               ].map((v) => (
                                   <button 
                                     key={v.code}
                                     onClick={() => insertVariable(v.code)}
-                                    className="w-full text-left px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-xs hover:border-brand-400 hover:text-brand-600 transition group"
+                                    disabled={editorMode === 'preview'}
+                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs border transition group ${editorMode === 'preview' ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-800 border-transparent' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400 hover:text-brand-600'}`}
                                   >
                                       <span className="font-mono font-bold text-slate-700 dark:text-slate-300 block">{v.code}</span>
                                       <span className="text-slate-400 group-hover:text-brand-500">{v.label}</span>
                                   </button>
                               ))}
                           </div>
-                      </div>
-
-                      {/* Editor Area */}
-                      <div className="flex-1 flex flex-col">
-                          <div className="p-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 flex items-center">
-                              <Code className="w-4 h-4 mr-2" />
-                              HTML Editör Modu
-                          </div>
-                          <textarea 
-                              ref={textareaRef}
-                              className="flex-1 w-full p-6 font-mono text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 resize-none outline-none focus:bg-slate-50 dark:focus:bg-slate-900 transition-colors"
-                              value={templateContent}
-                              onChange={e => setTemplateContent(e.target.value)}
-                              spellCheck={false}
-                          ></textarea>
                       </div>
                   </div>
 
@@ -265,8 +349,6 @@ export const SettingsManager: React.FC = () => {
               </div>
           </div>
       )}
-      
-      {/* ... (Rest of the component remains the same) ... */}
       
       <header className="mb-8 flex justify-between items-center flex-wrap gap-4">
         <div>
@@ -305,7 +387,6 @@ export const SettingsManager: React.FC = () => {
         {/* GENERAL SETTINGS */}
         {activeTab === 'general' && (
             <div className="space-y-8 animate-in slide-in-from-left-2 fade-in duration-300">
-                {/* ... Personal Settings & Admin Settings blocks (No changes) ... */}
                 {/* Personal Settings - Accessible to everyone */}
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 flex items-center">
@@ -443,6 +524,16 @@ export const SettingsManager: React.FC = () => {
                                     className={inputClass}
                                     value={profileData.name}
                                     onChange={e => setProfileData({...profileData, name: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Arabuluculuk Bürosu / Merkezi</label>
+                                <input 
+                                    type="text" 
+                                    className={inputClass}
+                                    value={profileData.officeName || ''}
+                                    onChange={e => setProfileData({...profileData, officeName: e.target.value})}
+                                    placeholder="Örn: BGA Arabuluculuk Merkezi"
                                 />
                             </div>
                             <div>
@@ -642,7 +733,6 @@ export const SettingsManager: React.FC = () => {
         {/* NOTIFICATIONS TAB */}
         {activeTab === 'notifications' && isAdmin && (
             <div className="space-y-8 animate-in slide-in-from-right-2 fade-in duration-300">
-                 {/* ... (Rest of notifications UI - No changes) ... */}
                  {/* Channels */}
                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 flex items-center">
