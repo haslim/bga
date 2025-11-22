@@ -369,7 +369,7 @@ export const MediationManager: React.FC = () => {
                     <p className="text-sm text-slate-600 mb-4">Bu oturumu iptal etmek üzeresiniz. Taraflara otomatik bildirim gönderilecektir.</p>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">İptal Sebebi</label>
                     <select 
-                        className="w-full border rounded p-2 mb-4 text-sm"
+                        className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 mb-4 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all"
                         value={cancelReason}
                         onChange={e => setCancelReason(e.target.value)}
                     >
@@ -381,8 +381,8 @@ export const MediationManager: React.FC = () => {
                         <option value="Diğer">Diğer</option>
                     </select>
                     <div className="flex justify-end gap-2">
-                        <button onClick={() => setIsCancelModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded text-sm">Vazgeç</button>
-                        <button onClick={handleCancelMeeting} disabled={!cancelReason} className="px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:bg-slate-300">Bildir ve İptal Et</button>
+                        <button onClick={() => setIsCancelModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium">Vazgeç</button>
+                        <button onClick={handleCancelMeeting} disabled={!cancelReason} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:bg-slate-300">Bildir ve İptal Et</button>
                     </div>
                 </div>
             </div>
@@ -404,7 +404,7 @@ export const MediationManager: React.FC = () => {
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Dosya Numarası</label>
                             <input 
                                 type="text" 
-                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" 
                                 placeholder="Örn: ARB-2025/101"
                                 value={newApplication.fileNumber} 
                                 onChange={e => setNewApplication({...newApplication, fileNumber: e.target.value})} 
@@ -425,7 +425,7 @@ export const MediationManager: React.FC = () => {
                                         <div key={idx} className="flex gap-2">
                                             <input 
                                                 type="text" 
-                                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                                className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" 
                                                 placeholder="Ad Soyad / Ünvan"
                                                 value={app}
                                                 onChange={e => handleChangePartyRow('applicant', idx, e.target.value)} 
@@ -453,7 +453,7 @@ export const MediationManager: React.FC = () => {
                                         <div key={idx} className="flex gap-2">
                                             <input 
                                                 type="text" 
-                                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                                className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" 
                                                 placeholder="Ad Soyad / Ünvan"
                                                 value={cp}
                                                 onChange={e => handleChangePartyRow('counter', idx, e.target.value)} 
@@ -472,7 +472,7 @@ export const MediationManager: React.FC = () => {
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Uyuşmazlık Konusu</label>
                             <textarea 
-                                className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none" 
+                                className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" 
                                 rows={3}
                                 value={newApplication.subject} 
                                 onChange={e => setNewApplication({...newApplication, subject: e.target.value})} 
@@ -483,15 +483,15 @@ export const MediationManager: React.FC = () => {
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Arabulucu</label>
                              <input 
                                 type="text" 
-                                className="w-full border rounded p-2 text-sm bg-slate-50" 
+                                className="w-full border border-slate-300 bg-slate-50 text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" 
                                 value={newApplication.mediatorName || mediatorProfile.name} 
                                 onChange={e => setNewApplication({...newApplication, mediatorName: e.target.value})} 
                             />
                         </div>
                     </div>
                     <div className="bg-slate-50 px-6 py-4 border-t flex justify-end gap-2 shrink-0">
-                        <button onClick={() => setIsApplicationModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm">İptal</button>
-                        <button onClick={handleAddApplication} className="px-4 py-2 bg-brand-600 text-white rounded text-sm hover:bg-brand-700 flex items-center">
+                        <button onClick={() => setIsApplicationModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium">İptal</button>
+                        <button onClick={handleAddApplication} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium">
                             <Save className="w-4 h-4 mr-2" /> Dosyayı Aç
                         </button>
                     </div>
@@ -532,11 +532,11 @@ export const MediationManager: React.FC = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tarih & Saat</label>
-                                <input type="datetime-local" className="w-full border rounded p-2 text-sm" value={newMeeting.date} onChange={e => setNewMeeting({...newMeeting, date: e.target.value})} />
+                                <input type="datetime-local" className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" value={newMeeting.date} onChange={e => setNewMeeting({...newMeeting, date: e.target.value})} />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Katılımcılar</label>
-                                <select className="w-full border rounded p-2 text-sm" value={newMeeting.participants} onChange={e => setNewMeeting({...newMeeting, participants: e.target.value})}>
+                                <select className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" value={newMeeting.participants} onChange={e => setNewMeeting({...newMeeting, participants: e.target.value})}>
                                     <option value="">Seçiniz...</option>
                                     <option>Taraflar ve Vekilleri</option>
                                     <option>Sadece Vekiller</option>
@@ -554,18 +554,18 @@ export const MediationManager: React.FC = () => {
                         ) : (
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Konum / Adres</label>
-                                <input type="text" className="w-full border rounded p-2 text-sm" value={newMeeting.location} onChange={e => setNewMeeting({...newMeeting, location: e.target.value})} />
+                                <input type="text" className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" value={newMeeting.location} onChange={e => setNewMeeting({...newMeeting, location: e.target.value})} />
                             </div>
                         )}
 
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Notlar</label>
-                            <textarea className="w-full border rounded p-2 text-sm" rows={2} value={newMeeting.notes} onChange={e => setNewMeeting({...newMeeting, notes: e.target.value})}></textarea>
+                            <textarea className="w-full border border-slate-300 bg-white text-slate-900 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all" rows={2} value={newMeeting.notes} onChange={e => setNewMeeting({...newMeeting, notes: e.target.value})}></textarea>
                         </div>
                     </div>
                     <div className="bg-slate-50 px-6 py-4 border-t flex justify-end gap-2">
-                        <button onClick={() => setIsMeetingModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded text-sm">İptal</button>
-                        <button onClick={handleAddMeeting} className="px-4 py-2 bg-brand-600 text-white rounded text-sm hover:bg-brand-700 flex items-center">
+                        <button onClick={() => setIsMeetingModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium">İptal</button>
+                        <button onClick={handleAddMeeting} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center font-medium">
                             <Save className="w-4 h-4 mr-2" /> Planla ve Davet Et
                         </button>
                     </div>
@@ -591,7 +591,7 @@ export const MediationManager: React.FC = () => {
                      <div className="flex-1 flex">
                          <textarea 
                             ref={textareaRef}
-                            className="flex-1 p-4 font-mono text-sm resize-none outline-none bg-slate-50"
+                            className="flex-1 p-4 font-mono text-sm resize-none outline-none bg-slate-50 text-slate-900"
                             value={editedTemplateContent}
                             onChange={e => setEditedTemplateContent(e.target.value)}
                          />
