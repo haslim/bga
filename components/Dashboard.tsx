@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { useData } from '../DataContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign, BookOpen, Clock } from 'lucide-react';
+import { CheckCircle, TrendingUp, AlertTriangle, Calendar, User, Activity, DollarSign, BookOpen, Clock, ChevronRight } from 'lucide-react';
 import { ViewState } from '../types';
 
 interface DashboardProps {
@@ -209,14 +210,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                     {todaysHearings.length > 0 ? (
                         <div className="space-y-3">
                             {todaysHearings.map((h, idx) => (
-                                <div key={idx} className="flex items-center p-3 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 rounded-lg">
+                                <div 
+                                    key={idx} 
+                                    onClick={() => onChangeView('cases')}
+                                    className="flex items-center p-3 bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 rounded-lg cursor-pointer hover:bg-brand-100 dark:hover:bg-brand-900/40 transition group"
+                                >
                                     <div className="font-bold text-brand-800 dark:text-brand-300 text-lg mr-4 w-16 text-center bg-white dark:bg-slate-800 rounded py-1 border border-brand-100 dark:border-brand-700 shadow-sm">
                                         {h.time}
                                     </div>
-                                    <div className="overflow-hidden">
+                                    <div className="overflow-hidden flex-1">
                                         <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{h.caseNumber}</p>
                                         <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{h.title}</p>
                                     </div>
+                                    <ChevronRight className="w-4 h-4 text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                             ))}
                         </div>
@@ -239,7 +245,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                 </div>
                 <div className="divide-y divide-slate-100 dark:divide-slate-700">
                     {criticalDeadlines.map((item, idx) => (
-                        <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                        <div 
+                            key={idx} 
+                            onClick={() => onChangeView(item.type === 'Görev' ? 'tasks' : 'cases')}
+                            className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer transition group"
+                        >
                             <div className="flex items-center space-x-3 overflow-hidden">
                                 <div className={`w-2 h-2 rounded-full shrink-0 ${item.type === 'Yasal Süre' ? 'bg-red-600 animate-pulse' : item.urgent ? 'bg-orange-500' : 'bg-blue-400'}`}></div>
                                 <div className="overflow-hidden">
@@ -347,9 +357,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                  </div>
                  <div className="divide-y divide-slate-50 dark:divide-slate-700">
                     {topClients.map((client, idx) => (
-                        <div key={idx} className="p-4 flex items-center justify-between">
+                        <div 
+                            key={idx} 
+                            onClick={() => onChangeView('clients')}
+                            className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer transition group"
+                        >
                             <div className="flex items-center overflow-hidden">
-                                <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs font-bold mr-3 shrink-0">
+                                <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs font-bold mr-3 shrink-0 group-hover:bg-brand-100 group-hover:text-brand-600 transition-colors">
                                     {idx + 1}
                                 </span>
                                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{client.name}</span>
@@ -372,7 +386,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                  </div>
                  <div className="divide-y divide-slate-50 dark:divide-slate-700">
                     {latestKnowledge.length > 0 ? latestKnowledge.map((k) => (
-                        <div key={k.id} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition cursor-pointer">
+                        <div 
+                            key={k.id} 
+                            onClick={() => onChangeView('knowledge')}
+                            className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition cursor-pointer group"
+                        >
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase font-bold ${
                                      k.category === 'İçtihat' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-800' : 
@@ -382,7 +400,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                                 </span>
                                 <span className="text-[10px] text-slate-400">{k.createdAt}</span>
                             </div>
-                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-1">{k.title}</p>
+                            <div className="flex justify-between items-center">
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-1">{k.title}</p>
+                                <ChevronRight className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                         </div>
                     )) : (
                         <p className="text-xs text-slate-400 italic text-center py-4">İçerik bulunmuyor.</p>
@@ -395,9 +416,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onChangeView }) => {
                  <h3 className="font-bold text-slate-800 dark:text-white mb-3 text-sm">Açık Görevlerim</h3>
                  <ul className="space-y-2">
                     {myOpenTasks.slice(0,4).map(t => (
-                        <li key={t.id} className="flex items-start text-sm">
+                        <li 
+                            key={t.id} 
+                            onClick={() => onChangeView('tasks')}
+                            className="flex items-start text-sm p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded cursor-pointer transition group"
+                        >
                              <div className={`w-2 h-2 rounded-full mt-1.5 mr-2 shrink-0 ${t.priority === 'Yüksek' ? 'bg-red-500' : 'bg-blue-400'}`}></div>
-                             <span className="text-slate-600 dark:text-slate-300 line-clamp-1">{t.title}</span>
+                             <span className="text-slate-600 dark:text-slate-300 line-clamp-1 flex-1">{t.title}</span>
+                             <ChevronRight className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </li>
                     ))}
                     {myOpenTasks.length === 0 && <li className="text-xs text-slate-400">Bekleyen görev yok.</li>}
