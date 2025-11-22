@@ -989,8 +989,7 @@ export const MediationManager: React.FC = () => {
                 </div>
 
                 {/* TABS */}
-                {/* ... (Tabs code remains same) ... */}
-                <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-6 w-fit border border-slate-200 dark:border-slate-700">
+                <div className="flex flex-wrap gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-6 w-full md:w-fit border border-slate-200 dark:border-slate-700">
                     {[
                         { id: 'overview', label: 'Genel Bakış', icon: Activity },
                         { id: 'sessions', label: 'Oturumlar', icon: Calendar },

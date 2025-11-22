@@ -186,6 +186,18 @@ export const SettingsManager: React.FC = () => {
   // Input Class for Dark Mode
   const inputClass = "w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all";
 
+  // Define tabs
+  const tabs = [
+    { id: 'general', label: 'Genel Ayarlar', icon: Settings },
+    ...(isAdmin ? [
+      { id: 'profile', label: 'Arabulucu Profili', icon: Briefcase },
+      { id: 'templates', label: 'Belge Şablonları', icon: LayoutTemplate },
+      { id: 'users', label: 'Kullanıcılar', icon: Users },
+      { id: 'deadlines', label: 'Süre Şablonları', icon: Clock },
+      { id: 'notifications', label: 'Bildirimler & Entegrasyon', icon: Bell }
+    ] : [])
+  ];
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen animate-in fade-in dark:bg-slate-900 dark:text-white">
       {/* Template Edit Modal */}
@@ -208,7 +220,8 @@ export const SettingsManager: React.FC = () => {
                               {[
                                   { code: '{{MUVEKKIL}}', label: 'Müvekkil Adı' },
                                   { code: '{{KARSI_TARAF}}', label: 'Karşı Taraf' },
-                                  { code: '{{DOSYA_NO}}', label: 'Dosya Numarası' },
+                                  { code: '{{DOSYA_NO}}', label: 'Büro Dosya No' },
+                                  { code: '{{ARB_NO}}', label: 'Arabuluculuk No' },
                                   { code: '{{KONU}}', label: 'Uyuşmazlık Konusu' },
                                   { code: '{{TARIH}}', label: 'Bugünün Tarihi' },
                                   { code: '{{ARABULUCU}}', label: 'Arabulucu Adı' },
@@ -253,7 +266,7 @@ export const SettingsManager: React.FC = () => {
           </div>
       )}
 
-      <header className="mb-8 flex justify-between items-center">
+      <header className="mb-8 flex justify-between items-center flex-wrap gap-4">
         <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Ayarlar</h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">Kişisel tercihler ve sistem yapılandırması</p>
@@ -266,60 +279,23 @@ export const SettingsManager: React.FC = () => {
         )}
       </header>
 
-      {/* Settings Tabs */}
-      <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto custom-scrollbar pb-1">
-          <button 
-            onClick={() => setActiveTab('general')}
-            className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'general' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-          >
-              <Settings className="w-4 h-4 mr-2" />
-              Genel Ayarlar
-          </button>
-          {isAdmin && (
+      {/* Settings Tabs - Responsive Wrapping */}
+      <div className="flex flex-wrap gap-2 md:gap-0 md:space-x-4 mb-6 md:border-b border-slate-200 dark:border-slate-700">
+          {tabs.map(tab => (
               <button 
-                onClick={() => setActiveTab('profile')}
-                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'profile' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`
+                    px-4 py-3 font-medium text-sm transition-all flex items-center justify-center rounded-lg md:rounded-none md:rounded-t-lg whitespace-nowrap
+                    ${activeTab === tab.id 
+                        ? 'bg-brand-50 text-brand-600 md:bg-transparent md:border-b-2 border-brand-600 dark:bg-brand-900/30 dark:text-brand-400 dark:md:bg-transparent dark:md:border-brand-400' 
+                        : 'text-slate-500 bg-slate-50 md:bg-transparent hover:bg-slate-100 md:hover:bg-transparent hover:text-slate-700 md:border-b-2 md:border-transparent dark:text-slate-400 dark:bg-slate-800 dark:hover:bg-slate-700'}
+                `}
               >
-                  <Briefcase className="w-4 h-4 mr-2" />
-                  Arabulucu Profili
+                  <tab.icon className="w-4 h-4 mr-2" />
+                  {tab.label}
               </button>
-          )}
-          {isAdmin && (
-              <button 
-                onClick={() => setActiveTab('templates')}
-                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'templates' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-              >
-                  <LayoutTemplate className="w-4 h-4 mr-2" />
-                  Belge Şablonları
-              </button>
-          )}
-          {isAdmin && (
-              <button 
-                onClick={() => setActiveTab('users')}
-                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'users' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-              >
-                  <Users className="w-4 h-4 mr-2" />
-                  Kullanıcılar
-              </button>
-          )}
-          {isAdmin && (
-              <button 
-                onClick={() => setActiveTab('deadlines')}
-                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'deadlines' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-              >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Süre Şablonları
-              </button>
-          )}
-          {isAdmin && (
-              <button 
-                onClick={() => setActiveTab('notifications')}
-                className={`pb-3 px-4 font-medium text-sm transition-all border-b-2 flex items-center whitespace-nowrap ${activeTab === 'notifications' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-              >
-                  <Bell className="w-4 h-4 mr-2" />
-                  Bildirimler & Entegrasyon
-              </button>
-          )}
+          ))}
       </div>
 
       <div className="max-w-5xl">
@@ -664,7 +640,6 @@ export const SettingsManager: React.FC = () => {
         {/* NOTIFICATIONS TAB */}
         {activeTab === 'notifications' && isAdmin && (
             <div className="space-y-8 animate-in slide-in-from-right-2 fade-in duration-300">
-                 {/* ... (Existing Notification Code) ... */}
                  {/* Channels */}
                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 flex items-center">
